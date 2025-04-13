@@ -1,6 +1,8 @@
 # Observatio
 
+<p align="center">
 <img src="front/public/logo.png" alt="logo" width="300"/>
+</p>
 
 The project focuses on monitoring Kubernetes clusters managed by [ClusterAPI](https://cluster-api.sigs.k8s.io/), 
 providing tools and solutions to enhance visibility and efficiency. By collecting and consolidating data from diverse sources, 
