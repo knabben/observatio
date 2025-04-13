@@ -42,7 +42,7 @@ lint-go: ## Lint codebase
 .PHONY: run-backend
 run-backend:  ## Build the binary using local golang
 	pushd webserver; \
-	go run . $(what); \
+	go run . $(what) --dev; \
 	popd;
 
 .PHONY: run-frontend
