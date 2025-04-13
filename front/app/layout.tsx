@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
-
 import "./globals.css";
 import '@mantine/core/styles.css';
 
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps, createTheme } from '@mantine/core';
-import {sourceCodePro400} from "@/fonts";
 
 export const metadata = {
   title: 'Observatio',

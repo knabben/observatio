@@ -1,11 +1,24 @@
 package cmd
 
 import (
-	"fmt"
-	"log"
+	"context"
+	"net/http"
+	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
-	"os/user"
+
+	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+
+	"github.com/knabben/observatio/webserver/internal/infra/kubernetes"
+	"github.com/knabben/observatio/webserver/internal/web"
+)
+
+var (
+	address     string
+	development bool
+	timeout     time.Duration = 15 * time.Second
 )
 
 var serveCmd = &cobra.Command{
@@ -17,16 +30,25 @@ Check args to change default values.`,
 }
 
 func init() {
+	log.SetLogger(zap.New())
+
+	serveCmd.PersistentFlags().StringVar(&address, "address", ":8080", "Webserver default listening HTTP port. Default 8080.")
+	serveCmd.PersistentFlags().BoolVar(&development, "dev", false, "Development mode, no static hosting. Default false")
+
 	rootCmd.AddCommand(serveCmd)
-	currentUser, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
-	}
-	serveCmd.PersistentFlags().Int("port", 8080, "Webserver default listening HTTP port. Default 8080.")
-	serveCmd.PersistentFlags().String("kubeconfig", fmt.Sprintf("%s/.kube/config", currentUser.HomeDir), "Kubernetes configuration file path. Default $HOME/.kube/config")
 }
 
 func RunE(cmd *cobra.Command, args []string) error {
-	fmt.Println("server")
-	return nil
+	router := mux.NewRouter()
+	client, config, err := kubernetes.NewClient()
+	if err != nil {
+		return err
+	}
+	router.Use(web.WithKubernetes(client, config))
+	web.DefaultHandlers(router, development)
+
+	ctx := context.Background()
+	log.FromContext(ctx).Info("Listening on " + address)
+	srv := &http.Server{Handler: router, Addr: address, WriteTimeout: timeout, ReadTimeout: timeout}
+	return srv.ListenAndServe()
 }

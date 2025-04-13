@@ -1,4 +1,4 @@
-import { inter, lora, sourceCodePro400 } from '@/fonts'
+import { sourceCodePro400 } from '@/fonts'
 
 export default function Home() {
   return (

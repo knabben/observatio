@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 front/next-env.d.ts
+
+# Golang
+output
