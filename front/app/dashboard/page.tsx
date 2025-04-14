@@ -4,8 +4,7 @@ import { getClusterInformation } from "@/app/lib/data";
 import { getComponentsVersion } from "@/app/lib/data";
 
 import { Suspense } from 'react';
-import { Roboto } from 'next/font/google'
-import { Card, Grid, GridCol, Text, Title, Divider, Breadcrumbs, Anchor } from '@mantine/core';
+import { Card, Grid, GridCol, Text, Divider } from '@mantine/core';
 import Loading from "@/app/dashboard/loading";
 
 export default async function Dahsboard() {
