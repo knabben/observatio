@@ -1,32 +1,37 @@
-'use client';
-
-import { Suspense } from 'react'
 import ClusterInfo from '@/app/ui/dashboard/components/ClusterInfo'
-import { Card, Grid, Text, Title, Loader} from '@mantine/core';
+import Versions from '@/app/ui/dashboard/components/Versions'
+import { getClusterInformation } from "@/app/lib/data";
+import { getComponentsVersion } from "@/app/lib/data";
 
-export default function Page() {
+import { Suspense } from 'react';
+import { Roboto } from 'next/font/google'
+import { Card, Grid, GridCol, Text, Title, Divider, Breadcrumbs, Anchor } from '@mantine/core';
+import Loading from "@/app/dashboard/loading";
+
+export default async function Dahsboard() {
+  const clusterInfo = await getClusterInformation()
+  const componentVersions = await getComponentsVersion()
   return (
     <main>
       <Grid grow>
-        <Grid.Col span={12}>
-          <Title order={2} tt="capitalize">
-            Dashboard
-          </Title>
-        </Grid.Col>
-      </Grid>
-      <Grid grow>
-        <Grid.Col span={4}>
-          <Card shadow="sm" padding="lg" radius="md" withBorder>
-            <Text>
-              CAPI Versions
-            </Text>
+        <GridCol span={6}>
+          <Card shadow="md"  radius="md" withBorder>
+            <Suspense fallback={<Loading />}>
+              <Text ta="center">Component versions</Text>
+              <Divider my="sm" variant="dashed" />
+              <Versions componentVersions={componentVersions}/>
+            </Suspense>
           </Card>
-        </Grid.Col>
-        <Grid.Col span={8}>
-          <Card shadow="sm" padding="lg" radius="md" withBorder>
-              <ClusterInfo />
+        </GridCol>
+        <GridCol span={6}>
+          <Card shadow="md" padding="sm" radius="md" withBorder>
+            <Suspense fallback={<Loading />}>
+              <Text ta="center">Cluster information</Text>
+              <Divider my="sm" variant="dashed" />
+              <ClusterInfo clusterInfo={clusterInfo}/>
+            </Suspense>
           </Card>
-        </Grid.Col>
+        </GridCol>
       </Grid>
     </main>
   );
