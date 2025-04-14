@@ -1,14 +1,21 @@
+'use client';
+
 import { Table } from '@mantine/core';
 
-async function getServices() {
-  const res = await fetch("http://localhost:8080/api/clusters/info")
-  return res.json()
+type Service = {
+  name: string,
+  path: string
+}
+type ClusterInfo = {
+  services: Service[],
 }
 
-export default async function ClusterInfo() {
-  const response = getServices()
-  const [services] = await Promise.all([response])
-
+// ClusterInfo: Cluster details and access URLs.
+export default function ClusterInfo({
+  clusterInfo,
+}: {
+  clusterInfo: ClusterInfo
+}) {
   return (
     <Table striped highlightOnHover withTableBorder withColumnBorders>
       <Table.Thead>
@@ -19,7 +26,7 @@ export default async function ClusterInfo() {
       </Table.Thead>
       <Table.Tbody>
         {
-          services["services"].map( (service: { name: string, path: string }, i) => (
+          clusterInfo.services.map( (service: { name: string, path: string }) => (
             <Table.Tr key={service.name}>
               <Table.Td>{service.name}</Table.Td>
               <Table.Td><a href={service.path}>{service.path}</a></Table.Td>

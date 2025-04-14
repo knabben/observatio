@@ -3,6 +3,9 @@
 import {
   HomeIcon,
   DocumentDuplicateIcon,
+  BanknotesIcon,
+  BookOpenIcon,
+  MagnifyingGlassPlusIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -18,6 +21,21 @@ const links = [
     href: '/dashboard/clusters',
     icon: DocumentDuplicateIcon,
   },
+  {
+    name: 'Machines',
+    href: '/dashboard/machines',
+    icon: BanknotesIcon,
+  },
+  {
+    name: 'Control Planes',
+    href: '/dashboard/controlplanes',
+    icon: BookOpenIcon,
+  },
+  {
+    name: 'Workers',
+    href: '/dashboard/workers',
+    icon: MagnifyingGlassPlusIcon,
+  }
 ];
 
 export default function NavLinks() {
