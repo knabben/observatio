@@ -6,15 +6,12 @@ type Service = {
   name: string,
   path: string
 }
-type ClusterInfo = {
-  services: Service[],
-}
 
 // ClusterInfo: Cluster details and access URLs.
 export default function ClusterInfo({
   clusterInfo,
 }: {
-  clusterInfo: ClusterInfo
+  clusterInfo: Service[]
 }) {
   return (
     <Table striped highlightOnHover withTableBorder withColumnBorders>
@@ -26,7 +23,7 @@ export default function ClusterInfo({
       </Table.Thead>
       <Table.Tbody>
         {
-          clusterInfo.services.map( (service: { name: string, path: string }) => (
+          clusterInfo.map( (service) => (
             <Table.Tr key={service.name}>
               <Table.Td>{service.name}</Table.Td>
               <Table.Td><a href={service.path}>{service.path}</a></Table.Td>

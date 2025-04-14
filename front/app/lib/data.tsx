@@ -3,7 +3,7 @@ const URL = "http://localhost:8080"
 // ----- Dashboard -----
 
 export async function getComponentsVersion() {
-  const res = await fetch(`${URL}/api/clusters/info`)
+  const res = await fetch(`${URL}/api/clusters/components`)
   return res.json()
 }
 
