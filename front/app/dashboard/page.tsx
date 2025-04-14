@@ -1,9 +1,10 @@
 'use client';
 
+import { Suspense } from 'react'
 import ClusterInfo from '@/app/ui/dashboard/components/ClusterInfo'
-import { Card, Grid, Text, Title} from '@mantine/core';
+import { Card, Grid, Text, Title, Loader} from '@mantine/core';
 
-export default async function Home() {
+export default function Page() {
   return (
     <main>
       <Grid grow>
@@ -23,7 +24,7 @@ export default async function Home() {
         </Grid.Col>
         <Grid.Col span={8}>
           <Card shadow="sm" padding="lg" radius="md" withBorder>
-            <ClusterInfo />
+              <ClusterInfo />
           </Card>
         </Grid.Col>
       </Grid>

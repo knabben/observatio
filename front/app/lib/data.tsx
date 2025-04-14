@@ -1,0 +1,15 @@
+const URL = "http://localhost:8080"
+
+// ----- Dashboard -----
+
+export async function getComponentsVersion() {
+  const res = await fetch(`${URL}/api/clusters/info`)
+  return res.json()
+}
+
+export async function getClusterInformation() {
+  const res = await fetch(`${URL}/api/clusters/info`)
+  return res.json()
+}
+
+// ----- Clusters -----
