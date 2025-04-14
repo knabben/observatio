@@ -1,4 +1,4 @@
-package web
+package handlers
 
 import (
 	"context"
@@ -13,27 +13,24 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type SystemService struct {
+type Services struct {
 	Name string `json:"name"`
 	Path string `json:"path"`
 }
 
-type ClusterInfo struct {
-	Services []SystemService `json:"services"`
-}
-
 func handleClusterInfo(w http.ResponseWriter, r *http.Request) {
 	var (
-		err            error
-		systemServices []SystemService
+		err      error
+		services []Services
 	)
+
 	cli := r.Context().Value("client").(client.Client)
-	if systemServices, err = findServices(r.Context(), cli, "kube-system"); err != nil {
+	if services, err = findServices(r.Context(), cli, "kube-system"); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if response, err := json.Marshal(ClusterInfo{Services: systemServices}); err != nil {
+	if response, err := json.Marshal(&services); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	} else {
@@ -42,16 +39,14 @@ func handleClusterInfo(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func findServices(ctx context.Context, cli client.Client, namespace string) ([]SystemService, error) {
+func findServices(ctx context.Context, cli client.Client, namespace string) ([]Services, error) {
 	var svcList = corev1.ServiceList{}
-	cfg := ctx.Value("config").(*rest.Config)
-	systemServices := []SystemService{
-		{Name: "control-plane", Path: cfg.Host},
-	}
 
+	cfg := ctx.Value("config").(*rest.Config)
+	services := []Services{{Name: "control-plane", Path: cfg.Host}}
 	labels := client.MatchingLabels{"kubernetes.io/cluster-service": "true"}
 	if err := cli.List(ctx, &svcList, client.InNamespace(namespace), labels); err != nil {
-		return systemServices, err
+		return nil, err
 	}
 
 	for _, svc := range svcList.Items {
@@ -85,7 +80,7 @@ func findServices(ctx context.Context, cli client.Client, namespace string) ([]S
 		if len(name) == 0 {
 			name = svc.ObjectMeta.Name
 		}
-		systemServices = append(systemServices, SystemService{Name: name, Path: link})
+		services = append(services, Services{Name: name, Path: link})
 	}
-	return systemServices, nil
+	return services, nil
 }

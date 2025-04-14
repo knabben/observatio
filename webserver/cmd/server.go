@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"github.com/knabben/observatio/webserver/internal/web/handlers"
 	"net/http"
 	"time"
 
@@ -45,7 +46,7 @@ func RunE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	router.Use(web.WithKubernetes(client, config))
-	web.DefaultHandlers(router, development)
+	handlers.DefaultHandlers(router, development)
 
 	ctx := context.Background()
 	log.FromContext(ctx).Info("Listening on " + address)

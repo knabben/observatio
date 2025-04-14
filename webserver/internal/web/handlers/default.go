@@ -1,4 +1,4 @@
-package web
+package handlers
 
 import (
 	"embed"
@@ -19,6 +19,7 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 
 	// Cluster API handlers
 	router.HandleFunc("/api/clusters/info", handleClusterInfo).Methods("GET")
+	router.HandleFunc("/api/clusters/components", handleComponentsVersion).Methods("GET")
 
 	// Static React bundle hosting handler
 	if !developmentMode {

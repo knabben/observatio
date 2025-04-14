@@ -1,4 +1,4 @@
-package web
+package handlers
 
 import (
 	"embed"
@@ -32,6 +32,7 @@ func (h SPAHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusAccepted)
 		w.Write(index)
 		return
+
 	} else if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -43,5 +44,6 @@ func (h SPAHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	http.FileServer(http.FS(files)).ServeHTTP(w, r)
 }
