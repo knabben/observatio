@@ -2,6 +2,7 @@ package clusterapi
 
 import (
 	"context"
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -18,6 +19,7 @@ import (
 var (
 	scheme = runtime.NewScheme()
 	_      = clusterctlv1.AddToScheme(scheme) // Register Cluster API types
+	_      = clusterv1.AddToScheme(scheme)    // Register Cluster API types
 	_      = corev1.AddToScheme(scheme)
 )
 
@@ -91,5 +93,36 @@ func Test_FindServices(t *testing.T) {
 			assert.Equal(t, tt.service.Name, service.Name)
 			assert.NotEmpty(t, service.Path)
 		}
+	}
+}
+
+func Test_ClusterSummary(t *testing.T) {
+	var clusters clusterv1.ClusterList
+	tests := []struct {
+		cluster clusterv1.Cluster
+	}{
+		{
+			cluster: clusterv1.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cluster",
+					Namespace: "kube-system",
+				},
+				Spec: clusterv1.ClusterSpec{},
+				Status: clusterv1.ClusterStatus{
+					Phase: string(clusterv1.ClusterPhase(clusterv1.ClusterPhaseProvisioned)),
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		var c = fake.NewClientBuilder().
+			WithScheme(scheme).
+			WithRuntimeObjects(&tt.cluster).
+			WithLists(&clusters).
+			Build()
+		summary, err := GenerateClusterSummary(context.Background(), c)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, summary.Failed)
+		assert.Equal(t, 1, summary.Provisioned)
 	}
 }
