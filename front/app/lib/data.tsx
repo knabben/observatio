@@ -12,4 +12,9 @@ export async function getClusterInformation() {
   return res.json()
 }
 
+export async function getClusterSummary() {
+  const res = await fetch(`${URL}/api/clusters/summary`)
+  return res.json()
+}
+
 // ----- Clusters -----
