@@ -17,7 +17,6 @@ func handleComponentsVersion(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, err)
 		return
 	}
-
 	if components, err = clusterapi.GenerateComponentVersions(ctx, cli); err != nil {
 		writeError(w, http.StatusInternalServerError, err)
 		return

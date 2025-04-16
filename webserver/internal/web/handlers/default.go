@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"k8s.io/apimachinery/pkg/runtime"
 	"net/http"
+
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
 
@@ -30,6 +31,7 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	router.HandleFunc("/api/clusters/info", handleClusterInfo).Methods("GET")
 	router.HandleFunc("/api/clusters/components", handleComponentsVersion).Methods("GET")
 	router.HandleFunc("/api/clusters/summary", handleSummaryCluster).Methods("GET")
+	router.HandleFunc("/api/clusters/mgmt", handleClusterClasses).Methods("GET")
 
 	// Static React bundle hosting handler
 	if !developmentMode {
