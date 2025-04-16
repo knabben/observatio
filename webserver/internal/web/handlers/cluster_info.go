@@ -6,6 +6,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// handleClusterInfo returns the information about the cluster.
 func handleClusterInfo(w http.ResponseWriter, r *http.Request) {
 	var (
 		ctx       = r.Context()

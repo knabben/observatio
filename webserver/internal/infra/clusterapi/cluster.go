@@ -41,8 +41,12 @@ func GenerateClusterSummary(ctx context.Context, c client.Client) (summary Clust
 	return ClusterSummary{Provisioned: provisioned, Failed: failed}, nil
 }
 
+// Services defines the service name and path.
 type Services struct {
+	// Name is the services name.
 	Name string `json:"name"`
+
+	// Path is the accessible core service path.
 	Path string `json:"path"`
 }
 
@@ -101,9 +105,15 @@ func FindServices(ctx context.Context, c client.Client, namespace string) ([]Ser
 	return services, nil
 }
 
+// Components stores the internal component details.
 type Components struct {
-	Name    string `json:"name"`
-	Kind    string `json:"kind"`
+	// Name is the name of the component.
+	Name string `json:"name"`
+
+	// Kind is the CAPI type of component.
+	Kind string `json:"kind"`
+
+	// Version is the CAPI version of the component.
 	Version string `json:"version"`
 }
 
@@ -113,6 +123,7 @@ func GenerateComponentVersions(ctx context.Context, c client.Client) (components
 	if err := c.List(ctx, &providers); err != nil {
 		return components, err
 	}
+
 	for _, r := range providers.Items {
 		components = append(components, Components{Name: r.Name, Kind: r.Type, Version: r.Version})
 	}

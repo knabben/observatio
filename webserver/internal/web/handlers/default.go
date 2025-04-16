@@ -29,7 +29,6 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	// Cluster API handlers
 	router.HandleFunc("/api/clusters/info", handleClusterInfo).Methods("GET")
 	router.HandleFunc("/api/clusters/components", handleComponentsVersion).Methods("GET")
-	//router.HandleFunc("/api/clusters/mgmt", handleManagementCluster).Methods("GET")
 	router.HandleFunc("/api/clusters/summary", handleSummaryCluster).Methods("GET")
 
 	// Static React bundle hosting handler

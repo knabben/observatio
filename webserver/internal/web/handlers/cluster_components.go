@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// handleComponentsVersion returns the cluster components and its versions.
 func handleComponentsVersion(w http.ResponseWriter, r *http.Request) {
 	var (
 		ctx        = r.Context()

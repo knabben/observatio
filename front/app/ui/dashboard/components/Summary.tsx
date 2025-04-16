@@ -13,7 +13,6 @@ export default function Summary({
 }: {
   clusterSummary: Summary
 }) {
-  console.log(clusterSummary)
   return (
     <div>
       <Paper ta="center" shadow="xs" withBorder p="xl">
@@ -24,7 +23,7 @@ export default function Summary({
       <Paper ta="center" shadow="xs" withBorder p="xl">
         Failing
         <Space h="xs" />
-        <Text fw={700} size="lg" c="red">{clusterSummary.failed}</Text>
+        <Text fw={700} size="xl" c="red">{clusterSummary.failed}</Text>
       </Paper>
     </div>
   );
