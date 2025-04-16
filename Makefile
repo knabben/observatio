@@ -45,6 +45,12 @@ run-backend:  ## Build the binary using local golang
 	go run . $(what) --dev; \
 	popd;
 
+.PHONY: run-tests-backend
+run-tests-backend:
+	pushd webserver; \
+	go test ./... ;\
+	popd;
+
 .PHONY: run-frontend
 run-frontend:  ## Run the frontend locally
 	pushd front; \
