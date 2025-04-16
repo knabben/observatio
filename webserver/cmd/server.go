@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"github.com/knabben/observatio/webserver/internal/infra/clusterapi"
 	"github.com/knabben/observatio/webserver/internal/web/handlers"
 	"net/http"
 	"time"
@@ -12,7 +13,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	"github.com/knabben/observatio/webserver/internal/infra/kubernetes"
 	"github.com/knabben/observatio/webserver/internal/web"
 )
 
@@ -41,7 +41,7 @@ func init() {
 
 func RunE(cmd *cobra.Command, args []string) error {
 	router := mux.NewRouter()
-	client, config, err := kubernetes.NewClient()
+	client, config, err := clusterapi.NewClient()
 	if err != nil {
 		return err
 	}

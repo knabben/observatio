@@ -5,10 +5,11 @@ import (
 	"net/http"
 )
 
-func handleComponentsVersion(w http.ResponseWriter, r *http.Request) {
+// handleSummaryCluster returns the summary of clusters states.
+func handleSummaryCluster(w http.ResponseWriter, r *http.Request) {
 	var (
-		ctx        = r.Context()
-		components []clusterapi.Components
+		ctx     = r.Context()
+		summary clusterapi.ClusterSummary
 	)
 
 	cli, err := clusterapi.NewClientWithScheme(ctx, scheme)
@@ -17,12 +18,12 @@ func handleComponentsVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if components, err = clusterapi.GenerateComponentVersions(ctx, cli); err != nil {
+	if summary, err = clusterapi.GenerateClusterSummary(ctx, cli); err != nil {
 		writeError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if err = writeResponse(w, components); err != nil {
+	if err = writeResponse(w, summary); err != nil {
 		writeError(w, http.StatusInternalServerError, err)
 		return
 	}
