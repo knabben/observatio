@@ -110,6 +110,9 @@ type Components struct {
 	// Name is the name of the component.
 	Name string `json:"name"`
 
+	// ProviderName is the provider name of the component.
+	ProviderName string `json:"providerName"`
+
 	// Kind is the CAPI type of component.
 	Kind string `json:"kind"`
 
@@ -125,7 +128,9 @@ func GenerateComponentVersions(ctx context.Context, c client.Client) (components
 	}
 
 	for _, r := range providers.Items {
-		components = append(components, Components{Name: r.Name, Kind: r.Type, Version: r.Version})
+		components = append(components, Components{
+			ProviderName: r.ProviderName, Name: r.Name, Kind: r.Type, Version: r.Version,
+		})
 	}
 	return components, nil
 }
