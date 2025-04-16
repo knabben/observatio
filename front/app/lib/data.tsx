@@ -17,4 +17,9 @@ export async function getClusterSummary() {
   return res.json()
 }
 
+export async function getClusterClasses() {
+  const res = await fetch(`${URL}/api/clusters/classes`)
+  return res.json()
+}
+
 // ----- Clusters -----
