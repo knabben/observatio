@@ -13,8 +13,8 @@ import (
 
 // ClusterSummary defines the summary of cluster states from a kubeconfig.
 type ClusterSummary struct {
-	// Running stores the number of running clusters.
-	Running int `json:"running"`
+	// Provisioned stores the number of running clusters.
+	Provisioned int `json:"provisioned"`
 
 	// Failed stores the number of failing clusters.
 	Failed int `json:"failed"`
@@ -23,22 +23,22 @@ type ClusterSummary struct {
 // GenerateClusterSummary returns the entire cluster summary from a kubeconfig.
 func GenerateClusterSummary(ctx context.Context, c client.Client) (summary ClusterSummary, err error) {
 	var (
-		running, failed int
-		clusterList     clusterv1.ClusterList
+		provisioned, failed int
+		clusterList         clusterv1.ClusterList
 	)
 
 	if err = c.List(ctx, &clusterList); err != nil {
 		return summary, err
 	}
 	for _, cluster := range clusterList.Items {
-		if clusterv1.MachinePhase(cluster.Status.Phase) == clusterv1.MachinePhaseRunning {
-			running += 1
+		if clusterv1.ClusterPhase(cluster.Status.Phase) == clusterv1.ClusterPhaseProvisioned {
+			provisioned += 1
 			continue
 		}
 		failed += 1
 	}
 
-	return ClusterSummary{Running: running, Failed: failed}, nil
+	return ClusterSummary{Provisioned: provisioned, Failed: failed}, nil
 }
 
 type Services struct {
