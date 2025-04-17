@@ -28,15 +28,21 @@ export default function ClusterClass({
           <Table.Th>Name</Table.Th>
           <Table.Th>Namespace</Table.Th>
           <Table.Th>Updates</Table.Th>
+          <Table.Th>Status</Table.Th>
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>
         {
-          clusterClass.map( (cc) => (
-            <Table.Tr key={cc.name}>
+          clusterClass.map( (cc, i) => (
+            <Table.Tr key={i}>
               <Table.Td>{cc.name}</Table.Td>
               <Table.Td>{cc.namespace}</Table.Td>
               <Table.Td>{cc.generation}</Table.Td>
+              {cc.conditions.map((condition, i) => (
+                  <Table.Td rowSpan={1}>
+                    {condition.type} - {condition.status}
+                  </Table.Td>
+              ))}
             </Table.Tr>
           ))
         }

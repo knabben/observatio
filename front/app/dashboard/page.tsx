@@ -17,6 +17,7 @@ export default async function Dashboard() {
   const componentsVersion = await getComponentsVersion()
   const clusterSummary = await getClusterSummary()
   const clusterClasses = await getClusterClasses()
+
   return (
     <main>
       <Grid grow>
