@@ -126,3 +126,53 @@ func Test_ClusterSummary(t *testing.T) {
 		assert.Equal(t, 1, summary.Provisioned)
 	}
 }
+
+func Test_ClusterList(t *testing.T) {
+	var clusters clusterv1.ClusterList
+	tests := []struct {
+		cluster clusterv1.Cluster
+	}{
+		{
+			cluster: clusterv1.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cluster",
+					Namespace: "kube-system",
+				},
+				Spec: clusterv1.ClusterSpec{
+					Topology: &clusterv1.Topology{
+						Class: "fake-clusterclass",
+					},
+				},
+				Status: clusterv1.ClusterStatus{
+					Phase: string(clusterv1.ClusterPhase(clusterv1.ClusterPhaseProvisioned)),
+				},
+			},
+		},
+		{
+			cluster: clusterv1.Cluster{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cluster-2",
+					Namespace: "kube-system",
+				},
+				Spec: clusterv1.ClusterSpec{Topology: nil},
+				Status: clusterv1.ClusterStatus{
+					Phase: string(clusterv1.ClusterPhase(clusterv1.ClusterPhaseProvisioned)),
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		var c = fake.NewClientBuilder().
+			WithScheme(scheme).
+			WithRuntimeObjects(&tt.cluster).
+			WithLists(&clusters).
+			Build()
+		clusters, err := GenerateClusterList(context.Background(), c)
+		assert.NoError(t, err)
+		assert.Len(t, clusters, 1)
+		for _, cl := range clusters {
+			assert.Equal(t, tt.cluster.Name, cl.Name)
+			assert.Equal(t, tt.cluster.Spec.Topology != nil, cl.HasTopology)
+		}
+	}
+}
