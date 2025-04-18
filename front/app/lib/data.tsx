@@ -23,3 +23,8 @@ export async function getClusterClasses() {
 }
 
 // ----- Clusters -----
+
+export async function getClusterList() {
+  const res = await fetch(`${URL}/api/clusters/list`)
+  return res.json()
+}

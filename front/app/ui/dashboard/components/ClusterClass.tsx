@@ -39,7 +39,7 @@ export default function ClusterClass({
               <Table.Td>{cc.namespace}</Table.Td>
               <Table.Td>{cc.generation}</Table.Td>
               {cc.conditions.map((condition, i) => (
-                  <Table.Td rowSpan={1}>
+                  <Table.Td key={i} rowSpan={1}>
                     {condition.type} - {condition.status}
                   </Table.Td>
               ))}

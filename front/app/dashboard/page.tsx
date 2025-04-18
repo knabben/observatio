@@ -21,30 +21,11 @@ export default async function Dashboard() {
   return (
     <main>
       <Grid grow>
-        <GridCol span={8}>
+        <GridCol span={7}>
           <Card shadow="md"  radius="md" withBorder>
             <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Cluster Class</Text>
             <Divider my="sm" variant="dashed" />
             <ClusterClass clusterClass={clusterClasses} />
-          </Card>
-        </GridCol>
-        <GridCol span={4}>
-          <Card shadow="md"  radius="md" withBorder>
-            <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Cluster Information</Text>
-            <Divider my="sm" variant="dashed" />
-            <ClusterInfo clusterInfo={clusterInfo}/>
-          </Card>
-        </GridCol>
-      </Grid>
-      <Grid grow>
-        <GridCol span={7}>
-          <Card shadow="md"  radius="md" withBorder>
-            <Suspense fallback={<Loading />}>
-
-              <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Components version</Text>
-              <Divider my="sm" variant="dashed" />
-              <Versions components={componentsVersion} />
-            </Suspense>
           </Card>
         </GridCol>
         <GridCol span={5}>
@@ -54,6 +35,25 @@ export default async function Dashboard() {
               <Divider my="sm" variant="dashed" />
               <Summary clusterSummary={clusterSummary} />
             </Suspense>
+          </Card>
+
+        </GridCol>
+      </Grid>
+      <Grid grow>
+        <GridCol span={7}>
+          <Card shadow="md"  radius="md" withBorder>
+            <Suspense fallback={<Loading />}>
+              <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Components version</Text>
+              <Divider my="sm" variant="dashed" />
+              <Versions components={componentsVersion} />
+            </Suspense>
+          </Card>
+        </GridCol>
+        <GridCol span={5}>
+          <Card shadow="md"  radius="md" withBorder>
+            <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Cluster Information</Text>
+            <Divider my="sm" variant="dashed" />
+            <ClusterInfo clusterInfo={clusterInfo}/>
           </Card>
         </GridCol>
       </Grid>
