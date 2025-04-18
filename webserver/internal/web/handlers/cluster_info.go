@@ -25,3 +25,24 @@ func handleClusterInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+// handleClusterList returns the information about the cluster.
+func handleClusterList(w http.ResponseWriter, r *http.Request) {
+	var ctx = r.Context()
+	c, err := clusterapi.NewClientWithScheme(ctx, scheme)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	clusters, err := clusterapi.GenerateClusterList(r.Context(), c)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	if err = writeResponse(w, clusters); err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+}

@@ -26,7 +26,7 @@ func GenerateClusterSummary(ctx context.Context, c client.Client) (summary Clust
 		provisioned, failed int
 		clusters            []clusterv1.Cluster
 	)
-	if clusters, err = fetchCluster(ctx, c); err != nil {
+	if clusters, err = fetchClusters(ctx, c); err != nil {
 		return summary, err
 	}
 	for _, cluster := range clusters {
@@ -39,37 +39,34 @@ func GenerateClusterSummary(ctx context.Context, c client.Client) (summary Clust
 	return ClusterSummary{Provisioned: provisioned, Failed: failed}, nil
 }
 
-func fetchCluster(ctx context.Context, c client.Client) (clusters []clusterv1.Cluster, err error) {
+// Cluster stores the presentation model for a CAPI cluster
+type Cluster struct {
+	Name        string               `json:"name"`
+	HasTopology bool                 `json:"hasTopology"`
+	Conditions  clusterv1.Conditions `json:"conditions"`
+}
+
+func GenerateClusterList(ctx context.Context, c client.Client) (clusterList []Cluster, err error) {
+	var clusters []clusterv1.Cluster
+	if clusters, err = fetchClusters(ctx, c); err != nil {
+		return clusterList, err
+	}
+	for _, cl := range clusters {
+		hasTopology := false
+		if cl.Spec.Topology != nil {
+			hasTopology = true
+		}
+		clusterList = append(clusterList, Cluster{Name: cl.Name, HasTopology: hasTopology, Conditions: cl.Status.Conditions})
+	}
+	return clusterList, err
+}
+
+func fetchClusters(ctx context.Context, c client.Client) (clusters []clusterv1.Cluster, err error) {
 	var clusterList clusterv1.ClusterList
 	if err = c.List(ctx, &clusterList); err != nil {
 		return nil, err
 	}
 	return clusterList.Items, nil
-}
-
-type ClusterClass struct {
-	Name       string                `json:"name"`
-	Namespace  string                `json:"namespace"`
-	Generation int64                 `json:"generation"`
-	Conditions []clusterv1.Condition `json:"conditions"`
-}
-
-// FetchClusterClass returns the list of ClusterClass objects in the mgmt cluster.
-func FetchClusterClass(ctx context.Context, c client.Client) (clusterClasses []ClusterClass, err error) {
-	var clusterClassList clusterv1.ClusterClassList
-	if err = c.List(ctx, &clusterClassList); err != nil {
-		return clusterClasses, err
-	}
-
-	for _, class := range clusterClassList.Items {
-		clusterClasses = append(clusterClasses, ClusterClass{
-			Name:       class.Name,
-			Namespace:  class.Namespace,
-			Generation: class.Status.ObservedGeneration,
-			Conditions: class.Status.Conditions,
-		})
-	}
-	return clusterClasses, nil
 }
 
 // Services defines the service name and path.
