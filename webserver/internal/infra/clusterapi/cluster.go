@@ -56,7 +56,11 @@ func GenerateClusterList(ctx context.Context, c client.Client) (clusterList []Cl
 		if cl.Spec.Topology != nil {
 			hasTopology = true
 		}
-		clusterList = append(clusterList, Cluster{Name: cl.Name, HasTopology: hasTopology, Conditions: cl.Status.Conditions})
+		clusterList = append(clusterList, Cluster{
+			Name:        cl.Name,
+			HasTopology: hasTopology,
+			Conditions:  cl.Status.Conditions,
+		})
 	}
 	return clusterList, err
 }
