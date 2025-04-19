@@ -1,6 +1,6 @@
 import { getClusterList } from "@/app/lib/data";
 import { Grid, GridCol, Title, Space } from '@mantine/core';
-import ClusterList from '@/app/ui/dashboard/components/ClusterList'
+import ClusterLister from '@/app/ui/dashboard/components/ClusterLister'
 
 export default async function Clusters() {
   const clusters = await getClusterList()
@@ -11,10 +11,10 @@ export default async function Clusters() {
         <Space h="md" />
         <Grid grow>
           <GridCol span={12}>
-            <ClusterList clusterList={clusters} />
+            <ClusterLister clusterList={clusters} />
           </GridCol>
         </Grid>
       </main>
     </div>
-)
+  )
 }

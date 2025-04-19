@@ -36,7 +36,6 @@ export default async function Dashboard() {
               <Summary clusterSummary={clusterSummary} />
             </Suspense>
           </Card>
-
         </GridCol>
       </Grid>
       <Grid grow>
