@@ -46,9 +46,9 @@ type Cluster struct {
 	Conditions  clusterv1.Conditions `json:"conditions"`
 }
 
-func GenerateClusterList(ctx context.Context, c client.Client) (clusterList []Cluster, err error) {
+func FetchClusters(ctx context.Context, c client.Client) (clusterList []Cluster, err error) {
 	var clusters []clusterv1.Cluster
-	if clusters, err = fetchClusters(ctx, c); err != nil {
+	if clusters, err = listClusters(ctx, c); err != nil {
 		return clusterList, err
 	}
 	for _, cl := range clusters {
@@ -65,7 +65,7 @@ func GenerateClusterList(ctx context.Context, c client.Client) (clusterList []Cl
 	return clusterList, err
 }
 
-func fetchClusters(ctx context.Context, c client.Client) (clusters []clusterv1.Cluster, err error) {
+func listClusters(ctx context.Context, c client.Client) (clusters []clusterv1.Cluster, err error) {
 	var clusterList clusterv1.ClusterList
 	if err = c.List(ctx, &clusterList); err != nil {
 		return nil, err

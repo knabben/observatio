@@ -167,7 +167,7 @@ func Test_ClusterList(t *testing.T) {
 			WithRuntimeObjects(&tt.cluster).
 			WithLists(&clusters).
 			Build()
-		clusters, err := GenerateClusterList(context.Background(), c)
+		clusters, err := FetchClusters(context.Background(), c)
 		assert.NoError(t, err)
 		assert.Len(t, clusters, 1)
 		for _, cl := range clusters {

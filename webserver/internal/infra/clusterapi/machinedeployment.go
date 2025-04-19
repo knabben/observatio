@@ -18,9 +18,9 @@ type MachineDeployment struct {
 	Phase           clusterv1.MachineDeploymentPhase `json:"phase"`
 }
 
-func GenerateMachineDeployments(ctx context.Context, c client.Client) (clusterMDs []MachineDeployment, err error) {
+func FetchMachineDeployments(ctx context.Context, c client.Client) (clusterMDs []MachineDeployment, err error) {
 	var machineDeployments []clusterv1.MachineDeployment
-	if machineDeployments, err = fetchMachineDeployments(ctx, c); err != nil {
+	if machineDeployments, err = listMachineDeployments(ctx, c); err != nil {
 		return clusterMDs, err
 	}
 	for _, md := range machineDeployments {
@@ -37,7 +37,7 @@ func GenerateMachineDeployments(ctx context.Context, c client.Client) (clusterMD
 	return clusterMDs, err
 }
 
-func fetchMachineDeployments(ctx context.Context, c client.Client) (machineDeployments []clusterv1.MachineDeployment, err error) {
+func listMachineDeployments(ctx context.Context, c client.Client) (machineDeployments []clusterv1.MachineDeployment, err error) {
 	var mdsList clusterv1.MachineDeploymentList
 	if err = c.List(ctx, &mdsList); err != nil {
 		return machineDeployments, err
