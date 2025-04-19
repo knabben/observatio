@@ -14,13 +14,12 @@ type Cluster = {
   conditions: Conditions[]
 }
 
-// ClusterInfo: Cluster details and access URLs.
-export default function ClusterInfo({
+// ClusterLister: Cluster details and access URLs.
+export default function ClusterLister({
   clusterList,
 }: {
   clusterList: Cluster[]
 }) {
-  console.log(clusterList)
   return (
     <Table striped highlightOnHover withTableBorder withColumnBorders>
       <Table.Thead>
