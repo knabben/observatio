@@ -1,5 +1,8 @@
 # Observatio
 
+[![Go Test](https://github.com/knabben/observatio/actions/workflows/backend.yml/badge.svg)](https://github.com/knabben/observatio/actions/workflows/backend.yml)
+[![Next.js Lint and Test](https://github.com/knabben/observatio/actions/workflows/frontend.yml/badge.svg)](https://github.com/knabben/observatio/actions/workflows/frontend.yml)
+
 <p align="center">
 <img src="front/public/logo.png" alt="logo" width="300"/>
 </p>
