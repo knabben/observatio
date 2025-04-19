@@ -35,7 +35,7 @@ func handleClusterList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	clusters, err := clusterapi.GenerateClusterList(r.Context(), c)
+	clusters, err := clusterapi.FetchClusters(r.Context(), c)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err)
 		return

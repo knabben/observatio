@@ -26,7 +26,7 @@ func GenerateClusterSummary(ctx context.Context, c client.Client) (summary Clust
 		provisioned, failed int
 		clusters            []clusterv1.Cluster
 	)
-	if clusters, err = fetchClusters(ctx, c); err != nil {
+	if clusters, err = listClusters(ctx, c); err != nil {
 		return summary, err
 	}
 	for _, cluster := range clusters {

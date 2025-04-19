@@ -41,7 +41,7 @@ func Test_FetchMachineDeployment(t *testing.T) {
 			WithRuntimeObjects(&tt.d).
 			WithLists(&machineDeploymentList).
 			Build()
-		mds, err := fetchMachineDeployments(context.Background(), c)
+		mds, err := FetchMachineDeployments(context.Background(), c)
 		assert.NoError(t, err)
 		assert.Len(t, mds, 1)
 	}
