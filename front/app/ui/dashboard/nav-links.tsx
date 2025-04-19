@@ -22,20 +22,15 @@ const links = [
     icon: DocumentDuplicateIcon,
   },
   {
-    name: 'Machines',
-    href: '/dashboard/machines',
+    name: 'Machines Deployment',
+    href: '/dashboard/machinedeployments',
     icon: BanknotesIcon,
   },
   {
-    name: 'Control Planes',
-    href: '/dashboard/controlplanes',
+    name: 'Machines',
+    href: '/dashboard/machines',
     icon: BookOpenIcon,
   },
-  {
-    name: 'Workers',
-    href: '/dashboard/workers',
-    icon: MagnifyingGlassPlusIcon,
-  }
 ];
 
 export default function NavLinks() {
