@@ -113,24 +113,24 @@ func FindServices(ctx context.Context, c client.Client, namespace string) ([]Ser
 				link += "http://" + ip + ":" + strconv.Itoa(int(port.Port)) + " "
 			}
 		} else {
-			name := svc.ObjectMeta.Name
+			name := svc.Name
 			if len(svc.Spec.Ports) > 0 {
 				port := svc.Spec.Ports[0]
 				scheme := ""
 				if port.Name == "https" || port.Port == 443 {
 					scheme = "https"
 				}
-				name = utilnet.JoinSchemeNamePort(scheme, svc.ObjectMeta.Name, port.Name)
+				name = utilnet.JoinSchemeNamePort(scheme, svc.Name, port.Name)
 			}
 			if len(svc.GroupVersionKind().Group) == 0 {
-				link = cfg.Host + "/api" + svc.GroupVersionKind().Version + "/namespaces/" + svc.ObjectMeta.Namespace + "/services/" + name + "/proxy"
+				link = cfg.Host + "/api" + svc.GroupVersionKind().Version + "/namespaces/" + svc.Namespace + "/services/" + name + "/proxy"
 			} else {
-				link = cfg.Host + "/api" + svc.GroupVersionKind().Group + "/" + svc.GroupVersionKind().Version + "/namespaces/" + svc.ObjectMeta.Namespace + "/services/" + name + "/proxy"
+				link = cfg.Host + "/api" + svc.GroupVersionKind().Group + "/" + svc.GroupVersionKind().Version + "/namespaces/" + svc.Namespace + "/services/" + name + "/proxy"
 			}
 		}
-		name := svc.ObjectMeta.Labels["kubernetes.io/name"]
+		name := svc.Labels["kubernetes.io/name"]
 		if len(name) == 0 {
-			name = svc.ObjectMeta.Name
+			name = svc.Name
 		}
 		services = append(services, Services{Name: name, Path: link})
 	}

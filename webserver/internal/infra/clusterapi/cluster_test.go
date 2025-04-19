@@ -85,7 +85,7 @@ func Test_FindServices(t *testing.T) {
 			WithLists(&services).
 			Build()
 		ctx := context.WithValue(context.Background(), "config", tt.config)
-		services, err := FindServices(ctx, c, tt.service.ObjectMeta.Namespace)
+		services, err := FindServices(ctx, c, tt.service.Namespace)
 		assert.NoError(t, err)
 		assert.Len(t, services, 2)
 		assert.Equal(t, services[0].Name, "control-plane")
