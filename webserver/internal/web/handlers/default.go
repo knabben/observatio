@@ -24,7 +24,9 @@ var (
 func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	// Generic handlers, healthcheck, version, etc.
 	router.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+		if err := json.NewEncoder(w).Encode(map[string]bool{"ok": true}); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	})
 
 	// Cluster API handlers

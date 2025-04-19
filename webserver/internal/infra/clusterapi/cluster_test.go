@@ -84,7 +84,7 @@ func Test_FindServices(t *testing.T) {
 			WithRuntimeObjects(&tt.service).
 			WithLists(&services).
 			Build()
-		ctx := context.WithValue(context.Background(), "config", tt.config)
+		ctx := context.WithValue(context.Background(), "config", tt.config) // nolint
 		services, err := FindServices(ctx, c, tt.service.Namespace)
 		assert.NoError(t, err)
 		assert.Len(t, services, 2)
