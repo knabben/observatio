@@ -1,6 +1,6 @@
 'use client';
 
-import { Grid, Paper, Space, Text } from '@mantine/core';
+import { Grid, Space, Text } from '@mantine/core';
 
 type Summary = {
   failed: bigint
