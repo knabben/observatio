@@ -25,12 +25,20 @@ func FetchMachine(ctx context.Context, c client.Client) (machines []Machine, err
 	}
 
 	for _, m := range machineList.Items {
+		var nodeRef string
+		if m.Status.NodeRef != nil {
+			nodeRef = m.Status.NodeRef.Name
+		}
+		var version string
+		if m.Spec.Version != nil {
+			version = *m.Spec.Version
+		}
 		machines = append(machines, Machine{
 			Name:      m.Name,
 			Namespace: m.Namespace,
 			Cluster:   m.Spec.ClusterName,
-			NodeName:  m.Status.NodeRef.Name,
-			Version:   *m.Spec.Version,
+			NodeName:  nodeRef,
+			Version:   version,
 			Phase:     clusterv1.MachinePhase(m.Status.Phase),
 		})
 	}
