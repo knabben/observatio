@@ -36,6 +36,12 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	router.HandleFunc("/api/clusters/summary", handleSummaryCluster).Methods("GET")
 	router.HandleFunc("/api/clusters/classes", handleClusterClasses).Methods("GET")
 
+	// Cluster API Machine Deployments
+	router.HandleFunc("/api/machinesdeployment/list", handleMachineDeployments).Methods("GET")
+
+	// Cluster API Machine
+	router.HandleFunc("/api/machines/list", handleMachines).Methods("GET")
+
 	// Static React bundle hosting handler
 	if !developmentMode {
 		spa := SPAHandler{staticFS: bundle, staticPath: "build", indexPath: "index.html"}
