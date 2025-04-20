@@ -2,10 +2,11 @@ import Link from 'next/link';
 
 import { getMachinesDeployments} from "@/app/lib/data";
 import MachineDeploymentLister from "@/app/ui/dashboard/components/MachineDeploymentLister";
+import { FilterItems } from "@/app/dashboard/utils";
 
 import Search from '@/app/ui/dashboard/search'
 import { Title, Grid, GridCol, Space } from '@mantine/core';
-import ClusterLister from "@/app/ui/dashboard/components/ClusterLister";
+import {Suspense} from "react";
 
 export default async function MachineDeployments(props: {
   searchParams?: Promise<{
@@ -16,11 +17,6 @@ export default async function MachineDeployments(props: {
   const query = searchParams?.query || '';
   let mds = await getMachinesDeployments(query)
 
-  if (query != "") {
-    mds = mds.filter((i: { name: string; }) =>
-      i.name.toLowerCase().includes(query.toLowerCase()));
-
-  }
   return (
     <div>
       <main>
@@ -36,7 +32,9 @@ export default async function MachineDeployments(props: {
             <Search placeholder="Machine deployment name"/>
           </GridCol>
           <GridCol span={12}>
-            <MachineDeploymentLister mds={mds} />
+            <Suspense fallback={<p>Loading feed...</p>}>
+              <MachineDeploymentLister mds={FilterItems(query, mds)} />
+            </Suspense>
           </GridCol>
         </Grid>
       </main>
