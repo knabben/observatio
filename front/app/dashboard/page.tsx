@@ -8,10 +8,8 @@ import { getClusterSummary } from "@/app/lib/data";
 import { getComponentsVersion } from "@/app/lib/data";
 import { getClusterClasses } from "@/app/lib/data";
 
-import { Suspense } from 'react';
-import { Card, Grid, GridCol, Text, Divider, Title, Space } from '@mantine/core';
 import Link from 'next/link';
-import Loading from "@/app/dashboard/loading";
+import { Card, Grid, GridCol, Text, Divider, Title, Space } from '@mantine/core';
 
 export default async function Dashboard() {
   const clusterInfo = await getClusterInformation()

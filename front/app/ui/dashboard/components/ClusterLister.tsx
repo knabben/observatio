@@ -18,7 +18,7 @@ type Cluster = {
 export default function ClusterLister({
   clusterList,
 }: {
-  clusterList: Cluster[]
+  clusterList: Cluster[] | undefined
 }) {
   return (
     <Table striped highlightOnHover withTableBorder withColumnBorders>
@@ -31,7 +31,7 @@ export default function ClusterLister({
       </Table.Thead>
       <Table.Tbody>
         {
-          clusterList.map( (cluster) => (
+          clusterList?.map( (cluster) => (
             <Table.Tr key={cluster.name}>
               <Table.Td>{cluster.name}</Table.Td>
               <Table.Td>{cluster.hasTopology.toString()}</Table.Td>
