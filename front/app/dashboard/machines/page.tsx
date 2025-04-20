@@ -14,7 +14,8 @@ export default async function Machines(props: {
 }) {
   const searchParams = await props.searchParams;
   const query = searchParams?.query || '';
-  let machines = await getMachines(query)
+  const machines = await getMachines(query)
+
   return (
     <div>
       <main>

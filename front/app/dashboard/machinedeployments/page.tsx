@@ -5,7 +5,7 @@ import MachineDeploymentLister from "@/app/ui/dashboard/components/MachineDeploy
 import { FilterItems } from "@/app/dashboard/utils";
 
 import Search from '@/app/ui/dashboard/search'
-import { Title, Grid, GridCol, Space } from '@mantine/core';
+import { Title, Grid, GridCol } from '@mantine/core';
 import {Suspense} from "react";
 
 export default async function MachineDeployments(props: {
@@ -15,7 +15,7 @@ export default async function MachineDeployments(props: {
 }) {
   const searchParams = await props.searchParams;
   const query = searchParams?.query || '';
-  let mds = await getMachinesDeployments(query)
+  const mds = await getMachinesDeployments(query)
 
   return (
     <div>

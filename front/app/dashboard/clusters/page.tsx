@@ -14,7 +14,7 @@ export default async function Clusters(props: {
 }) {
   const searchParams = await props.searchParams;
   const query = searchParams?.query || '';
-  let clusters = await getClusterList(query)
+  const clusters = await getClusterList(query)
 
   return (
     <div>
