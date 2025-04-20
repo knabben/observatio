@@ -9,7 +9,8 @@ import { getComponentsVersion } from "@/app/lib/data";
 import { getClusterClasses } from "@/app/lib/data";
 
 import { Suspense } from 'react';
-import { Card, Grid, GridCol, Text, Divider } from '@mantine/core';
+import { Card, Grid, GridCol, Text, Divider, Title, Space } from '@mantine/core';
+import Link from 'next/link';
 import Loading from "@/app/dashboard/loading";
 
 export default async function Dashboard() {
@@ -20,39 +21,40 @@ export default async function Dashboard() {
 
   return (
     <main>
-      <Grid grow>
+      <Grid grow justify="center" align="top">
+        <GridCol span={12}>
+          <Link href="/dashboard">
+            <Title className="hidden md:block" order={2}>
+              Dashboard
+            </Title>
+          </Link>
+        </GridCol>
+
+        <GridCol span={5}>
+          <Card shadow="md" padding="lg" radius="md" withBorder>
+            <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Clusters Health</Text>
+            <Divider my="sm" variant="dashed" />
+            <Summary clusterSummary={clusterSummary} />
+          </Card>
+          <Space h="md"/>
+          <Card shadow="md"  radius="md" withBorder>
+            <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Cluster Information</Text>
+            <Divider my="sm" variant="dashed" />
+            <ClusterInfo clusterInfo={clusterInfo}/>
+          </Card>
+        </GridCol>
+
         <GridCol span={7}>
           <Card shadow="md"  radius="md" withBorder>
             <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Cluster Class</Text>
             <Divider my="sm" variant="dashed" />
             <ClusterClass clusterClass={clusterClasses} />
           </Card>
-        </GridCol>
-        <GridCol span={5}>
-          <Card shadow="md" padding="sm" radius="md" withBorder>
-            <Suspense fallback={<Loading />}>
-              <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Clusters Health</Text>
-              <Divider my="sm" variant="dashed" />
-              <Summary clusterSummary={clusterSummary} />
-            </Suspense>
-          </Card>
-        </GridCol>
-      </Grid>
-      <Grid grow>
-        <GridCol span={7}>
+          <Space h="md"/>
           <Card shadow="md"  radius="md" withBorder>
-            <Suspense fallback={<Loading />}>
-              <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Components version</Text>
-              <Divider my="sm" variant="dashed" />
-              <Versions components={componentsVersion} />
-            </Suspense>
-          </Card>
-        </GridCol>
-        <GridCol span={5}>
-          <Card shadow="md"  radius="md" withBorder>
-            <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Cluster Information</Text>
+            <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Components version</Text>
             <Divider my="sm" variant="dashed" />
-            <ClusterInfo clusterInfo={clusterInfo}/>
+            <Versions components={componentsVersion} />
           </Card>
         </GridCol>
       </Grid>

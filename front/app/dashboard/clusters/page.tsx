@@ -1,15 +1,27 @@
+import Link from 'next/link';
+
 import { getClusterList } from "@/app/lib/data";
-import { Grid, GridCol, Title, Space } from '@mantine/core';
 import ClusterLister from '@/app/ui/dashboard/components/ClusterLister'
+
+import { Grid, GridCol, Title, Space, Input } from '@mantine/core';
 
 export default async function Clusters() {
   const clusters = await getClusterList()
   return (
     <div>
       <main>
-        <Title order={3}>Clusters</Title>
-        <Space h="md" />
         <Grid grow>
+          <GridCol h={60} span={8}>
+            <Link href="/dashboard/clusters">
+              <Title className="hidden md:block" order={2}>
+                Clusters / cluster.x-k8s.io
+              </Title>
+            </Link>
+          </GridCol>
+          <GridCol span={4}>
+            <Input placeholder="Search Clusters" />
+          </GridCol>
+
           <GridCol span={12}>
             <ClusterLister clusterList={clusters} />
           </GridCol>
