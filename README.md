@@ -1,4 +1,4 @@
-# Observatio
+# Observātiō 
 
 [![Go Test](https://github.com/knabben/observatio/actions/workflows/backend.yml/badge.svg)](https://github.com/knabben/observatio/actions/workflows/backend.yml)
 [![Next.js Lint and Test](https://github.com/knabben/observatio/actions/workflows/frontend.yml/badge.svg)](https://github.com/knabben/observatio/actions/workflows/frontend.yml)
@@ -13,5 +13,3 @@ it offers comprehensive insights into cluster performance and health. Equipped w
 the project enables users to swiftly identify and address issues, improving operational reliability and reducing downtime. 
 This solution empowers organizations to maintain optimal cluster functionality, streamline troubleshooting efforts, 
 and ensure robust management of their cloud-native environments.
-
-## Installation
