@@ -2,25 +2,22 @@ import Link from 'next/link';
 
 import { getClusterList } from "@/app/lib/data";
 import ClusterLister from '@/app/ui/dashboard/components/ClusterLister'
-import { Suspense } from 'react';
-import { Loader } from '@mantine/core';
+
 import Search from '@/app/ui/dashboard/search'
 import { Grid, GridCol, Title } from '@mantine/core';
 
 export default async function Clusters(props: {
   searchParams?: Promise<{
     query?: string;
-    page?: string;
   }>;
 }) {
   const searchParams = await props.searchParams;
   const query = searchParams?.query || '';
-  let clusters = await getClusterList()
-  const currentPage = Number(searchParams?.page) || 1;
+  let clusters = await getClusterList(query)
 
-    if (query != "") {
-      clusters = clusters.filter((i: { name: string; }) =>
-        i.name.toLowerCase().includes(query.toLowerCase()));
+  if (query != "") {
+    clusters = clusters.filter((i: { name: string; }) =>
+      i.name.toLowerCase().includes(query.toLowerCase()));
   }
 
   return (
@@ -38,9 +35,7 @@ export default async function Clusters(props: {
             <Search placeholder="Cluster name"/>
           </GridCol>
           <GridCol span={12}>
-            <Suspense key={query + currentPage} fallback={<Loader />}>
-              <ClusterLister clusterList={clusters} />
-            </Suspense>
+            <ClusterLister clusterList={clusters} />
           </GridCol>
         </Grid>
       </main>

@@ -14,12 +14,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" {...mantineHtmlProps}>
-    <head>
-      <ColorSchemeScript />
-    </head>
-    <body>
-      <MantineProvider>{children}</MantineProvider>
-    </body>
+      <head>
+        <ColorSchemeScript />
+      </head>
+      <body>
+        <MantineProvider>{children}</MantineProvider>
+      </body>
     </html>
 );
 }
