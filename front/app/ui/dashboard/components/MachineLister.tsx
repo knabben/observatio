@@ -1,6 +1,6 @@
 'use client';
 
-import { Table } from '@mantine/core';
+import { Table, Loader } from '@mantine/core';
 
 type Machine = {
   name: string,
@@ -16,6 +16,7 @@ export default function MachineLister ({
 }: {
   machines: Machine[]
 }) {
+  if (!machines) { return (<Loader />) }
   return (
     <Table striped highlightOnHover withTableBorder withColumnBorders>
       <Table.Thead>

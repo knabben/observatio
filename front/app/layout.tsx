@@ -4,7 +4,7 @@ import '@mantine/core/styles.css';
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
 
 export const metadata = {
-  title: 'Observatio',
+  title: 'observātiō',
 };
 
 export default function RootLayout({
@@ -14,12 +14,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" {...mantineHtmlProps}>
-    <head>
-      <ColorSchemeScript />
-    </head>
-    <body>
-      <MantineProvider>{children}</MantineProvider>
-    </body>
+      <head>
+        <ColorSchemeScript />
+      </head>
+      <body>
+        <MantineProvider>{children}</MantineProvider>
+      </body>
     </html>
 );
 }

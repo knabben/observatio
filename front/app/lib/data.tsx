@@ -24,21 +24,21 @@ export async function getClusterClasses() {
 
 // ----- Clusters -----
 
-export async function getClusterList() {
-  const res = await fetch(`${URL}/api/clusters/list`)
+export async function getClusterList(query: string) {
+  const res = await fetch(`${URL}/api/clusters/list?name=`+query)
   return res.json()
 }
 
 // ----- MachinesDeployment -----
 
-export async function getMachinesDeployments() {
-  const res = await fetch(`${URL}/api/machinesdeployment/list`)
+export async function getMachinesDeployments(query: string) {
+  const res = await fetch(`${URL}/api/machinesdeployment/list?name=`+query)
   return res.json()
 }
 
 // ----- Machines -----
 
-export async function getMachines() {
-  const res = await fetch(`${URL}/api/machines/list`)
+export async function getMachines(query: string) {
+  const res = await fetch(`${URL}/api/machines/list?name=`+query)
   return res.json()
 }
