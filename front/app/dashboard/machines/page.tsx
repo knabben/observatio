@@ -1,20 +1,14 @@
 import Link from 'next/link';
 
+import { Suspense } from 'react';
 import { getMachines } from "@/app/lib/data";
 import MachineLister from "@/app/ui/dashboard/components/MachineLister";
-import { FilterItems } from "@/app/dashboard/utils";
 
 import Search from "@/app/ui/dashboard/search";
 import { Title, Grid, GridCol } from '@mantine/core';
 
-export default async function Machines(props: {
-  searchParams?: Promise<{
-    query?: string;
-  }>;
-}) {
-  const searchParams = await props.searchParams;
-  const query = searchParams?.query || '';
-  const machines = await getMachines(query)
+export default async function Machines() {
+  const machines = await getMachines()
 
   return (
     <div>
@@ -28,10 +22,12 @@ export default async function Machines(props: {
             </Link>
           </GridCol>
           <GridCol span={4}>
-            <Search placeholder="Machine name"/>
+            <Suspense fallback={<div>Loading...</div>}>
+              <Search placeholder="Machine name"/>
+            </Suspense>
           </GridCol>
           <GridCol span={12}>
-            <MachineLister machines={FilterItems(query, machines)} />
+            <MachineLister machines={machines} />
           </GridCol>
         </Grid>
       </main>

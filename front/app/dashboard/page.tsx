@@ -59,3 +59,5 @@ export default async function Dashboard() {
     </main>
   );
 }
+
+export const dynamic = 'error'
