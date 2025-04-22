@@ -1,20 +1,15 @@
 import Link from 'next/link';
 
+import { Suspense } from 'react';
+
 import { getClusterList } from "@/app/lib/data";
 import ClusterLister from '@/app/ui/dashboard/components/ClusterLister'
-import { FilterItems } from "@/app/dashboard/utils";
 
 import Search from '@/app/ui/dashboard/search'
 import { Grid, GridCol, Title } from '@mantine/core';
 
-export default async function Clusters(props: {
-  searchParams?: Promise<{
-    query?: string;
-  }>;
-}) {
-  const searchParams = await props.searchParams;
-  const query = searchParams?.query || '';
-  const clusters = await getClusterList(query)
+export default async function Clusters() {
+  const clusters = await getClusterList()
 
   return (
     <div>
@@ -28,10 +23,12 @@ export default async function Clusters(props: {
             </Link>
           </GridCol>
           <GridCol span={4}>
-            <Search placeholder="Cluster name"/>
+            <Suspense fallback={<div>Loading...</div>}>
+              <Search placeholder="Cluster name"/>
+            </Suspense>
           </GridCol>
           <GridCol span={12}>
-            <ClusterLister clusterList={FilterItems(query, clusters)} />
+            <ClusterLister clusterList={clusters} />
           </GridCol>
         </Grid>
       </main>

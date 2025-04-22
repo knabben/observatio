@@ -16,6 +16,7 @@ SHELL := /usr/bin/env bash
 .DEFAULT_GOAL := help
 
 BINARY_PATH="${PWD}/output/observatio"
+BUILD_PATH="webserver/internal/web/handlers/build/"
 
 ## --------------------------------------
 ## Help
@@ -65,9 +66,11 @@ run-frontend:  ## Run the frontend locally
 .PHONY: build
 build:
 	pushd front; \
-	pnpm run build; \
+		npm run build; \
+		rm -fr ../${BUILD_PATH}* ; \
+		mv output/* ../${BUILD_PATH} ; \
 	popd;
 	pushd webserver; \
-	go build -o ${BINARY_PATH} .; \
+		go build -o ${BINARY_PATH} .; \
 	popd;
 

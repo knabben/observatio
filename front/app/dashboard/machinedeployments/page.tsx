@@ -1,21 +1,14 @@
 import Link from 'next/link';
 
+import { Suspense } from 'react';
 import { getMachinesDeployments} from "@/app/lib/data";
 import MachineDeploymentLister from "@/app/ui/dashboard/components/MachineDeploymentLister";
-import { FilterItems } from "@/app/dashboard/utils";
 
 import Search from '@/app/ui/dashboard/search'
 import { Title, Grid, GridCol } from '@mantine/core';
-import {Suspense} from "react";
 
-export default async function MachineDeployments(props: {
-  searchParams?: Promise<{
-    query?: string;
-  }>;
-}) {
-  const searchParams = await props.searchParams;
-  const query = searchParams?.query || '';
-  const mds = await getMachinesDeployments(query)
+export default async function MachineDeployments() {
+  const mds = await getMachinesDeployments()
 
   return (
     <div>
@@ -29,12 +22,12 @@ export default async function MachineDeployments(props: {
             </Link>
           </GridCol>
           <GridCol span={4}>
-            <Search placeholder="Machine deployment name"/>
+            <Suspense fallback={<div>Loading...</div>}>
+              <Search placeholder="Machine deployment name"/>
+            </Suspense>
           </GridCol>
           <GridCol span={12}>
-            <Suspense fallback={<p>Loading feed...</p>}>
-              <MachineDeploymentLister mds={FilterItems(query, mds)} />
-            </Suspense>
+            <MachineDeploymentLister mds={mds} />
           </GridCol>
         </Grid>
       </main>

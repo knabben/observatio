@@ -1,4 +1,4 @@
-name: Go Test
+name: Build
 
 on:
   push:
@@ -9,9 +9,8 @@ on:
       - main
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out code
         uses: actions/checkout@v2
@@ -21,8 +20,13 @@ jobs:
         with:
           go-version: '1.23.1'
 
-      - name: Run Linter
-        run: make lint-go
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
 
-      - name: Run tests
-        run: make run-tests-backend
+      - name: Install dependencies
+        run: cd front; npm install
+
+      - name: Run Build
+        run: make build

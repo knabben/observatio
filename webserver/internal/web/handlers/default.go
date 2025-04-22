@@ -46,7 +46,7 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 
 	// Static React bundle hosting handler
 	if !developmentMode {
-		spa := SPAHandler{staticFS: bundle, staticPath: "build", indexPath: "index.html"}
-		router.PathPrefix("/front").Handler(spa)
+		spa := SPAHandler{staticFS: bundle, staticPath: "build", indexPath: "dashboard.html"}
+		router.PathPrefix("/").Handler(spa)
 	}
 }
