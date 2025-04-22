@@ -66,7 +66,7 @@ run-frontend:  ## Run the frontend locally
 .PHONY: build
 build:
 	pushd front; \
-		pnpm run build; \
+		npm run build; \
 		rm -fr ../${BUILD_PATH}* ; \
 		mv output/* ../${BUILD_PATH} ; \
 	popd;
