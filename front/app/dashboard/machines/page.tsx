@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { getMachines} from "@/app/lib/data";
+import { getMachines } from "@/app/lib/data";
 import MachineLister from "@/app/ui/dashboard/components/MachineLister";
 import { FilterItems } from "@/app/dashboard/utils";
 
