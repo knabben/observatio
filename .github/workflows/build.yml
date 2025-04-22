@@ -1,4 +1,4 @@
-name: Go Test
+name: Build
 
 on:
   push:
@@ -9,8 +9,9 @@ on:
       - main
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
+    needs: ["test", "lint-and-test"]
 
     steps:
       - name: Check out code
@@ -21,8 +22,10 @@ jobs:
         with:
           go-version: '1.23.1'
 
-      - name: Run Linter
-        run: make lint-go
-
-      - name: Run tests
-        run: make run-tests-backend
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+      
+      - name: Run Build
+        run: make build
