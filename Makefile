@@ -65,9 +65,10 @@ run-frontend:  ## Run the frontend locally
 .PHONY: build
 build:
 	pushd front; \
-	pnpm run build; \
+		pnpm run build; \
+		mv output/* webserver/internal/web/handlers/build/. ; \
 	popd;
 	pushd webserver; \
-	go build -o ${BINARY_PATH} .; \
+		go build -o ${BINARY_PATH} .; \
 	popd;
 
