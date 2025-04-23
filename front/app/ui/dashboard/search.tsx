@@ -1,30 +1,22 @@
 'use client';
 
+import React from 'react';
+
 import { Input } from '@mantine/core';
-import { useSearchParams, usePathname, useRouter } from 'next/navigation';
+import { GridCol } from '@mantine/core';
 
-export default function Search({ placeholder }: { placeholder: string }) {
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const { replace } = useRouter();
-
-  function handleSearch(term: string) {
-    const params = new URLSearchParams(searchParams);
-    if (term) {
-      params.set('query', term);
-    } else {
-      params.delete('query');
-    }
-    replace(`${pathname}?${params.toString()}`);
-  }
-
+export default function Search({
+  placeholder,
+  onChange,
+  value
+}: { placeholder: string, onChange?: (e:React.ChangeEvent<HTMLInputElement>) => void, value: string }) {
   return (
-    <div>
+    <GridCol span={4}>
       <Input
-        onChange={(e) => handleSearch(e.currentTarget.value)}
+        value={value}
+        onChange={onChange}
         placeholder={placeholder}
-        defaultValue={searchParams.get('query')?.toString()}
       />
-    </div>
+    </GridCol>
   );
 }

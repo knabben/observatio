@@ -1,20 +1,22 @@
 'use client';
 
+import React from "react";
 import { Table } from '@mantine/core';
+import { GridCol } from '@mantine/core';
 
-type MachineDeploymentLister = {
+type MachineDeployment = {
   name: string,
   namespace: string,
   phase: string,
 }
 
-// MachineDeploymentLister: details the mds existent in the cluster.
-export default function MachineDeploymentLister({
+export default function MDTable({
   mds,
 }: {
-  mds: MachineDeploymentLister[]
+  mds: MachineDeployment[]
 }) {
   return (
+    <GridCol span={12}>
     <Table striped highlightOnHover withTableBorder withColumnBorders>
       <Table.Thead>
         <Table.Tr>
@@ -35,5 +37,6 @@ export default function MachineDeploymentLister({
         }
       </Table.Tbody>
     </Table>
+    </GridCol>
   );
 }
