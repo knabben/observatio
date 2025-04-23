@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image'
 import NavLinks from '@/app/ui/dashboard/nav-links';
-import { Select } from '@mantine/core';
 
 export default function SideNav() {
   return (

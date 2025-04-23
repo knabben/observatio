@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { getClusterList } from "@/app/lib/data";
 
 import { Table } from '@mantine/core';
-import { Loader } from '@mantine/core';
 import Search from "@/app/ui/dashboard/search";
 import { Grid, GridCol, Title } from '@mantine/core';
 import Link from 'next/link';
