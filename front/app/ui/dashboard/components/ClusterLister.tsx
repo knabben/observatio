@@ -3,10 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { getClusterList } from "@/app/lib/data";
 
-import { Table } from '@mantine/core';
-import Search from "@/app/ui/dashboard/search";
-import { Grid, GridCol, Title } from '@mantine/core';
 import Link from 'next/link';
+import { Table } from '@mantine/core';
+import { Grid, GridCol, Title } from '@mantine/core';
+
+import Search from "@/app/ui/dashboard/search";
+import {FilterItems} from "@/app/dashboard/utils";
 
 type Conditions = {
   type: string,
@@ -20,9 +22,12 @@ type Cluster = {
   conditions: Conditions[]
 }
 
-// ClusterLister: Cluster details and access URLs.
+// ClusterLister: Cluster list and details component.
 export default function ClusterLister() {
   const [clusters,setClusters] = useState<Cluster[]>([])
+  const [query,setQuery] = useState('')
+  const filteredClusters = FilterItems(query, clusters);
+
   useEffect(() => {
     const fetchData = async () => {
       setClusters(await getClusterList())
@@ -42,7 +47,10 @@ export default function ClusterLister() {
         </Link>
       </GridCol>
       <GridCol span={4}>
-          <Search placeholder="Cluster name"/>
+        <Search
+          value={query}
+          onChange={(e: { currentTarget: { value: React.SetStateAction<string>; }; }) => setQuery(e.currentTarget.value)}
+          placeholder="Cluster name" />
       </GridCol>
       <GridCol span={12}>
         <Table striped highlightOnHover withTableBorder withColumnBorders>
@@ -55,7 +63,7 @@ export default function ClusterLister() {
           </Table.Thead>
           <Table.Tbody>
             {
-              clusters?.map( (cluster) => (
+              filteredClusters?.map( (cluster) => (
                 <Table.Tr key={cluster.name}>
                   <Table.Td>{cluster.name}</Table.Td>
                   <Table.Td>{cluster.hasTopology.toString()}</Table.Td>
@@ -67,6 +75,5 @@ export default function ClusterLister() {
         </Table>
       </GridCol>
     </Grid>
-
   );
 }
