@@ -9,7 +9,6 @@ import { Title, Grid, GridCol } from '@mantine/core';
 
 export default async function Machines() {
   const machines = await getMachines()
-
   return (
     <div>
       <main>
