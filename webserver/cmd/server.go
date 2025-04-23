@@ -2,14 +2,12 @@ package cmd
 
 import (
 	"context"
-	"github.com/knabben/observatio/webserver/internal/infra/clusterapi"
-	"github.com/knabben/observatio/webserver/internal/web/handlers"
-	"net/http"
-	"time"
-
 	gh "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/knabben/observatio/webserver/internal/infra/clusterapi"
+	"github.com/knabben/observatio/webserver/internal/web/handlers"
 	"github.com/spf13/cobra"
+	"net/http"
 
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -20,7 +18,6 @@ import (
 var (
 	address     string
 	development bool
-	timeout     time.Duration = 15 * time.Second
 )
 
 var serveCmd = &cobra.Command{
