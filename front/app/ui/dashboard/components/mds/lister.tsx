@@ -1,39 +1,40 @@
 'use client';
 
-import { Table } from '@mantine/core';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 
-type MachineDeploymentLister = {
-  name: string,
-  namespace: string,
-  phase: string,
-}
+import Search from '@/app/ui/dashboard/search'
+import {FilterItems} from "@/app/dashboard/utils";
+import { Title, Grid, GridCol } from '@mantine/core';
 
-// MachineDeploymentLister: details the mds existent in the cluster.
-export default function MachineDeploymentLister({
-  mds,
-}: {
-  mds: MachineDeploymentLister[]
-}) {
+import {getMachinesDeployments} from "@/app/lib/data";
+import MDTable from '@/app/ui/dashboard/components/mds/table'
+
+// MDLister: List the MDs existent in the cluster.
+export default function MDLister() {
+  const [mds, setMD] = useState<any[]>([])
+  const [query, setQuery] = useState('')
+  const filteredMDs = FilterItems(query, mds);
+
+  useEffect(() => {
+    const fetchData = async () => { setMD(await getMachinesDeployments()) }
+    fetchData().catch((e) => { console.error('error', e) })
+  }, [])
+
   return (
-    <Table striped highlightOnHover withTableBorder withColumnBorders>
-      <Table.Thead>
-        <Table.Tr>
-          <Table.Th>Name</Table.Th>
-          <Table.Th>Namespace</Table.Th>
-          <Table.Th>Phase</Table.Th>
-        </Table.Tr>
-      </Table.Thead>
-      <Table.Tbody>
-        {
-          mds.map( (md, i) => (
-            <Table.Tr key={i}>
-              <Table.Td>{md.name}</Table.Td>
-              <Table.Td>{md.namespace}</Table.Td>
-              <Table.Td>{md.phase}</Table.Td>
-            </Table.Tr>
-          ))
-        }
-      </Table.Tbody>
-    </Table>
-  );
+    <Grid justify="flex-end" align="flex-start">
+      <GridCol h={60} span={8}>
+        <Link href="/dashboard/machinedeployments">
+          <Title className="hidden md:block" order={2}>
+            Machine Deployments / cluster.x-k8s.io
+          </Title>
+        </Link>
+      </GridCol>
+      <Search
+      value={query}
+      onChange={(e: { currentTarget: { value: React.SetStateAction<string>; }; }) => setQuery(e.currentTarget.value)}
+      placeholder="Cluster name" />
+      <MDTable mds={filteredMDs} />
+    </Grid>
+  )
 }
