@@ -1,4 +1,4 @@
-import ClusterInfo from '@/app/ui/dashboard/components/ClusterInfo'
+import ClusterInfo from '@/app/ui/dashboard/components/dashboard/clusterinfo'
 import Versions from '@/app/ui/dashboard/components/Versions'
 import Summary from '@/app/ui/dashboard/components/Summary'
 import ClusterClass from '@/app/ui/dashboard/components/ClusterClass'
@@ -12,7 +12,6 @@ import Link from 'next/link';
 import { Card, Grid, GridCol, Text, Divider, Title, Space } from '@mantine/core';
 
 export default async function Dashboard() {
-  const clusterInfo = await getClusterInformation()
   const componentsVersion = await getComponentsVersion()
   const clusterSummary = await getClusterSummary()
   const clusterClasses = await getClusterClasses()
@@ -35,11 +34,7 @@ export default async function Dashboard() {
             <Summary clusterSummary={clusterSummary} />
           </Card>
           <Space h="md"/>
-          <Card shadow="md"  radius="md" withBorder>
-            <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Cluster Information</Text>
-            <Divider my="sm" variant="dashed" />
-            <ClusterInfo clusterInfo={clusterInfo}/>
-          </Card>
+          <ClusterInfo />
         </GridCol>
 
         <GridCol span={7}>
