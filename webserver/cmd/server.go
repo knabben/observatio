@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	gh "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 
@@ -40,16 +41,16 @@ func init() {
 }
 
 func RunE(cmd *cobra.Command, args []string) error {
-	router := mux.NewRouter()
 	client, config, err := clusterapi.NewClient()
 	if err != nil {
 		return err
 	}
+
+	router := mux.NewRouter()
 	router.Use(web.WithKubernetes(client, config))
 	handlers.DefaultHandlers(router, development)
 
-	ctx := context.Background()
-	log.FromContext(ctx).Info("Listening on " + address)
-	srv := &http.Server{Handler: router, Addr: address, WriteTimeout: timeout, ReadTimeout: timeout}
-	return srv.ListenAndServe()
+	allowDomain := gh.AllowedOrigins([]string{"*"})
+	log.FromContext(context.Background()).Info("Listening on " + address)
+	return http.ListenAndServe(address, gh.CORS(allowDomain)(router))
 }
