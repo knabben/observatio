@@ -12,7 +12,7 @@ import ClusterTable from '@/app/ui/dashboard/components/clusters/table'
 
 // ClusterLister: Cluster list and details component.
 export default function ClusterLister() {
-  const [clusters,setClusters] = useState<any[]>([])
+  const [clusters,setClusters] = useState<[]>([])
   const [query,setQuery] = useState('')
   const filteredClusters = FilterItems(query, clusters);
 

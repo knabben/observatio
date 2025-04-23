@@ -12,7 +12,7 @@ import MDTable from '@/app/ui/dashboard/components/mds/table'
 
 // MDLister: List the MDs existent in the cluster.
 export default function MDLister() {
-  const [mds, setMD] = useState<any[]>([])
+  const [mds, setMD] = useState<[]>([])
   const [query, setQuery] = useState('')
   const filteredMDs = FilterItems(query, mds);
 
