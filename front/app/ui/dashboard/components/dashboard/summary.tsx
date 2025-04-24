@@ -1,17 +1,17 @@
 'use client';
 
 import React, {useState, useEffect} from 'react';
-import { Grid, Space, Text, Divider } from '@mantine/core';
+import { Card, Grid, Space, Text, Divider } from '@mantine/core';
 import {getClusterSummary} from "@/app/lib/data";
 
 type Summary = {
-  failed: bigint
-  provisioned: bigint,
+  failed?: bigint
+  provisioned?: bigint,
 }
 
 // Summary : Resume clusters statuses.
 export default function ClusterSummary() {
-  const [clusterSummary, setClusterSummary] = useState<Summary>([])
+  const [clusterSummary, setClusterSummary] = useState<Summary>({});
   useEffect( () => {
     const fetch = async  () => {
       setClusterSummary(await getClusterSummary())
@@ -20,7 +20,10 @@ export default function ClusterSummary() {
   }, [])
 
   return (
-    <div  style={{ resize: 'vertical', overflow: 'hidden', maxHeight: '100%' }}>
+    <Card shadow="md" padding="lg" radius="md" withBorder>
+      <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Clusters Health</Text>
+      <Divider my="sm" variant="dashed" />
+      <div style={{ resize: 'vertical', overflow: 'hidden', maxHeight: '100%' }}>
         <Grid ta="center">
           <Grid.Col span={6}>
             Provisioned
@@ -33,6 +36,7 @@ export default function ClusterSummary() {
             <Text fw={900} size="xl" c="red">{clusterSummary.failed}</Text>
           </Grid.Col>
         </Grid>
-    </div>
+      </div>
+    </Card>
   );
 }

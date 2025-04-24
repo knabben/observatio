@@ -1,6 +1,9 @@
 'use client';
 
-import { Table } from '@mantine/core';
+import React, {useState, useEffect} from 'react';
+import { Table, Card, Text, Divider } from '@mantine/core';
+import {getClusterClasses} from "@/app/lib/data";
+
 
 type Conditions = {
   type: string,
@@ -8,7 +11,7 @@ type Conditions = {
   lastTransitionTime: string,
 }
 
-type Clusterclass = {
+type ClusterClass = {
   name: string,
   namespace: string,
   generation: bigint,
@@ -16,12 +19,19 @@ type Clusterclass = {
 }
 
 // ClusterClass: details the cluster classes existent in the cluster.
-export default function ClusterClass({
-  clusterClass,
-}: {
-  clusterClass: Clusterclass[]
-}) {
+export default function ClusterClass() {
+  const [clusterClass, setClusterClass] = useState<ClusterClass[]>([])
+  useEffect( () => {
+    const fetch = async  () => {
+      setClusterClass(await getClusterClasses())
+    }
+    fetch().catch( (e) => { console.error('error', e) })
+  }, [])
+
   return (
+    <Card shadow="md"  radius="md" withBorder>
+      <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Cluster Class</Text>
+      <Divider my="sm" variant="dashed" />
     <Table striped highlightOnHover withTableBorder withColumnBorders>
       <Table.Thead>
         <Table.Tr>
@@ -48,5 +58,6 @@ export default function ClusterClass({
         }
       </Table.Tbody>
     </Table>
+    </Card>
   );
 }

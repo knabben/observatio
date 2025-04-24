@@ -1,57 +1,32 @@
 import ClusterInfo from '@/app/ui/dashboard/components/dashboard/clusterinfo'
-import Versions from '@/app/ui/dashboard/components/dashboard/versions'
-import Summary from '@/app/ui/dashboard/components/dashboard/summary'
+import ClusterVersions from '@/app/ui/dashboard/components/dashboard/versions'
+import ClusterSummary from '@/app/ui/dashboard/components/dashboard/summary'
 import ClusterClass from '@/app/ui/dashboard/components/dashboard/clusterclass'
-
-import { getClusterInformation } from "@/app/lib/data";
-import { getClusterSummary } from "@/app/lib/data";
-import { getComponentsVersion } from "@/app/lib/data";
-import { getClusterClasses } from "@/app/lib/data";
 
 import Link from 'next/link';
 import { Card, Grid, GridCol, Text, Divider, Title, Space } from '@mantine/core';
 
 export default async function Dashboard() {
-  const componentsVersion = await getComponentsVersion()
-  const clusterSummary = await getClusterSummary()
-  const clusterClasses = await getClusterClasses()
-
   return (
-    <main>
-      <Grid grow justify="center" align="top">
-        <GridCol span={12}>
-          <Link href="/dashboard">
-            <Title className="hidden md:block" order={2}>
-              Dashboard
-            </Title>
-          </Link>
-        </GridCol>
-
-        <GridCol span={5}>
-          <Card shadow="md" padding="lg" radius="md" withBorder>
-            <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Clusters Health</Text>
-            <Divider my="sm" variant="dashed" />
-            <Summary clusterSummary={clusterSummary} />
-          </Card>
-          <Space h="md"/>
-          <ClusterInfo />
-        </GridCol>
-
-        <GridCol span={7}>
-          <Card shadow="md"  radius="md" withBorder>
-            <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Cluster Class</Text>
-            <Divider my="sm" variant="dashed" />
-            <ClusterClass clusterClass={clusterClasses} />
-          </Card>
-          <Space h="md"/>
-          <Card shadow="md"  radius="md" withBorder>
-            <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Components version</Text>
-            <Divider my="sm" variant="dashed" />
-            <Versions components={componentsVersion} />
-          </Card>
-        </GridCol>
-      </Grid>
-    </main>
+    <Grid grow justify="center" align="top">
+      <GridCol span={12}>
+        <Link href="/dashboard">
+          <Title className="hidden md:block" order={2}>
+            Dashboard
+          </Title>
+        </Link>
+      </GridCol>
+      <GridCol span={5}>
+        <ClusterSummary />
+        <Space h="md"/>
+        <ClusterInfo />
+      </GridCol>
+      <GridCol span={7}>
+        <ClusterClass />
+        <Space h="md"/>
+        <ClusterVersions />
+      </GridCol>
+    </Grid>
   );
 }
 
