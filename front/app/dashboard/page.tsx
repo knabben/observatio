@@ -4,7 +4,7 @@ import ClusterSummary from '@/app/ui/dashboard/components/dashboard/summary'
 import ClusterClass from '@/app/ui/dashboard/components/dashboard/clusterclass'
 
 import Link from 'next/link';
-import { Card, Grid, GridCol, Text, Divider, Title, Space } from '@mantine/core';
+import { Grid, GridCol, Title, Space } from '@mantine/core';
 
 export default async function Dashboard() {
   return (

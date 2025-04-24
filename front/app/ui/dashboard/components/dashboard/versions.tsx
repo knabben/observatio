@@ -1,7 +1,7 @@
 'use client';
 
 import React, {useState, useEffect} from 'react';
-import { Card, Grid, Table, Text, Divider } from '@mantine/core';
+import { Card, Table, Text, Divider } from '@mantine/core';
 import {getComponentsVersion} from "@/app/lib/data";
 
 type Component = {

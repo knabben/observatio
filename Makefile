@@ -71,6 +71,6 @@ build:
 		mv output/* ../${BUILD_PATH} ; \
 	popd;
 	pushd webserver; \
-		go build -o ${BINARY_PATH} .; \
+		CGO_ENABLED=0 go build -o ${BINARY_PATH} .; \
 	popd;
 
