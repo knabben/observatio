@@ -8,7 +8,7 @@ type Conditions = {
   lastTransitionTime: string,
 }
 
-type ClusterClass = {
+type Clusterclass = {
   name: string,
   namespace: string,
   generation: bigint,
@@ -19,7 +19,7 @@ type ClusterClass = {
 export default function ClusterClass({
   clusterClass,
 }: {
-  clusterClass: ClusterClass[]
+  clusterClass: Clusterclass[]
 }) {
   return (
     <Table striped highlightOnHover withTableBorder withColumnBorders>

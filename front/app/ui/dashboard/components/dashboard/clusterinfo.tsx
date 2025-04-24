@@ -1,7 +1,7 @@
 'use client';
 
-import { Table, Card, Text, Divider } from '@mantine/core';
 import React, {useState, useEffect} from 'react';
+import { Table, Card, Text, Divider } from '@mantine/core';
 import {getClusterInformation} from "@/app/lib/data";
 
 type service = {

@@ -1,7 +1,7 @@
 import ClusterInfo from '@/app/ui/dashboard/components/dashboard/clusterinfo'
-import Versions from '@/app/ui/dashboard/components/Versions'
-import Summary from '@/app/ui/dashboard/components/Summary'
-import ClusterClass from '@/app/ui/dashboard/components/ClusterClass'
+import Versions from '@/app/ui/dashboard/components/dashboard/versions'
+import Summary from '@/app/ui/dashboard/components/dashboard/summary'
+import ClusterClass from '@/app/ui/dashboard/components/dashboard/clusterclass'
 
 import { getClusterInformation } from "@/app/lib/data";
 import { getClusterSummary } from "@/app/lib/data";

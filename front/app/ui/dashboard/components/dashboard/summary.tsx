@@ -1,18 +1,24 @@
 'use client';
 
-import { Grid, Space, Text } from '@mantine/core';
+import React, {useState, useEffect} from 'react';
+import { Grid, Space, Text, Divider } from '@mantine/core';
+import {getClusterSummary} from "@/app/lib/data";
 
 type Summary = {
   failed: bigint
   provisioned: bigint,
 }
 
-// Summary : resume clusters response
-export default function Summary({
-  clusterSummary,
-}: {
-  clusterSummary: Summary
-}) {
+// Summary : Resume clusters statuses.
+export default function ClusterSummary() {
+  const [clusterSummary, setClusterSummary] = useState<Summary>([])
+  useEffect( () => {
+    const fetch = async  () => {
+      setClusterSummary(await getClusterSummary())
+    }
+    fetch().catch( (e) => { console.error('error', e) })
+  }, [])
+
   return (
     <div  style={{ resize: 'vertical', overflow: 'hidden', maxHeight: '100%' }}>
         <Grid ta="center">
