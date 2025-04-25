@@ -56,18 +56,18 @@ func FetchClusters(ctx context.Context, c client.Client) (response responses.Clu
 	for _, cl := range clusters {
 		clusterClass := responses.ClusterClass{IsClusterClass: false}
 		if cl.Spec.Topology != nil {
-			hasMHC := false
-			if cl.Spec.Topology.ControlPlane.MachineHealthCheck != nil {
-				hasMHC = true
-			}
 			clusterClass = responses.ClusterClass{
-				IsClusterClass:            true,
-				ClassName:                 cl.Spec.Topology.Class,
-				ClassNamespace:            cl.Spec.Topology.ClassNamespace,
-				KubernetesVersion:         cl.Spec.Topology.Version,
-				ControlPlaneReplicas:      *cl.Spec.Topology.ControlPlane.Replicas,
-				ControlPlaneMHC:           hasMHC,
-				WorkersMachineDeployments: cl.Spec.Topology.Workers.MachineDeployments,
+				IsClusterClass:       true,
+				ClassName:            cl.Spec.Topology.Class,
+				ClassNamespace:       cl.Spec.Topology.ClassNamespace,
+				KubernetesVersion:    cl.Spec.Topology.Version,
+				ControlPlaneReplicas: *cl.Spec.Topology.ControlPlane.Replicas,
+			}
+			if cl.Spec.Topology.ControlPlane.MachineHealthCheck != nil {
+				clusterClass.ControlPlaneMHC = true
+			}
+			if cl.Spec.Topology.Workers != nil {
+				clusterClass.WorkersMachineDeployments = cl.Spec.Topology.Workers.MachineDeployments
 			}
 		}
 		clusterList = append(clusterList, responses.Cluster{
