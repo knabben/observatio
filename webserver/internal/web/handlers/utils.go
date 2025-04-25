@@ -26,7 +26,16 @@ func writeResponse(w http.ResponseWriter, object any) error {
 	return nil
 }
 
-// writeError write down an error with code to the writer response.
+// handleError write down an error with code to the writer response.
+func handleError(w http.ResponseWriter, code int, err error) (hasError bool) {
+	hasError = err != nil
+	if hasError {
+		http.Error(w, err.Error(), code)
+	}
+	return hasError
+}
+
+// handleError write down an error with code to the writer response.
 func writeError(w http.ResponseWriter, code int, err error) {
 	http.Error(w, err.Error(), code)
 }

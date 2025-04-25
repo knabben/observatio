@@ -7,21 +7,18 @@ import (
 
 // handleClusterList returns the information about the cluster.
 func handleClusterList(w http.ResponseWriter, r *http.Request) {
-	var ctx = r.Context()
-	c, err := clusterapi.NewClientWithScheme(ctx, scheme)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+	client, err := clusterapi.NewClientWithScheme(r.Context(), scheme)
+	if handleError(w, http.StatusInternalServerError, err) {
 		return
 	}
 
-	clusters, err := clusterapi.FetchClusters(r.Context(), c)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+	var clusters []clusterapi.Cluster
+	clusters, err = clusterapi.FetchClusters(r.Context(), client)
+	if handleError(w, http.StatusInternalServerError, err) {
 		return
 	}
 
-	if err = writeResponse(w, clusters); err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+	if err = writeResponse(w, clusters); handleError(w, http.StatusInternalServerError, err) {
 		return
 	}
 }
