@@ -16,7 +16,7 @@ type ClusterClass struct {
 	ClassName                 string                                `json:"className,omitempty"`
 	ClassNamespace            string                                `json:"classNamespace,omitempty"`
 	KubernetesVersion         string                                `json:"kubernetesVersion,omitempty"`
-	ControlPlaneReplicas      int                                   `json:"controlPlaneReplicas,omitempty"`
+	ControlPlaneReplicas      int32                                 `json:"controlPlaneReplicas,omitempty"`
 	ControlPlaneMHC           bool                                  `json:"controlPlaneMHC,omitempty"`
 	WorkersMachineDeployments []clusterv1.MachineDeploymentTopology `json:"machineDeployments,omitempty"`
 }

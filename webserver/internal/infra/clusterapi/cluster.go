@@ -2,13 +2,17 @@ package clusterapi
 
 import (
 	"context"
+	"strconv"
+
+	"github.com/knabben/observatio/webserver/internal/infra/responses"
+
 	corev1 "k8s.io/api/core/v1"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/client-go/rest"
+
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strconv"
 )
 
 // ClusterSummary defines the summary of cluster states from a kubeconfig.
@@ -39,30 +43,53 @@ func GenerateClusterSummary(ctx context.Context, c client.Client) (summary Clust
 	return ClusterSummary{Provisioned: provisioned, Failed: failed}, nil
 }
 
-// Cluster stores the presentation model for a CAPI cluster
-type Cluster struct {
-	Name        string               `json:"name"`
-	HasTopology bool                 `json:"hasTopology"`
-	Conditions  clusterv1.Conditions `json:"conditions"`
-}
-
-func FetchClusters(ctx context.Context, c client.Client) (clusterList []Cluster, err error) {
+func FetchClusters(ctx context.Context, c client.Client) (response responses.ClusterResponse, err error) {
 	var clusters []clusterv1.Cluster
 	if clusters, err = listClusters(ctx, c); err != nil {
-		return clusterList, err
+		return response, err
 	}
+
+	var (
+		clusterList []responses.Cluster
+		failed      int
+	)
 	for _, cl := range clusters {
-		hasTopology := false
+		clusterClass := responses.ClusterClass{IsClusterClass: false}
 		if cl.Spec.Topology != nil {
-			hasTopology = true
+			hasMHC := false
+			if cl.Spec.Topology.ControlPlane.MachineHealthCheck != nil {
+				hasMHC = true
+			}
+			clusterClass = responses.ClusterClass{
+				IsClusterClass:            true,
+				ClassName:                 cl.Spec.Topology.Class,
+				ClassNamespace:            cl.Spec.Topology.ClassNamespace,
+				KubernetesVersion:         cl.Spec.Topology.Version,
+				ControlPlaneReplicas:      *cl.Spec.Topology.ControlPlane.Replicas,
+				ControlPlaneMHC:           hasMHC,
+				WorkersMachineDeployments: cl.Spec.Topology.Workers.MachineDeployments,
+			}
 		}
-		clusterList = append(clusterList, Cluster{
-			Name:        cl.Name,
-			HasTopology: hasTopology,
-			Conditions:  cl.Status.Conditions,
+		clusterList = append(clusterList, responses.Cluster{
+			Name:                cl.Name,
+			Paused:              cl.Spec.Paused,
+			ClusterClass:        clusterClass,
+			PodNetwork:          cl.Spec.ClusterNetwork.Pods.String(),
+			ServiceNetwork:      cl.Spec.ClusterNetwork.Services.String(),
+			Phase:               cl.Status.Phase,
+			InfrastructureReady: cl.Status.InfrastructureReady,
+			ControlPlaneReady:   cl.Status.ControlPlaneReady,
+			Conditions:          cl.Status.Conditions,
 		})
+		if cl.Status.InfrastructureReady || cl.Status.ControlPlaneReady {
+			failed += 1
+		}
 	}
-	return clusterList, err
+	return responses.ClusterResponse{
+		Total:    len(clusters),
+		Clusters: clusterList,
+		Failing:  failed,
+	}, err
 }
 
 func listClusters(ctx context.Context, c client.Client) (clusters []clusterv1.Cluster, err error) {
