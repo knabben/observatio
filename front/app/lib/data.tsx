@@ -1,4 +1,4 @@
-const URL = ""
+const URL = "http://localhost:8080"
 
 // ----- Dashboard -----
 

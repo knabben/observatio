@@ -5,16 +5,17 @@ import Link from 'next/link';
 
 import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";
-import { Grid, GridCol, Title } from '@mantine/core';
+import { Space, Accordion, Grid, GridCol, Title } from '@mantine/core';
 
 import { getClusterList } from "@/app/lib/data";
 import ClusterTable from '@/app/ui/dashboard/components/clusters/table'
+import ClusterDetails from "@/app/ui/dashboard/components/clusters/details";
 
 // ClusterLister: Cluster list and details component.
 export default function ClusterLister() {
   const [clusters,setClusters] = useState<[]>([])
-  const [query,setQuery] = useState('')
-  const filteredClusters = FilterItems(query, clusters);
+  const [selected, setSelected] = useState('')
+  const filteredClusters = FilterItems(selected, clusters);
 
   useEffect(() => {
     const fetchData = async () => { setClusters(await getClusterList()) }
@@ -31,10 +32,11 @@ export default function ClusterLister() {
         </Link>
       </GridCol>
       <Search
-        value={query}
-        onChange={(e: { currentTarget: { value: React.SetStateAction<string>; }; }) => setQuery(e.currentTarget.value)}
+        options={clusters}
+        onChange={setSelected}
         placeholder="Cluster name" />
-      <ClusterTable clusters={filteredClusters} />
+      <ClusterTable clusters={filteredClusters}/>
+      <ClusterDetails selected={selected} />
     </Grid>
   );
 }
