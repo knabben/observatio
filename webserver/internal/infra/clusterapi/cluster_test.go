@@ -183,7 +183,7 @@ func Test_ClusterList(t *testing.T) {
 			Build()
 		response, err := FetchClusters(context.Background(), c)
 		assert.NoError(t, err)
-		assert.Len(t, clusters, 1)
+		assert.Len(t, response.Clusters, 1)
 		for _, cl := range response.Clusters {
 			assert.Equal(t, tt.cluster.Name, cl.Name)
 			assert.Equal(t, tt.cluster.Status.Phase, cl.Phase)

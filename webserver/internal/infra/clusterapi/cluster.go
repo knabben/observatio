@@ -70,20 +70,24 @@ func FetchClusters(ctx context.Context, c client.Client) (response responses.Clu
 				clusterClass.WorkersMachineDeployments = cl.Spec.Topology.Workers.MachineDeployments
 			}
 		}
-		clusterList = append(clusterList, responses.Cluster{
-			Name:                cl.Name,
-			Paused:              cl.Spec.Paused,
-			ClusterClass:        clusterClass,
-			PodNetwork:          cl.Spec.ClusterNetwork.Pods.String(),
-			ServiceNetwork:      cl.Spec.ClusterNetwork.Services.String(),
+		cluster := responses.Cluster{
+			Name:         cl.Name,
+			Paused:       cl.Spec.Paused,
+			ClusterClass: clusterClass,
+
 			Phase:               cl.Status.Phase,
 			InfrastructureReady: cl.Status.InfrastructureReady,
 			ControlPlaneReady:   cl.Status.ControlPlaneReady,
 			Conditions:          cl.Status.Conditions,
-		})
+		}
+		if cl.Spec.ClusterNetwork != nil {
+			cluster.PodNetwork = cl.Spec.ClusterNetwork.Pods.String()
+			cluster.ServiceNetwork = cl.Spec.ClusterNetwork.Services.String()
+		}
 		if cl.Status.InfrastructureReady || cl.Status.ControlPlaneReady {
 			failed += 1
 		}
+		clusterList = append(clusterList, cluster)
 	}
 	return responses.ClusterResponse{
 		Total:    len(clusters),
