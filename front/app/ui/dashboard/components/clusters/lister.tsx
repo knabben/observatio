@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { inter, lora, sourceCodePro400, openSans } from "@/fonts";
+import { sourceCodePro400 } from "@/fonts";
 
 import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";

@@ -3,8 +3,7 @@
 import React, {useState, useEffect} from 'react';
 import { Table, Card, Text, Divider } from '@mantine/core';
 import {getClusterClasses} from "@/app/lib/data";
-import {inter, openSans, sourceCodePro400} from "@/fonts";
-
+import {sourceCodePro400} from "@/fonts";
 
 type Conditions = {
   type: string,
