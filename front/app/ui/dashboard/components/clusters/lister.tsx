@@ -18,7 +18,10 @@ export default function ClusterLister() {
   const filteredClusters = FilterItems(selected, clusters);
 
   useEffect(() => {
-    const fetchData = async () => { setClusters(await getClusterList()) }
+    const fetchData = async () => {
+      const response = await getClusterList()
+      setClusters(response.clusters)
+    }
     fetchData().catch((e) => { console.error('error', e) })
   }, [])
 

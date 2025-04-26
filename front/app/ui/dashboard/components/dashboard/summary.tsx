@@ -21,19 +21,19 @@ export default function ClusterSummary() {
 
   return (
     <Card shadow="md" padding="lg" radius="md" withBorder>
-      <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Clusters Health</Text>
+      <Text tt="uppercase"  fw={600} c="#8feb83" ta="center">Clusters Health</Text>
       <Divider my="sm" variant="dashed" />
       <div style={{ resize: 'vertical', overflow: 'hidden', maxHeight: '100%' }}>
         <Grid ta="center">
           <Grid.Col span={6}>
-            Provisioned
+            <Text size="lg">Provisioned</Text>
             <Space h="lg" />
-            <Text fw={900} size="xl"  c="teal.4">{clusterSummary.provisioned}</Text>
+            <div className="text-7xl text-[#39b69d]">{clusterSummary.provisioned}</div>
           </Grid.Col>
           <Grid.Col span={6}>
             Failing
-            <Space h="lg" />
-            <Text fw={900} size="xl" c="red">{clusterSummary.failed}</Text>
+            <Space h="lg"/>
+            <div className="text-7xl text-[#e01003]">{clusterSummary.failed}</div>
           </Grid.Col>
         </Grid>
       </div>
