@@ -3,7 +3,7 @@ import SideNav from '@/app/ui/dashboard/sidenav';
 import {Roboto} from 'next/font/google';
 
 const roboto = Roboto({
-  weight: '300',
+  weight: '200',
   subsets: ['latin'],
 })
 

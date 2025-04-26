@@ -26,7 +26,6 @@ export default function ClusterTable({
             clusters?.map( (cluster) => (
               <Table.Tr key={cluster.name}>
                 <Table.Td>{cluster.name}</Table.Td>
-                <Table.Td>{cluster.hasTopology.toString()}</Table.Td>
                 <Table.Td>{cluster.conditions.length}</Table.Td>
               </Table.Tr>
             ))

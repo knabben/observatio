@@ -30,7 +30,7 @@ export default function ClusterClass() {
 
   return (
     <Card shadow="md"  radius="md" withBorder>
-      <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Cluster Class</Text>
+      <Text tt="uppercase"  fw={600} c="#39b69d" ta="center">Cluster Class</Text>
       <Divider my="sm" variant="dashed" />
     <Table striped highlightOnHover withTableBorder withColumnBorders>
       <Table.Thead>

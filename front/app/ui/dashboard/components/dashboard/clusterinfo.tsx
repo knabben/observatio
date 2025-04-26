@@ -21,7 +21,7 @@ export default function ClusterInfo() {
 
   return (
     <Card shadow="md"  radius="md" withBorder>
-      <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Cluster Information</Text>
+      <Text tt="uppercase"  fw={600} c="39b69dteal.8" ta="center">Cluster Information</Text>
       <Divider my="sm" variant="dashed" />
       <Table striped highlightOnHover withTableBorder withColumnBorders>
         <Table.Thead>
