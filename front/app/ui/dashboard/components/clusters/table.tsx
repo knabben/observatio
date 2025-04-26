@@ -1,7 +1,7 @@
 'use client';
 
 import React from "react";
-import { Table, Button, Pagination } from '@mantine/core';
+import { Table } from '@mantine/core';
 import { GridCol } from '@mantine/core';
 
 import {ClusterType} from '@/app/ui/dashboard/components/clusters/types'

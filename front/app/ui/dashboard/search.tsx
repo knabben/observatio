@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import React, {useState} from 'react';
@@ -6,10 +7,8 @@ import { GridCol } from '@mantine/core';
 import { Input, InputBase, Combobox, useCombobox } from '@mantine/core';
 
 export default function Search({
-  placeholder, options, onChange
-}: { placeholder: string, onChange: any, options: any[]}) {
-  const groceries = ['🍎 Apples', '🍌 Bananas', '🥦 Broccoli', '🥕 Carrots', '🍫 Chocolate'];
-
+  options, onChange
+}: { onChange: any, options: any[]}) {
   const [value, setValue] = useState<string | null>(null);
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption(),

@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";
-import { Space, Accordion, Grid, GridCol, Title } from '@mantine/core';
+import { Grid, GridCol, Title } from '@mantine/core';
 
 import { getClusterList } from "@/app/lib/data";
 import ClusterTable from '@/app/ui/dashboard/components/clusters/table'
@@ -33,8 +33,7 @@ export default function ClusterLister() {
       </GridCol>
       <Search
         options={clusters}
-        onChange={setSelected}
-        placeholder="Cluster name" />
+        onChange={setSelected}/>
       <ClusterTable clusters={filteredClusters}/>
       <ClusterDetails selected={selected} />
     </Grid>
