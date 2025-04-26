@@ -3,6 +3,7 @@
 import React, {useState, useEffect} from 'react';
 import { Table, Card, Text, Divider } from '@mantine/core';
 import {getClusterInformation} from "@/app/lib/data";
+import {sourceCodePro400} from "@/fonts";
 
 type service = {
   name: string,
@@ -21,7 +22,9 @@ export default function ClusterInfo() {
 
   return (
     <Card shadow="md"  radius="md" withBorder>
-      <Text tt="uppercase"  fw={600} c="39b69dteal.8" ta="center">Cluster Information</Text>
+      <Text size="lg" tt="uppercase" className={sourceCodePro400.className} c="#8feb83" ta="center">
+        Cluster Information
+      </Text>
       <Divider my="sm" variant="dashed" />
       <Table striped highlightOnHover withTableBorder withColumnBorders>
         <Table.Thead>

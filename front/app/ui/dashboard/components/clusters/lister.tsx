@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { inter, lora, sourceCodePro400, openSans } from "@/fonts";
 
 import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";
@@ -29,7 +30,7 @@ export default function ClusterLister() {
     <Grid justify="flex-end" align="flex-start">
       <GridCol h={60} span={8}>
         <Link href="/dashboard/clusters">
-          <Title className="hidden md:block" order={2}>
+          <Title className={sourceCodePro400.className} order={2}>
             Clusters / cluster.x-k8s.io
           </Title>
         </Link>

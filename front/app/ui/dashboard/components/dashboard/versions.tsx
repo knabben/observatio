@@ -3,6 +3,7 @@
 import React, {useState, useEffect} from 'react';
 import { Card, Table, Text, Divider } from '@mantine/core';
 import {getComponentsVersion} from "@/app/lib/data";
+import {sourceCodePro400} from "@/fonts";
 
 type Component = {
     name: string,
@@ -22,7 +23,9 @@ export default function ClusterVersions() {
 
   return (
     <Card shadow="md"  radius="md" withBorder>
-      <Text tt="uppercase"  fw={600} c="teal.8" ta="center">Components version</Text>
+      <Text size="lg" tt="uppercase" className={sourceCodePro400.className} c="#8feb83" ta="center">
+        Component Versions
+      </Text>
       <Divider my="sm" variant="dashed" />
       <Table striped highlightOnHover withTableBorder withColumnBorders>
         <Table.Thead>

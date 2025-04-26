@@ -3,6 +3,7 @@
 import React, {useState, useEffect} from 'react';
 import { Table, Card, Text, Divider } from '@mantine/core';
 import {getClusterClasses} from "@/app/lib/data";
+import {inter, openSans, sourceCodePro400} from "@/fonts";
 
 
 type Conditions = {
@@ -30,7 +31,9 @@ export default function ClusterClass() {
 
   return (
     <Card shadow="md"  radius="md" withBorder>
-      <Text tt="uppercase"  fw={600} c="#39b69d" ta="center">Cluster Class</Text>
+      <Text size="lg" tt="uppercase" className={sourceCodePro400.className} c="#8feb83" ta="center">
+        Cluster Class
+      </Text>
       <Divider my="sm" variant="dashed" />
     <Table striped highlightOnHover withTableBorder withColumnBorders>
       <Table.Thead>

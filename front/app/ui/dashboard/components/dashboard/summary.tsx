@@ -28,12 +28,12 @@ export default function ClusterSummary() {
           <Grid.Col span={6}>
             <Text size="lg">Provisioned</Text>
             <Space h="lg" />
-            <div className="text-7xl text-[#39b69d]">{clusterSummary.provisioned}</div>
+            <div className="text-5xl text-[#39b69d]">{clusterSummary.provisioned}</div>
           </Grid.Col>
           <Grid.Col span={6}>
             Failing
             <Space h="lg"/>
-            <div className="text-7xl text-[#e01003]">{clusterSummary.failed}</div>
+            <div className="text-5xl text-[#e01003]">{clusterSummary.failed}</div>
           </Grid.Col>
         </Grid>
       </div>
