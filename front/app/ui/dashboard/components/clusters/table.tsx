@@ -4,22 +4,12 @@ import React from "react";
 import { Table } from '@mantine/core';
 import { GridCol } from '@mantine/core';
 
-type Conditions = {
-  type: string,
-  status: boolean,
-  lastTransitionTime: string,
-}
-
-type Cluster = {
-  name: string,
-  hasTopology: boolean,
-  conditions: Conditions[]
-}
+import {ClusterType} from '@/app/ui/dashboard/components/clusters/types'
 
 export default function ClusterTable({
-  clusters,
+  clusters
 }: {
-  clusters: Cluster[]
+  clusters: ClusterType[]
 }) {
   return (
     <GridCol span={12}>

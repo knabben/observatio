@@ -1,22 +1,49 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import React from 'react';
+import React, {useState} from 'react';
 
-import { Input } from '@mantine/core';
 import { GridCol } from '@mantine/core';
+import { Input, InputBase, Combobox, useCombobox } from '@mantine/core';
 
 export default function Search({
-  placeholder,
-  onChange,
-  value
-}: { placeholder: string, onChange?: (e:React.ChangeEvent<HTMLInputElement>) => void, value: string }) {
+  options, onChange
+}: { onChange: any, options: any[]}) {
+  const [value, setValue] = useState<string | null>(null);
+  const combobox = useCombobox({
+    onDropdownClose: () => combobox.resetSelectedOption(),
+  });
+
+  const comboboxOptions = options.map((item) => (
+    <Combobox.Option value={item.name} key={item.name}>
+      {item.name}
+     </Combobox.Option>
+  ));
   return (
     <GridCol span={4}>
-      <Input
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-      />
+      <Combobox
+        store={combobox}
+        onOptionSubmit={(val) => {
+          setValue(val);
+          onChange(val)
+          combobox.closeDropdown();
+        }}>
+      <Combobox.Target>
+          <InputBase
+            component="button"
+            type="button"
+            pointer
+            rightSection={<Combobox.Chevron />}
+            rightSectionPointerEvents="none"
+            onClick={() => combobox.toggleDropdown()}
+          >
+            {value || <Input.Placeholder>Pick an option</Input.Placeholder>}
+          </InputBase>
+        </Combobox.Target>
+        <Combobox.Dropdown>
+          <Combobox.Options>{comboboxOptions}</Combobox.Options>
+        </Combobox.Dropdown>
+    </Combobox>
     </GridCol>
   );
 }

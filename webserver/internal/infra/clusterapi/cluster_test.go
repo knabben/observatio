@@ -129,6 +129,8 @@ func Test_ClusterSummary(t *testing.T) {
 
 func Test_ClusterList(t *testing.T) {
 	var clusters clusterv1.ClusterList
+	replicas := int32(1)
+	enabled := bool(true)
 	tests := []struct {
 		cluster clusterv1.Cluster
 	}{
@@ -141,6 +143,10 @@ func Test_ClusterList(t *testing.T) {
 				Spec: clusterv1.ClusterSpec{
 					Topology: &clusterv1.Topology{
 						Class: "fake-clusterclass",
+						ControlPlane: clusterv1.ControlPlaneTopology{
+							Replicas:           &replicas,
+							MachineHealthCheck: &clusterv1.MachineHealthCheckTopology{Enable: &enabled},
+						},
 					},
 				},
 				Status: clusterv1.ClusterStatus{
@@ -154,7 +160,15 @@ func Test_ClusterList(t *testing.T) {
 					Name:      "cluster-2",
 					Namespace: "kube-system",
 				},
-				Spec: clusterv1.ClusterSpec{Topology: nil},
+				Spec: clusterv1.ClusterSpec{
+					Topology: &clusterv1.Topology{
+						Class: "fake-clusterclass",
+						ControlPlane: clusterv1.ControlPlaneTopology{
+							Replicas:           &replicas,
+							MachineHealthCheck: &clusterv1.MachineHealthCheckTopology{Enable: &enabled},
+						},
+					},
+				},
 				Status: clusterv1.ClusterStatus{
 					Phase: string(clusterv1.ClusterPhase(clusterv1.ClusterPhaseProvisioned)),
 				},
@@ -167,12 +181,12 @@ func Test_ClusterList(t *testing.T) {
 			WithRuntimeObjects(&tt.cluster).
 			WithLists(&clusters).
 			Build()
-		clusters, err := FetchClusters(context.Background(), c)
+		response, err := FetchClusters(context.Background(), c)
 		assert.NoError(t, err)
-		assert.Len(t, clusters, 1)
-		for _, cl := range clusters {
+		assert.Len(t, response.Clusters, 1)
+		for _, cl := range response.Clusters {
 			assert.Equal(t, tt.cluster.Name, cl.Name)
-			assert.Equal(t, tt.cluster.Spec.Topology != nil, cl.HasTopology)
+			assert.Equal(t, tt.cluster.Status.Phase, cl.Phase)
 		}
 	}
 }
