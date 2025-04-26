@@ -1,11 +1,6 @@
 import React from "react";
 import SideNav from '@/app/ui/dashboard/sidenav';
-import {Roboto} from 'next/font/google';
-
-const roboto = Roboto({
-  weight: '200',
-  subsets: ['latin'],
-})
+import {openSans} from '@/fonts';
 
 export default function Layout({
   children,
@@ -13,7 +8,7 @@ export default function Layout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={roboto.className}>
+    <div className={openSans.className}>
       <div className="flex h-screen flex-col md:flex-row md:overflow-hidden">
         <div className="w-full flex-none md:w-64">
           <SideNav/>
