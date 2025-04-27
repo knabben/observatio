@@ -43,7 +43,7 @@ export default function Search({
         <Combobox.Dropdown>
           <Combobox.Options>{comboboxOptions}</Combobox.Options>
         </Combobox.Dropdown>
-    </Combobox>
+      </Combobox>
     </GridCol>
   );
 }
