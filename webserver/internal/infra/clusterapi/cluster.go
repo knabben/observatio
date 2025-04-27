@@ -71,14 +71,14 @@ func FetchClusters(ctx context.Context, c client.Client) (response responses.Clu
 			}
 		}
 		cluster := responses.Cluster{
-			Name:         cl.Name,
-			Paused:       cl.Spec.Paused,
-			ClusterClass: clusterClass,
-
+			Name:                cl.Name,
+			Paused:              cl.Spec.Paused,
+			ClusterClass:        clusterClass,
 			Phase:               cl.Status.Phase,
 			InfrastructureReady: cl.Status.InfrastructureReady,
 			ControlPlaneReady:   cl.Status.ControlPlaneReady,
 			Conditions:          cl.Status.Conditions,
+			Created:             cl.ObjectMeta.CreationTimestamp.String(),
 		}
 		if cl.Spec.ClusterNetwork != nil {
 			cluster.PodNetwork = cl.Spec.ClusterNetwork.Pods.String()
