@@ -27,7 +27,7 @@ export default function ClusterTable({
             <Table.Th ta="center">Status</Table.Th>
           </Table.Tr>
         </Table.Thead>
-        <Table.Tbody>
+        <Table.Tbody className="text-base">
           {
             clusters?.map( (cluster) => (
               <Table.Tr className={sourceCodePro400.className} key={cluster.name}>
