@@ -13,17 +13,15 @@ import ClusterTable from '@/app/ui/dashboard/components/clusters/table'
 import ClusterDetails from "@/app/ui/dashboard/components/clusters/details";
 
 type Status = {
-  failed: bigint;
-  total: bigint;
+  failed: number;
+  total: number;
 }
 // ClusterLister: Cluster list and details component.
 export default function ClusterLister() {
   const [clusters,setClusters] = useState<[]>([])
   const [selected, setSelected] = useState('')
-  const [status, setStatus] = useState<Status>({})
+  const [status, setStatus] = useState<Status>({failed: 0, total: 0})
   const filteredClusters = FilterItems(selected, clusters);
-  let total = 0;
-  let failed = 0;
 
   useEffect(() => {
     const fetchData = async () => {

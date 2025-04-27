@@ -5,7 +5,7 @@ import React from "react";
 import { Table, Indicator, Pill } from '@mantine/core';
 import { GridCol } from '@mantine/core';
 
-import {inter, sourceCodePro400} from '@/fonts';
+import {sourceCodePro400} from '@/fonts';
 import {ClusterType} from '@/app/ui/dashboard/components/clusters/types';
 
 export default function ClusterTable({
