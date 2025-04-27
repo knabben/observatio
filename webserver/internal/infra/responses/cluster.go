@@ -29,6 +29,7 @@ type Cluster struct {
 	PodNetwork          string               `json:"podNetwork"`
 	ServiceNetwork      string               `json:"serviceNetwork"`
 	Phase               string               `json:"phase"`
+	Created             string               `json:"created"`
 	Conditions          clusterv1.Conditions `json:"conditions"`
 	InfrastructureReady bool                 `json:"infrastructureReady"`
 	ControlPlaneReady   bool                 `json:"controlPlaneReady"`
