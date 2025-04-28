@@ -1,82 +1,50 @@
 import {ClusterType} from "@/app/ui/dashboard/components/clusters/types";
 import {Card, Grid, GridCol} from "@mantine/core";
-import { Pill, Table, Title, Indicator, Divider, Group, List } from '@mantine/core';
+import { Pill, Table, Title, Indicator, Divider, Group, Space, SimpleGrid } from '@mantine/core';
 import React from "react";
-import {sourceCodePro400} from "@/fonts";
-
+import {inter, openSans, sourceCodePro400} from "@/fonts";
 
 export default function ClusterDetails({
   cluster,
 }: { cluster: ClusterType }) {
   return (
-    <GridCol className={sourceCodePro400.className} span={12}>
-        <Group className="text-xl text-right">
-          Cluster Name:
-        {cluster.controlPlaneReady && cluster.infrastructureReady
-          ? <Indicator offset={0} position="top-end" inline processing color="green" size={10}>{cluster.name}</Indicator>
-          : <Indicator  offset={2} position="top-end" inline processing color="red" size={10}>{cluster.name}</Indicator>
-        }
-        <Divider size="sm" orientation="vertical" />
-        Phase: {cluster.phase}
-        <Divider size="sm" orientation="vertical" />
-        Created: {cluster.created}
-        </Group>
+    <GridCol className={inter.className} span={12}>
+      <Card className={openSans.className} withBorder shadow="sm" padding="sm" radius="md">
+          <SimpleGrid className="text-center" cols={3}>
+            <div>
+              <span className="font-bold">Cluster Name: </span>
+              {
+                cluster.controlPlaneReady && cluster.infrastructureReady
+                ? <Indicator offset={-2} inline withBorder position="top-end" color="green" size={7}> {cluster.name} </Indicator>
+                : <Indicator  offset={-2} inline withBorder position="top-end" color="red" size={7}> {cluster.name} </Indicator>
+              }
+            </div>
+            <div>
+              <span className="font-bold">Phase: </span> {cluster.phase}
+            </div>
+            <div>
+              <span className="font-bold">Age:</span> {cluster.created}
+            </div>
+          </SimpleGrid>
+      </Card>
+      <Space h="sm" />
         <Card shadow="sm" padding="lg" radius="md" withBorder>
           <Grid>
-          <GridCol span={6}>
-            <Title order={4}>Specification</Title>
-            <Table className="text-lg" horizontalSpacing="sm" verticalSpacing="sm" variant="vertical">
-              <Table.Tbody>
-                <Table.Tr>
-                  <Table.Th w={160}>Paused</Table.Th>
-                  <Table.Td><Pill size="md">{cluster.paused.toString()}</Pill></Table.Td>
-                </Table.Tr>
-                <Table.Tr>
-                  <Table.Th>Infrastructure Ready</Table.Th>
-                  <Table.Td><Pill size="md">{cluster.infrastructureReady.toString()}</Pill></Table.Td>
-                </Table.Tr>
-                <Table.Tr>
-                  <Table.Th>Control Plane Ready</Table.Th>
-                  <Table.Td><Pill size="md">{cluster.controlPlaneReady.toString()}</Pill></Table.Td>
-                </Table.Tr>
-                <Table.Tr>
-                  <Table.Th>Pod Network</Table.Th>
-                  <Table.Td>{cluster.podNetwork}</Table.Td>
-                </Table.Tr>
-                <Table.Tr>
-                  <Table.Th>Service Network</Table.Th>
-                  <Table.Td>{cluster.serviceNetwork}</Table.Td>
-                </Table.Tr>
-              </Table.Tbody>
-            </Table>
-            <Title>Cluster conditions</Title>
-            <List  spacing="md"
-                   size="lg"
-                   center>
-            {
-              cluster.conditions?.map((condition) => (
-                <List.Item>{condition.lastTransitionTime}: {condition.type} - {condition.status}</List.Item>
-              ))
-            }
-            </List>
-        </GridCol>
-        <GridCol span={6}>
-          { cluster.clusterClass.isClusterClass ?
-            <>
-              <Title order={4}>Cluster class</Title>
-              <Table horizontalSpacing="sm" verticalSpacing="sm" variant="vertical">
+            <GridCol span={6}>
+              <Title order={4}>Specification</Title>
+              <Table className="text-lg" horizontalSpacing="sm" verticalSpacing="sm" variant="vertical">
                 <Table.Tbody>
                   <Table.Tr>
-                    <Table.Th w={160}>Kubernetes Version</Table.Th>
-                    <Table.Td>{cluster.clusterClass.kubernetesVersion}</Table.Td>
+                    <Table.Th w={160}>Paused</Table.Th>
+                    <Table.Td><Pill size="md">{cluster.paused.toString()}</Pill></Table.Td>
                   </Table.Tr>
                   <Table.Tr>
-                    <Table.Th>Cluster Class Name</Table.Th>
-                    <Table.Td>{cluster.clusterClass.className}</Table.Td>
+                    <Table.Th>Infrastructure Ready</Table.Th>
+                    <Table.Td><Pill size="md">{cluster.infrastructureReady.toString()}</Pill></Table.Td>
                   </Table.Tr>
                   <Table.Tr>
                     <Table.Th>Control Plane Ready</Table.Th>
-                    <Table.Td>{cluster.controlPlaneReady.toString()}</Table.Td>
+                    <Table.Td><Pill size="md">{cluster.controlPlaneReady.toString()}</Pill></Table.Td>
                   </Table.Tr>
                   <Table.Tr>
                     <Table.Th>Pod Network</Table.Th>
@@ -88,11 +56,77 @@ export default function ClusterDetails({
                   </Table.Tr>
                 </Table.Tbody>
               </Table>
-            </>
-            : <div />
-          }
-        </GridCol>
-          </Grid>
+              <Title>Cluster conditions</Title>
+              <Table horizontalSpacing="sm" verticalSpacing="sm" variant="vertical">
+                <Table.Tbody>
+                  {
+                    cluster.conditions?.map((condition) => (
+                      <Table.Tr>
+                        <Table.Th>{condition.type}</Table.Th>
+                        <Table.Td>{condition.status}</Table.Td>
+                        <Table.Td>{condition.lastTransitionTime}</Table.Td>
+                      </Table.Tr>
+                    ))
+                  }
+                </Table.Tbody>
+              </Table>
+          </GridCol>
+          <GridCol span={6}>
+            { cluster.clusterClass.isClusterClass ?
+              <>
+                <Title order={4}>Cluster class</Title>
+                <Table horizontalSpacing="sm" verticalSpacing="sm" variant="vertical">
+                  <Table.Tbody>
+                    <Table.Tr>
+                      <Table.Th w={160}>Kubernetes Version</Table.Th>
+                      <Table.Td>{cluster.clusterClass.kubernetesVersion}</Table.Td>
+                    </Table.Tr>
+                    <Table.Tr>
+                      <Table.Th>Cluster Class Name</Table.Th>
+                      <Table.Td>{cluster.clusterClass.className}</Table.Td>
+                    </Table.Tr>
+                    <Table.Tr>
+                      <Table.Th>Control Plane Ready</Table.Th>
+                      <Table.Td>{cluster.controlPlaneReady.toString()}</Table.Td>
+                    </Table.Tr>
+                    <Table.Tr>
+                      <Table.Th>Pod Network</Table.Th>
+                      <Table.Td>{cluster.podNetwork}</Table.Td>
+                    </Table.Tr>
+                    <Table.Tr>
+                      <Table.Th>Service Network</Table.Th>
+                      <Table.Td>{cluster.serviceNetwork}</Table.Td>
+                    </Table.Tr>
+                  </Table.Tbody>
+                </Table>
+              </>
+              : <div />
+            }
+            <Title>Machine Deployments</Title>
+            <Table horizontalSpacing="sm" verticalSpacing="sm">
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Name</Table.Th>
+                  <Table.Th>Class</Table.Th>
+                  <Table.Th>Replicas</Table.Th>
+                  <Table.Th>Strategy</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody className="text-base">
+              {
+                cluster.clusterClass?.machineDeployments?.map((md) => (
+                  <Table.Tr className={sourceCodePro400.className} key={cluster.name}>
+                    <Table.Td>{md.name}</Table.Td>
+                    <Table.Td>{md.class}</Table.Td>
+                    <Table.Td>{md.replicas}</Table.Td>
+                    <Table.Td>{md.strategy?.type}</Table.Td>
+                  </Table.Tr>
+                ))
+              }
+              </Table.Tbody>
+            </Table>
+          </GridCol>
+        </Grid>
       </Card>
     </GridCol>
   )

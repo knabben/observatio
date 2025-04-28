@@ -10,7 +10,9 @@ type MachineDeployments = {
   class: string,
   name: string,
   replicas: string,
-  strategy: {type: string},
+  strategy: {
+    type: string
+  },
 }
 
 type ClusterClass = {
