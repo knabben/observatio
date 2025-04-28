@@ -1,10 +1,10 @@
 'use client';
 
 import React, {useState, useEffect} from 'react';
-import { Table, Card, Text, Divider } from '@mantine/core';
+import { Table, Card } from '@mantine/core';
 import {getClusterClasses} from "@/app/lib/data";
 import Header from "@/app/ui/dashboard/utils/header";
-import {roboto, sourceCodePro400} from "@/fonts";
+import {roboto} from "@/fonts";
 
 type Conditions = {
   type: string,

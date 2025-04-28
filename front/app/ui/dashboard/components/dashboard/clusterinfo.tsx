@@ -1,9 +1,9 @@
 'use client';
 
 import React, {useState, useEffect} from 'react';
-import { Table, Card, Text, Divider } from '@mantine/core';
+import { Table, Card } from '@mantine/core';
 import {getClusterInformation} from "@/app/lib/data";
-import {roboto, sourceCodePro400} from "@/fonts";
+import {roboto} from "@/fonts";
 import Header from "@/app/ui/dashboard/utils/header";
 
 type service = {

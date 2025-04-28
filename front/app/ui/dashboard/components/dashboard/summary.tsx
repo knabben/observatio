@@ -1,7 +1,7 @@
 'use client';
 
 import React, {useState, useEffect} from 'react';
-import { Card, Grid, Space, Text, Divider } from '@mantine/core';
+import {Card, Grid, Space, Text} from '@mantine/core';
 import {getClusterSummary} from "@/app/lib/data";
 import Header from "@/app/ui/dashboard/utils/header";
 import {sourceCodePro400} from "@/fonts";

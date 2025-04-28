@@ -5,7 +5,7 @@ import React from "react";
 import { Table, Indicator, Pill } from '@mantine/core';
 import { GridCol } from '@mantine/core';
 
-import {sourceCodePro400} from '@/fonts';
+import {roboto} from '@/fonts';
 import {ClusterType} from '@/app/ui/dashboard/components/clusters/types';
 
 export default function ClusterTable({
@@ -27,10 +27,10 @@ export default function ClusterTable({
             <Table.Th ta="center">Status</Table.Th>
           </Table.Tr>
         </Table.Thead>
-        <Table.Tbody className="text-base">
+        <Table.Tbody className="text-sm">
           {
             clusters?.map( (cluster) => (
-              <Table.Tr className={sourceCodePro400.className} key={cluster.name}>
+              <Table.Tr className={roboto.className} key={cluster.name}>
                 <Table.Td>{cluster.name}</Table.Td>
                 <Table.Td>{cluster.clusterClass.kubernetesVersion}</Table.Td>
                 <Table.Td>{cluster.created}</Table.Td>

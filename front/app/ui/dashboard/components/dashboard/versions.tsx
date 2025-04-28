@@ -1,9 +1,9 @@
 'use client';
 
 import React, {useState, useEffect} from 'react';
-import { Card, Table, Text, Divider } from '@mantine/core';
+import {Card, Table} from '@mantine/core';
 import {getComponentsVersion} from "@/app/lib/data";
-import {roboto, sourceCodePro400} from "@/fonts";
+import {roboto} from "@/fonts";
 import Header from "@/app/ui/dashboard/utils/header";
 
 type Component = {
