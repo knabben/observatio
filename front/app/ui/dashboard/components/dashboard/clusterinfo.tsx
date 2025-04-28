@@ -3,7 +3,7 @@
 import React, {useState, useEffect} from 'react';
 import { Table, Card, Text, Divider } from '@mantine/core';
 import {getClusterInformation} from "@/app/lib/data";
-import {sourceCodePro400} from "@/fonts";
+import {roboto, sourceCodePro400} from "@/fonts";
 import Header from "@/app/ui/dashboard/utils/header";
 
 type service = {
@@ -22,18 +22,18 @@ export default function ClusterInfo() {
   }, [])
 
   return (
-    <Card shadow="md" className={sourceCodePro400.className} radius="md" withBorder>
+    <Card shadow="md" className={roboto.className} radius="md" withBorder>
       <Header title="Cluster Information" />
       <Table striped highlightOnHover>
-        <Table.Thead className="text-base">
+        <Table.Thead className="text-sm">
           <Table.Tr>
             <Table.Th>Name</Table.Th>
             <Table.Th>URL</Table.Th>
           </Table.Tr>
         </Table.Thead>
-        <Table.Tbody className="text-base">
+        <Table.Tbody className="text-sm">
           {
-            clusterInfo.map( (service) => (
+            clusterInfo.map((service) => (
               <Table.Tr key={service.name}>
                 <Table.Td>{service.name}</Table.Td>
                 <Table.Td><a href={service.path}>{service.path}</a></Table.Td>

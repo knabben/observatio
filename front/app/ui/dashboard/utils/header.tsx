@@ -1,5 +1,5 @@
 import React from "react";
-import {Divider, Space, Title} from "@mantine/core";
+import {Divider, Title} from "@mantine/core";
 import {openSans} from "@/fonts";
 
 export default function Header({ title }: { title: string }) {
