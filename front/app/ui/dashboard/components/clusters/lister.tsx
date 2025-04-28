@@ -18,10 +18,14 @@ type Status = {
 }
 // ClusterLister: Cluster list and details component.
 export default function ClusterLister() {
+  const [status, setStatus] = useState<Status>({failed: 0, total: 0})
   const [clusters,setClusters] = useState<[]>([])
   const [selected, setSelected] = useState('')
-  const [status, setStatus] = useState<Status>({failed: 0, total: 0})
-  const filteredClusters = FilterItems(selected, clusters);
+
+  let filteredCluster = undefined;
+  if (selected) {
+    filteredCluster = FilterItems(selected, clusters);
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,8 +55,11 @@ export default function ClusterLister() {
       <Search
         options={clusters}
         onChange={setSelected}/>
-      <ClusterTable clusters={filteredClusters}/>
-      <ClusterDetails selected={selected} />
+      {
+        filteredCluster
+          ? <ClusterDetails cluster={filteredCluster} />
+          : <ClusterTable clusters={clusters}/>
+      }
     </Grid>
   );
 }

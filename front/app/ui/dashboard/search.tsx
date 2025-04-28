@@ -4,7 +4,7 @@
 import React, {useState} from 'react';
 
 import { GridCol } from '@mantine/core';
-import { Input, InputBase, Combobox, useCombobox } from '@mantine/core';
+import { Text, Input, InputBase, Combobox, useCombobox } from '@mantine/core';
 
 export default function Search({
   options, onChange
@@ -41,6 +41,9 @@ export default function Search({
           </InputBase>
         </Combobox.Target>
         <Combobox.Dropdown>
+          <Combobox.Option value="" key="clean">
+            <Text className="italic">Reset selection</Text>
+          </Combobox.Option>
           <Combobox.Options>{comboboxOptions}</Combobox.Options>
         </Combobox.Dropdown>
       </Combobox>
