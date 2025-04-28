@@ -1,8 +1,10 @@
 'use client';
 
 import React, {useState, useEffect} from 'react';
-import { Card, Grid, Space, Text, Divider } from '@mantine/core';
+import {Card, Grid, Space, Text} from '@mantine/core';
 import {getClusterSummary} from "@/app/lib/data";
+import Header from "@/app/ui/dashboard/utils/header";
+import {sourceCodePro400} from "@/fonts";
 
 type Summary = {
   failed?: bigint
@@ -12,6 +14,7 @@ type Summary = {
 // Summary : Resume clusters statuses.
 export default function ClusterSummary() {
   const [clusterSummary, setClusterSummary] = useState<Summary>({});
+
   useEffect( () => {
     const fetch = async  () => {
       setClusterSummary(await getClusterSummary())
@@ -20,9 +23,8 @@ export default function ClusterSummary() {
   }, [])
 
   return (
-    <Card shadow="md" padding="lg" radius="md" withBorder>
-      <Text tt="uppercase"  fw={600} c="#8feb83" ta="center">Clusters Health</Text>
-      <Divider my="sm" variant="dashed" />
+    <Card shadow="md" className={sourceCodePro400.className} padding="lg" radius="md" withBorder>
+      <Header title="Clusters Health"/>
       <div style={{ resize: 'vertical', overflow: 'hidden', maxHeight: '100%' }}>
         <Grid ta="center">
           <Grid.Col span={6}>
