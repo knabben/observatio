@@ -4,6 +4,7 @@ import React, {useState, useEffect} from 'react';
 import { Card, Table, Text, Divider } from '@mantine/core';
 import {getComponentsVersion} from "@/app/lib/data";
 import {sourceCodePro400} from "@/fonts";
+import Header from "@/app/ui/dashboard/utils/header";
 
 type Component = {
     name: string,
@@ -22,20 +23,17 @@ export default function ClusterVersions() {
   }, [])
 
   return (
-    <Card shadow="md"  radius="md" withBorder>
-      <Text size="lg" tt="uppercase" className={sourceCodePro400.className} c="#8feb83" ta="center">
-        Component Versions
-      </Text>
-      <Divider my="sm" variant="dashed" />
-      <Table striped highlightOnHover withTableBorder withColumnBorders>
-        <Table.Thead>
+    <Card shadow="md" className={sourceCodePro400.className}  radius="md" withBorder>
+      <Header title="Component Versions" />
+      <Table striped highlightOnHover>
+        <Table.Thead className="text-base">
         <Table.Tr>
           <Table.Th>Name</Table.Th>
           <Table.Th>Kind</Table.Th>
           <Table.Th>Versions</Table.Th>
         </Table.Tr>
         </Table.Thead>
-        <Table.Tbody>
+        <Table.Tbody className="text-base">
           {
             clusterVersions.map((component) => (
               <Table.Tr key={component.name}>

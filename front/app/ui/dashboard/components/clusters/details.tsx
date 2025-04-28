@@ -16,8 +16,8 @@ export default function ClusterDetails({
             <span className="font-bold">Cluster Name: </span>
             {
               cluster.controlPlaneReady && cluster.infrastructureReady
-              ? <Indicator offset={-2} inline withBorder position="top-end" color="green" size={7}> {cluster.name} </Indicator>
-              : <Indicator  offset={-2} inline withBorder position="top-end" color="red" size={7}> {cluster.name} </Indicator>
+              ? <Indicator offset={-3} inline withBorder position="top-end" color="green" size={7}> {cluster.name} </Indicator>
+              : <Indicator  offset={-3} inline withBorder position="top-end" color="red" size={7}> {cluster.name} </Indicator>
             }
           </div>
           <div><span className="font-bold">Phase: </span> {cluster.phase}</div>

@@ -27,7 +27,7 @@ export default function MDTable({
       </Table.Thead>
       <Table.Tbody>
         {
-          mds.map( (md, i) => (
+          mds.map((md, i) => (
             <Table.Tr key={i}>
               <Table.Td>{md.name}</Table.Td>
               <Table.Td>{md.namespace}</Table.Td>
