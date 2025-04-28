@@ -3,6 +3,7 @@ package clusterapi
 import (
 	"context"
 	"strconv"
+	"time"
 
 	"github.com/knabben/observatio/webserver/internal/infra/responses"
 
@@ -78,7 +79,7 @@ func FetchClusters(ctx context.Context, c client.Client) (response responses.Clu
 			InfrastructureReady: cl.Status.InfrastructureReady,
 			ControlPlaneReady:   cl.Status.ControlPlaneReady,
 			Conditions:          cl.Status.Conditions,
-			Created:             cl.ObjectMeta.CreationTimestamp.String(),
+			Created:             time.Now().Sub(cl.ObjectMeta.CreationTimestamp.Time).String(),
 		}
 		if cl.Spec.ClusterNetwork != nil {
 			cluster.PodNetwork = cl.Spec.ClusterNetwork.Pods.String()
