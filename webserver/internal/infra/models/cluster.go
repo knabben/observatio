@@ -1,6 +1,9 @@
 package models
 
-import clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
+import (
+	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
+)
 
 // ClusterResponse returns the Cluster list payload and internal formatted
 // list of clusters.
@@ -45,10 +48,13 @@ type Cluster struct {
 
 // ClusterInfra stores the definition for CAPV
 type ClusterInfra struct {
-	Name       string `json:"name"`
-	Cluster    string `json:"cluster"`
-	Thumbprint string `json:"thumbprint"`
-	Created    string `json:"created"`
-	Server     string `json:"server"`
-	Ready      bool   `json:"ready"`
+	Name                 string               `json:"name"`
+	Cluster              string               `json:"cluster"`
+	Thumbprint           string               `json:"thumbprint"`
+	Created              string               `json:"created"`
+	Server               string               `json:"server"`
+	ControlPlaneEndpoint string               `json:"controlPlaneEndpoint"`
+	Conditions           clusterv1.Conditions `json:"conditions"`
+	Modules              []capv.ClusterModule `json:"modules"`
+	Ready                bool                 `json:"ready"`
 }

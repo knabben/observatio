@@ -121,12 +121,15 @@ func FetchClusterInfra(ctx context.Context, c client.Client) (response models.Cl
 			clusterOwner = owner.Name
 		}
 		cluster := models.ClusterInfra{
-			Name:       cl.Name,
-			Cluster:    clusterOwner,
-			Server:     cl.Spec.Server,
-			Thumbprint: cl.Spec.Thumbprint,
-			Created:    time.Now().Sub(cl.ObjectMeta.CreationTimestamp.Time).String(),
-			Ready:      ready,
+			Name:                 cl.Name,
+			Cluster:              clusterOwner,
+			Server:               cl.Spec.Server,
+			Thumbprint:           cl.Spec.Thumbprint,
+			Created:              time.Now().Sub(cl.ObjectMeta.CreationTimestamp.Time).String(),
+			ControlPlaneEndpoint: cl.Spec.ControlPlaneEndpoint.String(),
+			Modules:              cl.Spec.ClusterModules,
+			Conditions:           cl.Status.Conditions,
+			Ready:                ready,
 		}
 		if !ready {
 			failed += 1
