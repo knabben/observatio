@@ -24,7 +24,7 @@ export default function ClusterInfraDetails({
           <div><span className="font-bold">Age:</span> {cluster.created}</div>
         </SimpleGrid>
       </Card>
-      <Space h="lg" />
+      <Space h="md" />
       <Grid>
         <GridCol span={6}>
           <Panel title="Specification" content={
@@ -50,7 +50,7 @@ export default function ClusterInfraDetails({
               </Table.Tbody>
             </Table>
           }/>
-          <Space h="lg" />
+          <Space h="md" />
           <Panel title="vSphere Cluster Conditions" content={
               <Table variant="vertical">
                 <Table.Tbody className="text-sm">
@@ -67,7 +67,7 @@ export default function ClusterInfraDetails({
               </Table>
           }></Panel>
         </GridCol>
-        <Space h="lg" />
+        <Space h="md" />
         <GridCol span={6}>
           <Panel title="Cluster Modules" content={
             <Table horizontalSpacing="sm" verticalSpacing="sm">
