@@ -36,3 +36,11 @@ export type ClusterType = {
   conditions: Conditions[]
 }
 
+export type ClusterInfraType = {
+  name: string,
+  cluster: string,
+  created: string,
+  server: string,
+  ready: boolean
+}
+
