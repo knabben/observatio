@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import { Table, Indicator, Pill } from '@mantine/core';
+import { Table, Indicator } from '@mantine/core';
 import { GridCol } from '@mantine/core';
 
 import {roboto} from '@/fonts';
