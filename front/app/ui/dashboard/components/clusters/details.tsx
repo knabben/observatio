@@ -3,7 +3,6 @@ import {Card, Grid, GridCol} from "@mantine/core";
 import { Pill, Table, Indicator, Space, SimpleGrid } from '@mantine/core';
 import React from "react";
 import {roboto, sourceCodePro400} from "@/fonts";
-import Header from "@/app/ui/dashboard/utils/header";
 import Panel from "@/app/ui/dashboard/utils/panel";
 
 export default function ClusterDetails({
@@ -17,8 +16,8 @@ export default function ClusterDetails({
             <span className="font-bold">Cluster Name: </span>
             {
               cluster.controlPlaneReady && cluster.infrastructureReady
-              ? <Indicator offset={-3} inline withBorder position="top-end" color="green" size={7}> {cluster.name} </Indicator>
-              : <Indicator  offset={-3} inline withBorder position="top-end" color="red" size={7}> {cluster.name} </Indicator>
+              ? <Indicator offset={-3} inline withBorder position="top-end" color="green" size={10}> {cluster.name} </Indicator>
+              : <Indicator  offset={-3} inline withBorder position="top-end" color="red" size={10}> {cluster.name} </Indicator>
             }
           </div>
           <div><span className="font-bold">Phase: </span> {cluster.phase}</div>
