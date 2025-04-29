@@ -6,6 +6,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"net/http"
 
+	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
 
@@ -19,6 +20,7 @@ var (
 	scheme = runtime.NewScheme()
 	_      = clusterctlv1.AddToScheme(scheme) // Register Cluster API types
 	_      = clusterv1.AddToScheme(scheme)    // Register Cluster API types
+	_      = capv.AddToScheme(scheme)         // Register Cluster API types
 )
 
 func DefaultHandlers(router *mux.Router, developmentMode bool) {
@@ -31,6 +33,7 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 
 	// Cluster API handlers
 	router.HandleFunc("/api/clusters/list", handleClusterList).Methods("GET")
+	router.HandleFunc("/api/clusters/infra/list", handleClusterInfraList).Methods("GET")
 
 	// Cluster API dashboard handlers
 	router.HandleFunc("/api/clusters/info", handleClusterInfo).Methods("GET")
