@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/knabben/observatio/webserver/internal/infra/clusterapi"
-	"github.com/knabben/observatio/webserver/internal/infra/responses"
+	"github.com/knabben/observatio/webserver/internal/infra/models"
 	"net/http"
 )
 
@@ -13,8 +13,26 @@ func handleClusterList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var clusterResponse responses.ClusterResponse
+	var clusterResponse models.ClusterResponse
 	clusterResponse, err = clusterapi.FetchClusters(r.Context(), client)
+	if handleError(w, http.StatusInternalServerError, err) {
+		return
+	}
+
+	if err = writeResponse(w, clusterResponse); handleError(w, http.StatusInternalServerError, err) {
+		return
+	}
+}
+
+// handleClusterInfraList returns the information about the vSphere cluster.
+func handleClusterInfraList(w http.ResponseWriter, r *http.Request) {
+	client, err := clusterapi.NewClientWithScheme(r.Context(), scheme)
+	if handleError(w, http.StatusInternalServerError, err) {
+		return
+	}
+
+	var clusterResponse models.ClusterInfraResponse
+	clusterResponse, err = clusterapi.FetchClusterInfra(r.Context(), client)
 	if handleError(w, http.StatusInternalServerError, err) {
 		return
 	}

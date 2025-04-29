@@ -29,6 +29,11 @@ export async function getClusterList() {
   return res.json()
 }
 
+export async function getClusterInfraList() {
+  const res = await fetch(`${URL}/api/clusters/infra/list`)
+  return res.json()
+}
+
 // ----- MachinesDeployment -----
 
 export async function getMachinesDeployments() {

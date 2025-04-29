@@ -1,0 +1,98 @@
+import React from "react";
+import {ClusterInfraType, ClusterType} from "@/app/ui/dashboard/components/clusters/types";
+import {Card, Grid, GridCol} from "@mantine/core";
+import { Pill, Table, Indicator, Space, SimpleGrid } from '@mantine/core';
+import {roboto, sourceCodePro400} from "@/fonts";
+import Header from "@/app/ui/dashboard/utils/header";
+
+export default function ClusterInfraDetails({
+  cluster,
+}: { cluster: ClusterInfraType }) {
+  return (
+    <GridCol className={roboto.className} span={12}>
+      <Card withBorder shadow="sm" padding="lg" radius="md">
+        <SimpleGrid className="text-center" cols={2}>
+          <div>
+            <span className="font-bold">Cluster Name: </span>
+            {
+              cluster.ready
+              ? <Indicator offset={-3} inline withBorder position="top-end" color="green" size={7}> {cluster.name} </Indicator>
+              : <Indicator  offset={-3} inline withBorder position="top-end" color="red" size={7}> {cluster.name} </Indicator>
+            }
+          </div>
+          <div><span className="font-bold">Age:</span> {cluster.created}</div>
+        </SimpleGrid>
+      </Card>
+
+      <Space h="lg" />
+      <Grid>
+        <GridCol span={6}>
+          <Card className={roboto.className} shadow="sm" padding="lg" radius="md" withBorder>
+            <Header title="Specification" />
+            <Table
+              variant="vertical">
+              <Table.Tbody className="text-sm">
+                <Table.Tr>
+                  <Table.Th w={260}>Cluster</Table.Th>
+                  <Table.Td>{cluster.cluster}</Table.Td>
+                </Table.Tr>
+                <Table.Tr>
+                  <Table.Th w={260}>Control Plane Endpoint</Table.Th>
+                  <Table.Td>{cluster.controlPlaneEndpoint}</Table.Td>
+                </Table.Tr>
+                <Table.Tr>
+                  <Table.Th w={260}>Server</Table.Th>
+                  <Table.Td>{cluster.server}</Table.Td>
+                </Table.Tr>
+                <Table.Tr>
+                  <Table.Th w={260}>Thumbprint</Table.Th>
+                  <Table.Td>{cluster.thumbprint}</Table.Td>
+                </Table.Tr>
+              </Table.Tbody>
+            </Table>
+            <Space h="lg" />
+            <Header title="vSphere Cluster conditions" />
+              <Table variant="vertical">
+                <Table.Tbody className="text-sm">
+                  {
+                    cluster.conditions?.map((condition) => (
+                      <Table.Tr key={condition.type}>
+                        <Table.Th>{condition.type}</Table.Th>
+                        <Table.Td><Pill size="sm">{condition.status}</Pill></Table.Td>
+                        <Table.Td>{condition.lastTransitionTime}</Table.Td>
+                      </Table.Tr>
+                    ))
+                  }
+                </Table.Tbody>
+              </Table>
+          </Card>
+        </GridCol>
+        <GridCol span={6}>
+          <Card shadow="sm" padding="lg" radius="md" withBorder>
+            <Header title="Modules" />
+            <Table horizontalSpacing="sm" verticalSpacing="sm">
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Control Plane</Table.Th>
+                  <Table.Th>Target Object Name</Table.Th>
+                  <Table.Th>Module UUID</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody className="text-base">
+                {
+                  cluster.modules?.map((module) => (
+                    <Table.Tr className={sourceCodePro400.className} key={cluster.name}>
+                      <Table.Td><Pill>{module.controlPlane.toString()}</Pill></Table.Td>
+                      <Table.Td>{module.targetObjectName}</Table.Td>
+                      <Table.Td>{module.moduleUUID}</Table.Td>
+                    </Table.Tr>
+                  ))
+                }
+              </Table.Tbody>
+            </Table>
+          </Card>
+        </GridCol>
+      </Grid>
+    </GridCol>
+  )
+}

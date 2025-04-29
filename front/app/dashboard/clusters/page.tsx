@@ -1,6 +1,7 @@
 import React from "react";
 
 import ClusterLister from '@/app/ui/dashboard/components/clusters/lister'
+import ClusterInfraLister from '@/app/ui/dashboard/components/clusters/infra-lister'
 import { Text, Space, Tabs, TabsList, TabsTab, TabsPanel } from '@mantine/core'
 
 export default async function Clusters() {
@@ -11,7 +12,7 @@ export default async function Clusters() {
             <Text size="md" fw={700}>Clusters</Text>
           </TabsTab>
           <TabsTab value="vsphere">
-            <Text size="md" fw={700}> vSphere Clusters</Text>
+            <Text size="md" fw={700}>vSphere Clusters</Text>
           </TabsTab>
         </TabsList>
 
@@ -21,7 +22,8 @@ export default async function Clusters() {
         </TabsPanel>
 
         <TabsPanel value="vsphere">
-          Infra structure - vsphere
+          <Space h="lg" />
+          <ClusterInfraLister />
         </TabsPanel>
       </Tabs>
   )

@@ -8,29 +8,30 @@ import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";
 import { Grid, GridCol, Title, Badge } from '@mantine/core';
 
-import { getClusterList } from "@/app/lib/data";
-import ClusterTable from '@/app/ui/dashboard/components/clusters/table'
-import ClusterDetails from "@/app/ui/dashboard/components/clusters/details";
+import ClusterInfraTable from '@/app/ui/dashboard/components/clusters/infra-table'
+import ClusterInfraDetails from "@/app/ui/dashboard/components/clusters/infra-details";
+
+import { getClusterInfraList } from "@/app/lib/data";
 
 type Status = {
   failed: number;
   total: number;
 }
 // ClusterLister: Cluster list and details component.
-export default function ClusterLister() {
-  const [status, setStatus] = useState<Status>({failed: 0, total: 0})
-  const [clusters,setClusters] = useState<[]>([])
+export default function ClusterInfraLister() {
+  const [vsphereClusters,setVsphereClusters] = useState<[]>([])
   const [selected, setSelected] = useState('')
-
-  let filteredCluster = undefined;
+  const [status, setStatus] = useState<Status>({failed: 0, total: 0})
+  //
+  let filteredClusterInfra= undefined;
   if (selected) {
-    filteredCluster = FilterItems(selected, clusters);
+    filteredClusterInfra = FilterItems(selected, vsphereClusters);
   }
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await getClusterList()
-      setClusters(response.clusters)
+      const response = await getClusterInfraList()
+      setVsphereClusters(response.clusters)
       setStatus({
         "failed": response.failed,
         "total": response.total,
@@ -41,24 +42,24 @@ export default function ClusterLister() {
 
   return (
     <Grid justify="flex-end" align="flex-start">
-      <GridCol h={60} span={6}>
+      <GridCol h={60} span={7}>
         <Link href="/dashboard/clusters">
           <Title className={sourceCodePro400.className} order={2}>
-            Clusters / cluster.x-k8s.io
+            VSphereCluster / infrastructure.cluster.x-k8s.io/v1beta1
           </Title>
         </Link>
       </GridCol>
-      <GridCol className="text-right" h={60} span={2}>
+      <GridCol className="text-right" h={60} span={1}>
         <Badge className="m-1" radius="sm" variant="dot" color="blue" size="lg">{status.total}</Badge>
         { status.failed > 0 ? <Badge radius="sm" variant="dot" color="red" size="lg">{status.failed}</Badge> : <div></div> }
       </GridCol>
       <Search
-        options={clusters}
+        options={vsphereClusters}
         onChange={setSelected}/>
       {
-        filteredCluster
-          ? <ClusterDetails cluster={filteredCluster} />
-          : <ClusterTable clusters={clusters}/>
+        filteredClusterInfra
+          ? <ClusterInfraDetails cluster={filteredClusterInfra} />
+          : <ClusterInfraTable clusters={vsphereClusters}/>
       }
     </Grid>
   );

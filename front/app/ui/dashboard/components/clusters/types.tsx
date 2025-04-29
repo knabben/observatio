@@ -36,3 +36,21 @@ export type ClusterType = {
   conditions: Conditions[]
 }
 
+export type Modules = {
+  controlPlane: boolean,
+  targetObjectName: string,
+  moduleUUID: string,
+}
+
+export type ClusterInfraType = {
+  name: string,
+  cluster: string,
+  created: string,
+  controlPlaneEndpoint: string,
+  server: string,
+  thumbprint: string,
+  ready: boolean,
+  modules: Modules[],
+  conditions: Conditions[]
+}
+
