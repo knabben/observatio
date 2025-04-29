@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"github.com/knabben/observatio/webserver/internal/infra/clusterapi"
-	"github.com/knabben/observatio/webserver/internal/infra/responses"
 	"net/http"
 )
 
@@ -13,7 +12,7 @@ func handleClusterList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var clusterResponse responses.ClusterResponse
+	var clusterResponse models.ClusterResponse
 	clusterResponse, err = clusterapi.FetchClusters(r.Context(), client)
 	if handleError(w, http.StatusInternalServerError, err) {
 		return

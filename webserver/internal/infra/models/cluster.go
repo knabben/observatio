@@ -1,4 +1,4 @@
-package responses
+package models
 
 import clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 
@@ -8,6 +8,14 @@ type ClusterResponse struct {
 	Total    int       `json:"total"`
 	Failing  int       `json:"failing"`
 	Clusters []Cluster `json:"clusters"`
+}
+
+// ClusterInfraResponse returns the ClusterInfra list payload and internal formatted
+// list of clusters.
+type ClusterInfraResponse struct {
+	Total    int            `json:"total"`
+	Failing  int            `json:"failing"`
+	Clusters []ClusterInfra `json:"clusters"`
 }
 
 // ClusterClass stores the topology definition for a Cluster
@@ -33,4 +41,14 @@ type Cluster struct {
 	Conditions          clusterv1.Conditions `json:"conditions"`
 	InfrastructureReady bool                 `json:"infrastructureReady"`
 	ControlPlaneReady   bool                 `json:"controlPlaneReady"`
+}
+
+// ClusterInfra stores the definition for CAPV
+type ClusterInfra struct {
+	Name       string `json:"name"`
+	Cluster    string `json:"cluster"`
+	Thumbprint string `json:"thumbprint"`
+	Created    string `json:"created"`
+	Server     string `json:"server"`
+	Ready      bool   `json:"ready"`
 }
