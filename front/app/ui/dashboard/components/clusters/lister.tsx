@@ -49,8 +49,8 @@ export default function ClusterLister() {
         </Link>
       </GridCol>
       <GridCol className="text-right" h={60} span={2}>
-        <Badge className="m-1" radius="sm" variant="dot" color="blue" size="lg">{status.total} clusters</Badge>
-        { status.failed > 0 ? <Badge radius="sm" variant="dot" color="red" size="lg">Failed {status.failed}</Badge> : <div></div> }
+        <Badge className="m-1" radius="sm" variant="dot" color="blue" size="lg">{status.total}</Badge>
+        { status.failed > 0 ? <Badge radius="sm" variant="dot" color="red" size="lg">{status.failed}</Badge> : <div></div> }
       </GridCol>
       <Search
         options={clusters}

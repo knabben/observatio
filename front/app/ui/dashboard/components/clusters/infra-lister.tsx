@@ -9,7 +9,7 @@ import {FilterItems} from "@/app/dashboard/utils";
 import { Grid, GridCol, Title, Badge } from '@mantine/core';
 
 import ClusterInfraTable from '@/app/ui/dashboard/components/clusters/infra-table'
-import ClusterDetails from "@/app/ui/dashboard/components/clusters/details";
+import ClusterInfraDetails from "@/app/ui/dashboard/components/clusters/infra-details";
 
 import { getClusterInfraList } from "@/app/lib/data";
 
@@ -24,10 +24,10 @@ export default function ClusterInfraLister() {
   const [status, setStatus] = useState<Status>({failed: 0, total: 0})
   //
   let filteredClusterInfra= undefined;
-  // if (selected) {
-  //   filteredCluster = FilterItems(selected, clusters);
-  // }
-  //
+  if (selected) {
+    filteredClusterInfra = FilterItems(selected, vsphereClusters);
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       const response = await getClusterInfraList()
@@ -50,15 +50,15 @@ export default function ClusterInfraLister() {
         </Link>
       </GridCol>
       <GridCol className="text-right" h={60} span={1}>
-        {/*<Badge className="m-1" radius="sm" variant="dot" color="blue" size="lg">{status.total} clusters</Badge>*/}
-        {/*{ status.failed > 0 ? <Badge radius="sm" variant="dot" color="red" size="lg">Failed {status.failed}</Badge> : <div></div> }*/}
+        <Badge className="m-1" radius="sm" variant="dot" color="blue" size="lg">{status.total}</Badge>
+        { status.failed > 0 ? <Badge radius="sm" variant="dot" color="red" size="lg">{status.failed}</Badge> : <div></div> }
       </GridCol>
       <Search
         options={vsphereClusters}
         onChange={setSelected}/>
       {
         filteredClusterInfra
-          ? <ClusterDetails cluster={filteredClusterInfra} />
+          ? <ClusterInfraDetails cluster={filteredClusterInfra} />
           : <ClusterInfraTable clusters={vsphereClusters}/>
       }
     </Grid>
