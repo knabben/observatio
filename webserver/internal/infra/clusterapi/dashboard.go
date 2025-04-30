@@ -9,8 +9,8 @@ import (
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/client-go/rest"
 
+	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/fetchers"
 	"github.com/knabben/observatio/webserver/internal/infra/models"
-	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -31,7 +31,7 @@ func GenerateClusterSummary(ctx context.Context, c client.Client) (summary Clust
 		provisioned, failed int
 		clusters            []clusterv1.Cluster
 	)
-	if clusters, err = listClusters(ctx, c); err != nil {
+	if clusters, err = fetchers.ListClusters(ctx, c); err != nil {
 		return summary, err
 	}
 	for _, cluster := range clusters {
@@ -44,16 +44,16 @@ func GenerateClusterSummary(ctx context.Context, c client.Client) (summary Clust
 	return ClusterSummary{Provisioned: provisioned, Failed: failed}, nil
 }
 
-func FetchClusters(ctx context.Context, c client.Client) (response models.ClusterResponse, err error) {
-	var clusters []clusterv1.Cluster
-	if clusters, err = listClusters(ctx, c); err != nil {
+func FetchClusters2(ctx context.Context, c client.Client) (response models.ClusterResponse, err error) {
+	var (
+		clusterList []models.Cluster
+		clusters    []clusterv1.Cluster
+		failed      int
+	)
+	if clusters, err = fetchers.ListClusters(ctx, c); err != nil {
 		return response, err
 	}
 
-	var (
-		clusterList []models.Cluster
-		failed      int
-	)
 	for _, cl := range clusters {
 		clusterClass := models.ClusterClass{IsClusterClass: false}
 		if cl.Spec.Topology != nil {
@@ -95,61 +95,6 @@ func FetchClusters(ctx context.Context, c client.Client) (response models.Cluste
 		Clusters: clusterList,
 		Failing:  failed,
 	}, err
-}
-
-func listClusters(ctx context.Context, c client.Client) (clusters []clusterv1.Cluster, err error) {
-	var clusterList clusterv1.ClusterList
-	if err = c.List(ctx, &clusterList); err != nil {
-		return nil, err
-	}
-	return clusterList.Items, nil
-}
-
-func FetchClusterInfra(ctx context.Context, c client.Client) (response models.ClusterInfraResponse, err error) {
-	var clusters []capv.VSphereCluster
-	if clusters, err = listClusterInfra(ctx, c); err != nil {
-		return response, err
-	}
-	var (
-		clusterList []models.ClusterInfra
-		failed      int
-	)
-	for _, cl := range clusters {
-		ready := cl.Status.Ready
-		var clusterOwner string
-		for _, owner := range cl.OwnerReferences {
-			clusterOwner = owner.Name
-		}
-		cluster := models.ClusterInfra{
-			Name:                 cl.Name,
-			Cluster:              clusterOwner,
-			Server:               cl.Spec.Server,
-			Thumbprint:           cl.Spec.Thumbprint,
-			Created:              time.Now().Sub(cl.ObjectMeta.CreationTimestamp.Time).String(),
-			ControlPlaneEndpoint: cl.Spec.ControlPlaneEndpoint.String(),
-			Modules:              cl.Spec.ClusterModules,
-			Conditions:           cl.Status.Conditions,
-			Ready:                ready,
-		}
-		if !ready {
-			failed += 1
-		}
-		clusterList = append(clusterList, cluster)
-	}
-	return models.ClusterInfraResponse{
-		Total:    len(clusters),
-		Clusters: clusterList,
-		Failing:  failed,
-	}, err
-}
-
-// todo(knabben) - create a generic method for any cluster type listing
-func listClusterInfra(ctx context.Context, c client.Client) (clusters []capv.VSphereCluster, err error) {
-	var vsphereClusters capv.VSphereClusterList
-	if err = c.List(ctx, &vsphereClusters); err != nil {
-		return nil, err
-	}
-	return vsphereClusters.Items, nil
 }
 
 // Services defines the service name and path.

@@ -3,7 +3,7 @@ import {Card, Grid, GridCol} from "@mantine/core";
 import { Pill, Table, Indicator, Space, SimpleGrid } from '@mantine/core';
 import React from "react";
 import {roboto, sourceCodePro400} from "@/fonts";
-import Header from "@/app/ui/dashboard/utils/header";
+import Panel from "@/app/ui/dashboard/utils/panel";
 
 export default function ClusterDetails({
   cluster,
@@ -16,20 +16,18 @@ export default function ClusterDetails({
             <span className="font-bold">Cluster Name: </span>
             {
               cluster.controlPlaneReady && cluster.infrastructureReady
-              ? <Indicator offset={-3} inline withBorder position="top-end" color="green" size={7}> {cluster.name} </Indicator>
-              : <Indicator  offset={-3} inline withBorder position="top-end" color="red" size={7}> {cluster.name} </Indicator>
+              ? <Indicator offset={-3} inline withBorder position="top-end" color="green" size={10}> {cluster.name} </Indicator>
+              : <Indicator  offset={-3} inline withBorder position="top-end" color="red" size={10}> {cluster.name} </Indicator>
             }
           </div>
           <div><span className="font-bold">Phase: </span> {cluster.phase}</div>
           <div><span className="font-bold">Age:</span> {cluster.created}</div>
         </SimpleGrid>
       </Card>
-
-      <Space h="lg" />
+      <Space h="md" />
       <Grid>
         <GridCol span={6}>
-          <Card className={roboto.className} shadow="sm" padding="lg" radius="md" withBorder>
-            <Header title="Specification" />
+          <Panel title="Specification" content={
             <Table
               variant="vertical">
               <Table.Tbody className="text-sm">
@@ -55,8 +53,9 @@ export default function ClusterDetails({
                 </Table.Tr>
               </Table.Tbody>
             </Table>
-            <Space h="lg" />
-            <Header title="Cluster conditions" />
+          } />
+          <Space h="md" />
+          <Panel title="Cluster conditions" content={
               <Table variant="vertical">
                 <Table.Tbody className="text-sm">
                   {
@@ -70,11 +69,10 @@ export default function ClusterDetails({
                   }
                 </Table.Tbody>
               </Table>
-          </Card>
+          } />
         </GridCol>
         <GridCol span={6}>
-          <Card shadow="sm" padding="lg" radius="md" withBorder>
-            <Header title="Cluster Class" />
+          <Panel title="Cluster Class" content={
             <Table variant="vertical">
               <Table.Tbody className="text-sm">
                 <Table.Tr>
@@ -99,8 +97,9 @@ export default function ClusterDetails({
                 </Table.Tr>
               </Table.Tbody>
             </Table>
-            <Space h="xl" />
-            <Header title="Machine Deployments" />
+          } />
+          <Space h="md" />
+          <Panel title="Machine Deployments" content={
             <Table horizontalSpacing="sm" verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
@@ -123,7 +122,7 @@ export default function ClusterDetails({
               }
               </Table.Tbody>
             </Table>
-          </Card>
+          } />
         </GridCol>
       </Grid>
     </GridCol>
