@@ -17,11 +17,11 @@ func ProcessMachineDeployment(machineDeployments []clusterv1.MachineDeployment) 
 			Replicas:            md.Status.Replicas,
 			ReadyReplicas:       md.Status.ReadyReplicas,
 			UpdatedReplicas:     md.Status.UpdatedReplicas,
-			UnavailableReplicas: md.Status.UnavailableReplicas,
+			UnavailableReplicas: md.Status.UnavailableReplicas, // nolint
 			Created:             time.Now().Sub(md.ObjectMeta.CreationTimestamp.Time).String(),
 			Phase:               clusterv1.MachineDeploymentPhase(md.Status.Phase),
 		})
-		if md.Status.UnavailableReplicas > 0 {
+		if md.Status.UnavailableReplicas > 0 { // nolint
 			failed += 1
 		}
 	}
