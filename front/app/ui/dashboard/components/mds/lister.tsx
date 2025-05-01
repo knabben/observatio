@@ -5,19 +5,35 @@ import Link from 'next/link';
 
 import Search from '@/app/ui/dashboard/search'
 import {FilterItems} from "@/app/dashboard/utils";
-import { Title, Grid, GridCol } from '@mantine/core';
+import { Grid, GridCol, Title, Badge } from '@mantine/core';
 
 import {getMachinesDeployments} from "@/app/lib/data";
 import MDTable from '@/app/ui/dashboard/components/mds/table'
 
+type Status = {
+  failed: number;
+  total: number;
+}
 // MDLister: List the MDs existent in the cluster.
 export default function MDLister() {
+  const [status, setStatus] = useState<Status>({failed: 0, total: 0})
   const [mds, setMD] = useState<[]>([])
-  const [query, setQuery] = useState('')
-  const filteredMDs = FilterItems(query, mds);
+  const [selected, setSelected] = useState('')
+
+  let filteredMD = undefined;
+  if (selected) {
+    filteredMD = FilterItems(selected, mds);
+  }
 
   useEffect(() => {
-    const fetchData = async () => { setMD(await getMachinesDeployments()) }
+    const fetchData = async () => {
+      const response = await getMachinesDeployments()
+      setMD(response.machineDeployments)
+      setStatus({
+        "failed": response.failed,
+        "total": response.total,
+      })
+    }
     fetchData().catch((e) => { console.error('error', e) })
   }, [])
 
@@ -30,11 +46,19 @@ export default function MDLister() {
           </Title>
         </Link>
       </GridCol>
+
+      <GridCol className="text-right" h={60} span={2}>
+        <Badge className="m-1" radius="sm" variant="dot" color="blue" size="lg">{status.total}</Badge>
+        { status.failed > 0 ? <Badge radius="sm" variant="dot" color="red" size="lg">{status.failed}</Badge> : <div></div> }
+      </GridCol>
       <Search
-      value={query}
-      onChange={(e: { currentTarget: { value: React.SetStateAction<string>; }; }) => setQuery(e.currentTarget.value)}
-      placeholder="Cluster name" />
-      <MDTable mds={filteredMDs} />
+        options={mds}
+        onChange={setSelected}/>
+      {
+        filteredMD
+          ? <div></div>
+          : <MDTable mds={mds} />
+      }
     </Grid>
   )
 }
