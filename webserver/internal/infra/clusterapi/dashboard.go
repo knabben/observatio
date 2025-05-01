@@ -2,15 +2,12 @@ package clusterapi
 
 import (
 	"context"
-	"strconv"
-	"time"
-
 	corev1 "k8s.io/api/core/v1"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/client-go/rest"
+	"strconv"
 
 	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/fetchers"
-	"github.com/knabben/observatio/webserver/internal/infra/models"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -42,59 +39,6 @@ func GenerateClusterSummary(ctx context.Context, c client.Client) (summary Clust
 		failed += 1
 	}
 	return ClusterSummary{Provisioned: provisioned, Failed: failed}, nil
-}
-
-func FetchClusters2(ctx context.Context, c client.Client) (response models.ClusterResponse, err error) {
-	var (
-		clusterList []models.Cluster
-		clusters    []clusterv1.Cluster
-		failed      int
-	)
-	if clusters, err = fetchers.ListClusters(ctx, c); err != nil {
-		return response, err
-	}
-
-	for _, cl := range clusters {
-		clusterClass := models.ClusterClass{IsClusterClass: false}
-		if cl.Spec.Topology != nil {
-			clusterClass = models.ClusterClass{
-				IsClusterClass:       true,
-				ClassName:            cl.Spec.Topology.Class,
-				ClassNamespace:       cl.Spec.Topology.ClassNamespace,
-				KubernetesVersion:    cl.Spec.Topology.Version,
-				ControlPlaneReplicas: *cl.Spec.Topology.ControlPlane.Replicas,
-			}
-			if cl.Spec.Topology.ControlPlane.MachineHealthCheck != nil {
-				clusterClass.ControlPlaneMHC = true
-			}
-			if cl.Spec.Topology.Workers != nil {
-				clusterClass.WorkersMachineDeployments = cl.Spec.Topology.Workers.MachineDeployments
-			}
-		}
-		cluster := models.Cluster{
-			Name:                cl.Name,
-			Paused:              cl.Spec.Paused,
-			ClusterClass:        clusterClass,
-			Phase:               cl.Status.Phase,
-			InfrastructureReady: cl.Status.InfrastructureReady,
-			ControlPlaneReady:   cl.Status.ControlPlaneReady,
-			Conditions:          cl.Status.Conditions,
-			Created:             time.Now().Sub(cl.ObjectMeta.CreationTimestamp.Time).String(),
-		}
-		if cl.Spec.ClusterNetwork != nil {
-			cluster.PodNetwork = cl.Spec.ClusterNetwork.Pods.String()
-			cluster.ServiceNetwork = cl.Spec.ClusterNetwork.Services.String()
-		}
-		if cl.Status.InfrastructureReady || cl.Status.ControlPlaneReady {
-			failed += 1
-		}
-		clusterList = append(clusterList, cluster)
-	}
-	return models.ClusterResponse{
-		Total:    len(clusters),
-		Clusters: clusterList,
-		Failing:  failed,
-	}, err
 }
 
 // Services defines the service name and path.
