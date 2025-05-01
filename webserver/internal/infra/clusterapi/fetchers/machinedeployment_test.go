@@ -2,8 +2,6 @@ package fetchers
 
 import (
 	"context"
-	"github.com/knabben/observatio/webserver/internal/infra/clusterapi"
-	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/processor"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -39,12 +37,14 @@ func Test_FetchMachineDeployment(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var c = fake.NewClientBuilder().
-			WithScheme(clusterapi.scheme).
+			WithScheme(scheme).
 			WithRuntimeObjects(&tt.d).
 			WithLists(&machineDeploymentList).
 			Build()
-		mds, err := processor.FetchMachineDeployments(context.Background(), c)
+		mds, err := FetchMachineDeployment(context.Background(), c)
 		assert.NoError(t, err)
-		assert.Len(t, mds, 1)
+		assert.Equal(t, mds.Total, 1)
+		assert.Equal(t, mds.Failing, 0)
+		assert.Len(t, mds.MachineDeployments, 1)
 	}
 }
