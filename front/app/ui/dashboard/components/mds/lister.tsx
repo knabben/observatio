@@ -9,6 +9,7 @@ import { Grid, GridCol, Title, Badge } from '@mantine/core';
 
 import {getMachinesDeployments} from "@/app/lib/data";
 import MDTable from '@/app/ui/dashboard/components/mds/table'
+import {sourceCodePro400} from "@/fonts";
 
 type Status = {
   failed: number;
@@ -39,14 +40,13 @@ export default function MDLister() {
 
   return (
     <Grid justify="flex-end" align="flex-start">
-      <GridCol h={60} span={8}>
+      <GridCol h={60} span={6}>
         <Link href="/dashboard/machinedeployments">
-          <Title className="hidden md:block" order={2}>
+          <Title className={sourceCodePro400.className} order={2}>
             Machine Deployments / cluster.x-k8s.io
           </Title>
         </Link>
       </GridCol>
-
       <GridCol className="text-right" h={60} span={2}>
         <Badge className="m-1" radius="sm" variant="dot" color="blue" size="lg">{status.total}</Badge>
         { status.failed > 0 ? <Badge radius="sm" variant="dot" color="red" size="lg">{status.failed}</Badge> : <div></div> }
