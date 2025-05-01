@@ -30,6 +30,7 @@ func ProcessClusterResponse(clusters []clusterv1.Cluster) models.ClusterResponse
 		}
 		cluster := models.Cluster{
 			Name:                cl.Name,
+			Namespace:           cl.Namespace,
 			Paused:              cl.Spec.Paused,
 			ClusterClass:        clusterClass,
 			Phase:               cl.Status.Phase,

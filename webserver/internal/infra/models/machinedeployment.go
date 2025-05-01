@@ -13,6 +13,7 @@ type MachineDeploymentResponse struct {
 // MachineDeployment stores the details for CAPI machine deployments objects
 type MachineDeployment struct {
 	Name                string                           `json:"name"`
+	Namespace           string                           `json:"namespace"`
 	Replicas            int32                            `json:"replicas"`
 	Cluster             string                           `json:"cluster"`
 	Created             string                           `json:"created"`
