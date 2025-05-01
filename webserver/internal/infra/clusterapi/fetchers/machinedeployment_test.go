@@ -1,7 +1,9 @@
-package clusterapi
+package fetchers
 
 import (
 	"context"
+	"github.com/knabben/observatio/webserver/internal/infra/clusterapi"
+	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/processor"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -37,11 +39,11 @@ func Test_FetchMachineDeployment(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var c = fake.NewClientBuilder().
-			WithScheme(scheme).
+			WithScheme(clusterapi.scheme).
 			WithRuntimeObjects(&tt.d).
 			WithLists(&machineDeploymentList).
 			Build()
-		mds, err := FetchMachineDeployments(context.Background(), c)
+		mds, err := processor.FetchMachineDeployments(context.Background(), c)
 		assert.NoError(t, err)
 		assert.Len(t, mds, 1)
 	}
