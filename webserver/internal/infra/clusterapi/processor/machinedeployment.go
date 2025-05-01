@@ -12,6 +12,7 @@ func ProcessMachineDeployment(machineDeployments []clusterv1.MachineDeployment) 
 	for _, md := range machineDeployments {
 		clusterMDs = append(clusterMDs, models.MachineDeployment{
 			Name:                md.Name,
+			Namespace:           md.Namespace,
 			Cluster:             md.Spec.ClusterName,
 			Replicas:            md.Status.Replicas,
 			ReadyReplicas:       md.Status.ReadyReplicas,

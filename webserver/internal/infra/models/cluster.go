@@ -35,6 +35,7 @@ type ClusterClass struct {
 // Cluster stores the definition of a CAPI Cluster
 type Cluster struct {
 	Name                string               `json:"name"`
+	Namespace           string               `json:"namespace"`
 	Paused              bool                 `json:"paused"`
 	ClusterClass        ClusterClass         `json:"clusterClass"`
 	PodNetwork          string               `json:"podNetwork"`
