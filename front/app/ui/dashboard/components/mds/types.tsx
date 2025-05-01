@@ -1,6 +1,6 @@
 // MachineDeployment models and details
 
-type MachineDeploymentType = {
+export type MachineDeploymentType = {
   name: string,
   replicas: number,
   namespace: string,
