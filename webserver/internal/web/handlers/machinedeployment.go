@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/knabben/observatio/webserver/internal/infra/clusterapi"
+	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/fetchers"
 	"net/http"
 )
 
@@ -14,7 +15,7 @@ func handleMachineDeployments(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mds, err := clusterapi.FetchMachineDeployments(r.Context(), c)
+	mds, err := fetchers.FetchMachineDeployment(r.Context(), c)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err)
 		return
