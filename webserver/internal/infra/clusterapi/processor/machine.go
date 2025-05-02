@@ -22,13 +22,17 @@ func ProcessMachine(machines []clusterv1.Machine) models.MachineResponse {
 		for _, owner := range m.OwnerReferences {
 			machineOwner = owner.Name
 		}
+		var providerId string
+		if m.Spec.ProviderID != nil {
+			providerId = *m.Spec.ProviderID
+		}
 		machinesList = append(machinesList, models.Machine{
 			Name:                m.Name,
 			Namespace:           m.Namespace,
 			Owner:               machineOwner,
 			Cluster:             m.Spec.ClusterName,
 			NodeName:            nodeRef,
-			ProviderID:          *m.Spec.ProviderID,
+			ProviderID:          providerId,
 			Version:             version,
 			BootstrapReady:      m.Status.BootstrapReady,
 			InfrastructureReady: m.Status.InfrastructureReady,

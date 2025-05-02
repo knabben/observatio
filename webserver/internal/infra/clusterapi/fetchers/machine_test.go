@@ -2,7 +2,6 @@ package fetchers
 
 import (
 	"context"
-	"github.com/knabben/observatio/webserver/internal/infra/clusterapi"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -26,6 +25,8 @@ func Test_FetchMachine(t *testing.T) {
 				},
 				Spec: clusterv1.MachineSpec{},
 				Status: clusterv1.MachineStatus{
+					InfrastructureReady: true,
+					BootstrapReady:      true,
 					Conditions: clusterv1.Conditions{
 						{
 							Type:   "InfrastructureReady",
@@ -38,12 +39,14 @@ func Test_FetchMachine(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var c = fake.NewClientBuilder().
-			WithScheme(clusterapi.scheme).
+			WithScheme(scheme).
 			WithRuntimeObjects(&tt.m).
 			WithLists(&machineList).
 			Build()
-		machines, err := FetchMachine(context.Background(), c)
+		machines, err := FetchMachines(context.Background(), c)
 		assert.NoError(t, err)
-		assert.Len(t, machines, 1)
+		assert.Equal(t, machines.Total, 1)
+		assert.Equal(t, machines.Failing, 0)
+		assert.Len(t, machines.Machines, 1)
 	}
 }
