@@ -18,13 +18,21 @@ func ProcessMachine(machines []clusterv1.Machine) models.MachineResponse {
 		if m.Spec.Version != nil {
 			version = *m.Spec.Version
 		}
+		var machineOwner string
+		for _, owner := range m.OwnerReferences {
+			machineOwner = owner.Name
+		}
 		machinesList = append(machinesList, models.Machine{
-			Name:      m.Name,
-			Namespace: m.Namespace,
-			Cluster:   m.Spec.ClusterName,
-			NodeName:  nodeRef,
-			Version:   version,
-			Phase:     clusterv1.MachinePhase(m.Status.Phase),
+			Name:                m.Name,
+			Namespace:           m.Namespace,
+			Owner:               machineOwner,
+			Cluster:             m.Spec.ClusterName,
+			NodeName:            nodeRef,
+			ProviderID:          *m.Spec.ProviderID,
+			Version:             version,
+			BootstrapReady:      m.Status.BootstrapReady,
+			InfrastructureReady: m.Status.InfrastructureReady,
+			Phase:               clusterv1.MachinePhase(m.Status.Phase),
 		})
 		if !m.Status.InfrastructureReady || !m.Status.BootstrapReady {
 			failed += 1
