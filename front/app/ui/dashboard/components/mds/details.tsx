@@ -1,7 +1,7 @@
 import {Card, Grid, GridCol} from "@mantine/core";
 import { Pill, Table, Indicator, Space, SimpleGrid } from '@mantine/core';
 import React from "react";
-import {roboto, sourceCodePro400} from "@/fonts";
+import {roboto} from "@/fonts";
 import Panel from "@/app/ui/dashboard/utils/panel";
 import {MachineDeploymentType} from "@/app/ui/dashboard/components/mds/types";
 
