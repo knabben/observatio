@@ -10,18 +10,16 @@ import (
 func handleMachineDeployments(w http.ResponseWriter, r *http.Request) {
 	var ctx = r.Context()
 	c, err := clusterapi.NewClientWithScheme(ctx, scheme)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+	if handleError(w, http.StatusInternalServerError, err) {
 		return
 	}
 
 	mds, err := fetchers.FetchMachineDeployment(r.Context(), c)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+	if handleError(w, http.StatusInternalServerError, err) {
 		return
 	}
 
-	if err = writeResponse(w, mds); err != nil {
+	if err = writeResponse(w, mds); handleError(w, http.StatusInternalServerError, err) {
 		writeError(w, http.StatusInternalServerError, err)
 		return
 	}
