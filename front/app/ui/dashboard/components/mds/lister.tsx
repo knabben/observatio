@@ -8,7 +8,8 @@ import {FilterItems} from "@/app/dashboard/utils";
 import { Grid, GridCol, Title, Badge } from '@mantine/core';
 
 import {getMachinesDeployments} from "@/app/lib/data";
-import MDTable from '@/app/ui/dashboard/components/mds/table'
+import MachineDeploymentTable from '@/app/ui/dashboard/components/mds/table'
+import MachineDeploymentDetails from "@/app/ui/dashboard/components/mds/details";
 import {sourceCodePro400} from "@/fonts";
 
 type Status = {
@@ -56,8 +57,8 @@ export default function MDLister() {
         onChange={setSelected}/>
       {
         filteredMD
-          ? <div></div>
-          : <MDTable mds={mds} />
+          ? <MachineDeploymentDetails md={filteredMD} />
+          : <MachineDeploymentTable mds={mds} />
       }
     </Grid>
   )
