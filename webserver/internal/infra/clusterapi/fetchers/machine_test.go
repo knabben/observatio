@@ -1,7 +1,8 @@
-package clusterapi
+package fetchers
 
 import (
 	"context"
+	"github.com/knabben/observatio/webserver/internal/infra/clusterapi"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -37,7 +38,7 @@ func Test_FetchMachine(t *testing.T) {
 	}
 	for _, tt := range tests {
 		var c = fake.NewClientBuilder().
-			WithScheme(scheme).
+			WithScheme(clusterapi.scheme).
 			WithRuntimeObjects(&tt.m).
 			WithLists(&machineList).
 			Build()
