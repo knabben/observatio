@@ -6,7 +6,7 @@ import { sourceCodePro400 } from "@/fonts";
 
 import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";
-import { Grid, GridCol, Title, Badge } from '@mantine/core';
+import { Grid, GridCol, Title, Badge, Loader, Alert } from '@mantine/core';
 
 import ClusterInfraTable from '@/app/ui/dashboard/components/clusters/infra-table'
 import ClusterInfraDetails from "@/app/ui/dashboard/components/clusters/infra-details";
@@ -22,7 +22,9 @@ export default function ClusterInfraLister() {
   const [vsphereClusters,setVsphereClusters] = useState<[]>([])
   const [selected, setSelected] = useState('')
   const [status, setStatus] = useState<Status>({failed: 0, total: 0})
-  //
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
   let filteredClusterInfra= undefined;
   if (selected) {
     filteredClusterInfra = FilterItems(selected, vsphereClusters);
@@ -32,14 +34,25 @@ export default function ClusterInfraLister() {
     const fetchData = async () => {
       const response = await getClusterInfraList()
       setVsphereClusters(response.clusters)
+      setLoading(false)
       setStatus({
         "failed": response.failed,
         "total": response.total,
       })
     }
-    fetchData().catch((e) => { console.error('error', e) })
+    fetchData().catch((e) => {
+      setLoading(false)
+      setError(e.toString())
+    })
   }, [])
 
+  if (loading) {
+    return(<div className="text-center"><Loader color="teal" size="xl"/></div>)
+  }
+  if (error) {
+    return (<Alert variant="light" color="red" title="Endpoint Error"> {error} </Alert>)
+  }
+  
   return (
     <Grid justify="flex-end" align="flex-start">
       <GridCol h={60} span={7}>

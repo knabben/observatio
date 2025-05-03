@@ -10,17 +10,13 @@ import {roboto} from '@/fonts';
 import {ClusterType} from '@/app/ui/dashboard/components/clusters/types';
 
 export default function ClusterTable({
-  clusters,
-  loading
+  clusters
 }: {
-  clusters: ClusterType[],
-  loading: boolean
+  clusters: ClusterType[]
 }) {
   return (
     <GridCol span={12}>
-    { loading
-      ? <div className="text-center"><Loader color="teal" size="xl"/></div>
-      : <Table highlightOnHover>
+      <Table highlightOnHover>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Name</Table.Th>
