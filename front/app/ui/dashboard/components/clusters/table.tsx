@@ -2,7 +2,6 @@
 
 import React from "react";
 
-import { Loader } from '@mantine/core';
 import { Table, Indicator, Pill } from '@mantine/core';
 import { GridCol } from '@mantine/core';
 
@@ -50,7 +49,6 @@ export default function ClusterTable({
           }
         </Table.Tbody>
       </Table>
-      }
     </GridCol>
   )
 }

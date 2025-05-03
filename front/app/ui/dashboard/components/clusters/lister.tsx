@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { sourceCodePro400 } from "@/fonts";
-import { useDisclosure } from '@mantine/hooks';
 
 import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";
