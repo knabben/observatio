@@ -13,10 +13,11 @@ type MachineResponse struct {
 type Machine struct {
 	Name                string                 `json:"name"`
 	Namespace           string                 `json:"namespace"`
+	Created             string                 `json:"created"`
 	Owner               string                 `json:"owner"`
 	Bootstrap           string                 `json:"bootstrap"`
 	Cluster             string                 `json:"cluster,omitempty"`
-	NodeName            string                 `json:"nomeName,omitempty"`
+	NodeName            string                 `json:"nodeName,omitempty"`
 	ProviderID          string                 `json:"providerID,omitempty"`
 	Version             string                 `json:"version,omitempty"`
 	BootstrapReady      bool                   `json:"bootstrapReady"`
