@@ -1,7 +1,7 @@
 'use client';
 
 import React from "react";
-import { Indicator, Loader, Table } from '@mantine/core';
+import { Indicator, Table } from '@mantine/core';
 import { GridCol } from '@mantine/core';
 import {MachineType} from "@/app/ui/dashboard/components/machines/types";
 import {roboto} from "@/fonts";
@@ -15,9 +15,7 @@ export default function MachinesTable({
 }) {
   return (
     <GridCol span={12}>
-    { loading
-      ? <div className="text-center"><Loader color="teal" size="xl"/></div>
-      : <Table highlightOnHover>
+      <Table highlightOnHover>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Name</Table.Th>
@@ -47,7 +45,6 @@ export default function MachinesTable({
           }
         </Table.Tbody>
       </Table>
-      }
     </GridCol>
   )
 }

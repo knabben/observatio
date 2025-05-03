@@ -72,7 +72,7 @@ export default function ClusterLister() {
       {
         filteredCluster
           ? <ClusterDetails cluster={filteredCluster} />
-          : <ClusterTable loading={loading} clusters={clusters}/>
+          : <ClusterTable clusters={clusters}/>
       }
     </Grid>
   );

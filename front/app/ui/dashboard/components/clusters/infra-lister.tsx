@@ -52,7 +52,7 @@ export default function ClusterInfraLister() {
   if (error) {
     return (<Alert variant="light" color="red" title="Endpoint Error"> {error} </Alert>)
   }
-  
+
   return (
     <Grid justify="flex-end" align="flex-start">
       <GridCol h={60} span={7}>
