@@ -9,8 +9,7 @@ import { Grid, GridCol, Title, Badge } from '@mantine/core';
 
 import { getMachines } from "@/app/lib/data";
 import MachinesTable from "@/app/ui/dashboard/components/machines/table";
-import ClusterDetails from "@/app/ui/dashboard/components/clusters/details";
-import ClusterTable from "@/app/ui/dashboard/components/clusters/table";
+import MachineDetails from "@/app/ui/dashboard/components/machines/details";
 
 type Status = {
   failed: number;
@@ -43,7 +42,7 @@ export default function MachineLister () {
 
   return (
     <Grid justify="flex-end" align="flex-start">
-      <GridCol h={60} span={8}>
+      <GridCol h={60} span={6}>
         <Link href="/dashboard/clusters">
           <Title className="hidden md:block" order={2}>
             Machines / cluster.x-k8s.io
@@ -59,7 +58,7 @@ export default function MachineLister () {
         onChange={setSelected}/>
       {
         filteredMachines
-          ? <ClusterDetails cluster={filteredMachines} />
+          ? <MachineDetails machine={filteredMachines} />
           : <MachinesTable loading={loading} machines={machines}/>
       }
     </Grid>

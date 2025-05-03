@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React from "react";
 
 import { Loader } from '@mantine/core';
 import { Table, Indicator, Pill } from '@mantine/core';
