@@ -5,19 +5,39 @@ import Link from 'next/link';
 
 import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";
-import { Grid, GridCol, Title } from '@mantine/core';
+import { Grid, GridCol, Title, Badge } from '@mantine/core';
 
 import { getMachines } from "@/app/lib/data";
 import MachinesTable from "@/app/ui/dashboard/components/machines/table";
+import ClusterDetails from "@/app/ui/dashboard/components/clusters/details";
+import ClusterTable from "@/app/ui/dashboard/components/clusters/table";
 
+type Status = {
+  failed: number;
+  total: number;
+}
 // MachineLister: List machines existent in the cluster.
 export default function MachineLister () {
+  const [status, setStatus] = useState<Status>({failed: 0, total: 0})
   const [machines,setMachines] = useState<[]>([])
-  const [query,setQuery] = useState('')
-  const filteredMachines = FilterItems(query, machines);
+  const [selected, setSelected] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  let filteredMachines = undefined;
+  if (selected) {
+    filteredMachines = FilterItems(selected, machines);
+  }
 
   useEffect(() => {
-    const fetchData = async () => { setMachines(await getMachines()) }
+    const fetchData = async () => {
+      const response = await getMachines();
+      setMachines(response.machines)
+      setLoading(false)
+      setStatus({
+        "failed": response.failed,
+        "total": response.total,
+      })
+    }
     fetchData().catch((e) => { console.error('error', e) })
   }, [])
 
@@ -30,11 +50,18 @@ export default function MachineLister () {
           </Title>
         </Link>
       </GridCol>
+      <GridCol className="text-right" h={60} span={2}>
+        <Badge className="m-1" radius="sm" variant="dot" color="blue" size="lg">{status.total}</Badge>
+        { status.failed > 0 ? <Badge radius="sm" variant="dot" color="red" size="lg">{status.failed}</Badge> : <div></div> }
+      </GridCol>
       <Search
-        value={query}
-        onChange={(e: { currentTarget: { value: React.SetStateAction<string>; }; }) => setQuery(e.currentTarget.value)}
-        placeholder="Cluster name" />
-      <MachinesTable machines={filteredMachines} />
+        options={machines}
+        onChange={setSelected}/>
+      {
+        filteredMachines
+          ? <ClusterDetails cluster={filteredMachines} />
+          : <MachinesTable loading={loading} machines={machines}/>
+      }
     </Grid>
   )
 }
