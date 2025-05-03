@@ -3,6 +3,7 @@ package processor
 import (
 	"github.com/knabben/observatio/webserver/internal/infra/models"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
+	"time"
 )
 
 // ProcessMachine returns the list of Machines objects from the mgmt cluster.
@@ -26,6 +27,10 @@ func ProcessMachine(machines []clusterv1.Machine) models.MachineResponse {
 		if m.Spec.ProviderID != nil {
 			providerId = *m.Spec.ProviderID
 		}
+		var bootstrap string
+		if m.Spec.Bootstrap.ConfigRef != nil {
+			bootstrap = m.Spec.Bootstrap.ConfigRef.Name
+		}
 		machinesList = append(machinesList, models.Machine{
 			Name:                m.Name,
 			Namespace:           m.Namespace,
@@ -36,6 +41,8 @@ func ProcessMachine(machines []clusterv1.Machine) models.MachineResponse {
 			Version:             version,
 			BootstrapReady:      m.Status.BootstrapReady,
 			InfrastructureReady: m.Status.InfrastructureReady,
+			Created:             time.Now().Sub(m.ObjectMeta.CreationTimestamp.Time).String(),
+			Bootstrap:           bootstrap,
 			Phase:               clusterv1.MachinePhase(m.Status.Phase),
 		})
 		if !m.Status.InfrastructureReady || !m.Status.BootstrapReady {

@@ -6,7 +6,7 @@ import { sourceCodePro400 } from "@/fonts";
 
 import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";
-import { Grid, GridCol, Title, Badge } from '@mantine/core';
+import { Grid, GridCol, Title, Badge, Alert, Loader } from '@mantine/core';
 
 import { getClusterList } from "@/app/lib/data";
 import ClusterTable from '@/app/ui/dashboard/components/clusters/table'
@@ -21,6 +21,8 @@ export default function ClusterLister() {
   const [status, setStatus] = useState<Status>({failed: 0, total: 0})
   const [clusters,setClusters] = useState<[]>([])
   const [selected, setSelected] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
 
   let filteredCluster = undefined;
   if (selected) {
@@ -31,13 +33,24 @@ export default function ClusterLister() {
     const fetchData = async () => {
       const response = await getClusterList()
       setClusters(response.clusters)
+      setLoading(false)
       setStatus({
         "failed": response.failed,
         "total": response.total,
       })
     }
-    fetchData().catch((e) => { console.error('error', e) })
+    fetchData().catch((e) => {
+      setLoading(false)
+      setError(e.toString())
+    })
   }, [])
+
+  if (loading) {
+      return(<div className="text-center"><Loader color="teal" size="xl"/></div>)
+  }
+  if (error) {
+    return (<Alert variant="light" color="red" title="Endpoint Error"> {error} </Alert>)
+  }
 
   return (
     <Grid justify="flex-end" align="flex-start">
