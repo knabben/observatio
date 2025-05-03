@@ -8,10 +8,8 @@ import {roboto} from "@/fonts";
 
 export default function MachinesTable({
   machines,
-  loading,
 }: {
   machines: MachineType[]
-  loading: boolean
 }) {
   return (
     <GridCol span={12}>

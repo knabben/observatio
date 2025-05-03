@@ -15,6 +15,7 @@ type Status = {
   failed: number;
   total: number;
 }
+
 // MachineLister: List machines existent in the cluster.
 export default function MachineLister () {
   const [status, setStatus] = useState<Status>({failed: 0, total: 0})
