@@ -1,23 +1,19 @@
 'use client';
 
 import React from "react";
-import { Loader, Table, Indicator } from '@mantine/core';
+import { Table, Indicator } from '@mantine/core';
 import { GridCol } from '@mantine/core';
 
 import {MachineDeploymentType} from '@/app/ui/dashboard/components/mds/types';
 
 export default function MDTable({
   mds,
-  loading,
 }: {
   mds: MachineDeploymentType[]
-  loading: boolean
 }) {
   return (
     <GridCol span={12}>
-    { loading
-      ? <div className="text-center"><Loader color="teal" size="xl"/></div>
-      : <Table highlightOnHover>
+      <Table highlightOnHover>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Name</Table.Th>
@@ -50,7 +46,6 @@ export default function MDTable({
           }
         </Table.Tbody>
       </Table>
-    }
     </GridCol>
   );
 }

@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 import Search from '@/app/ui/dashboard/search'
 import {FilterItems} from "@/app/dashboard/utils";
-import { Grid, GridCol, Title, Badge } from '@mantine/core';
+import { Grid, GridCol, Title, Badge, Loader, Alert } from '@mantine/core';
 
 import {getMachinesDeployments} from "@/app/lib/data";
 import MachineDeploymentTable from '@/app/ui/dashboard/components/mds/table'
@@ -22,6 +22,7 @@ export default function MDLister() {
   const [mds, setMD] = useState<[]>([])
   const [selected, setSelected] = useState('')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
 
   let filteredMD = undefined;
   if (selected) {
@@ -38,9 +39,18 @@ export default function MDLister() {
         "total": response.total,
       })
     }
-    fetchData().catch((e) => { console.error('error', e) })
+    fetchData().catch((e) => {
+      setLoading(false)
+      setError(e.toString())
+    })
   }, [])
 
+  if (loading) {
+    return(<div className="text-center"><Loader color="teal" size="xl"/></div>)
+  }
+  if (error) {
+    return (<Alert variant="light" color="red" title="Endpoint Error"> {error} </Alert>)
+  }
   return (
     <Grid justify="flex-end" align="flex-start">
       <GridCol h={60} span={6}>
@@ -60,7 +70,7 @@ export default function MDLister() {
       {
         filteredMD
           ? <MachineDeploymentDetails md={filteredMD} />
-          : <MachineDeploymentTable loading={loading} mds={mds} />
+          : <MachineDeploymentTable mds={mds} />
       }
     </Grid>
   )
