@@ -21,6 +21,7 @@ export default function MDLister() {
   const [status, setStatus] = useState<Status>({failed: 0, total: 0})
   const [mds, setMD] = useState<[]>([])
   const [selected, setSelected] = useState('')
+  const [loading, setLoading] = useState(true)
 
   let filteredMD = undefined;
   if (selected) {
@@ -31,6 +32,7 @@ export default function MDLister() {
     const fetchData = async () => {
       const response = await getMachinesDeployments()
       setMD(response.machineDeployments)
+      setLoading(false)
       setStatus({
         "failed": response.failed,
         "total": response.total,
@@ -58,7 +60,7 @@ export default function MDLister() {
       {
         filteredMD
           ? <MachineDeploymentDetails md={filteredMD} />
-          : <MachineDeploymentTable mds={mds} />
+          : <MachineDeploymentTable loading={loading} mds={mds} />
       }
     </Grid>
   )

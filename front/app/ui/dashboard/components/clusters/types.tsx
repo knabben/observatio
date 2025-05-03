@@ -25,6 +25,7 @@ type ClusterClass = {
 
 export type ClusterType = {
   name: string,
+  namespace: string,
   paused: boolean,
   podNetwork: string,
   serviceNetwork: string,

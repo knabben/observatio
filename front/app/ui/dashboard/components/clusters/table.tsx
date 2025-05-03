@@ -24,6 +24,7 @@ export default function ClusterTable({
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Name</Table.Th>
+            <Table.Th>Namespace</Table.Th>
             <Table.Th>Version</Table.Th>
             <Table.Th>Age</Table.Th>
             <Table.Th>Phase</Table.Th>
@@ -37,6 +38,7 @@ export default function ClusterTable({
             clusters?.map( (cluster) => (
               <Table.Tr className={roboto.className} key={cluster.name}>
                 <Table.Td>{cluster.name}</Table.Td>
+                <Table.Td>{cluster.namespace}</Table.Td>
                 <Table.Td>{cluster.clusterClass.kubernetesVersion}</Table.Td>
                 <Table.Td>{cluster.created}</Table.Td>
                 <Table.Td>{cluster.phase}</Table.Td>
