@@ -21,6 +21,7 @@ export default function ClusterLister() {
   const [status, setStatus] = useState<Status>({failed: 0, total: 0})
   const [clusters,setClusters] = useState<[]>([])
   const [selected, setSelected] = useState('')
+  const [loading, setLoading] = useState(true)
 
   let filteredCluster = undefined;
   if (selected) {
@@ -31,6 +32,7 @@ export default function ClusterLister() {
     const fetchData = async () => {
       const response = await getClusterList()
       setClusters(response.clusters)
+      setLoading(false)
       setStatus({
         "failed": response.failed,
         "total": response.total,
@@ -58,7 +60,7 @@ export default function ClusterLister() {
       {
         filteredCluster
           ? <ClusterDetails cluster={filteredCluster} />
-          : <ClusterTable clusters={clusters}/>
+          : <ClusterTable loading={loading} clusters={clusters}/>
       }
     </Grid>
   );

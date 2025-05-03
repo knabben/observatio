@@ -1,7 +1,8 @@
 'use client';
 
-import React from "react";
+import React, { useState } from "react";
 
+import { Loader } from '@mantine/core';
 import { Table, Indicator, Pill } from '@mantine/core';
 import { GridCol } from '@mantine/core';
 
@@ -9,13 +10,17 @@ import {roboto} from '@/fonts';
 import {ClusterType} from '@/app/ui/dashboard/components/clusters/types';
 
 export default function ClusterTable({
-  clusters
+  clusters,
+  loading
 }: {
-  clusters: ClusterType[]
+  clusters: ClusterType[],
+  loading: boolean
 }) {
   return (
     <GridCol span={12}>
-      <Table highlightOnHover>
+    { loading
+      ? <div className="text-center"><Loader color="teal" size="xl"/></div>
+      : <Table highlightOnHover>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Name</Table.Th>
@@ -47,6 +52,7 @@ export default function ClusterTable({
           }
         </Table.Tbody>
       </Table>
+      }
     </GridCol>
   )
 }
