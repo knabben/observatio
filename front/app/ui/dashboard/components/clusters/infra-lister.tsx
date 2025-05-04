@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import Link from 'next/link';
@@ -7,7 +8,7 @@ import { sourceCodePro400 } from "@/fonts";
 
 import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";
-import { Grid, GridCol, Title, Badge, Loader, Alert } from '@mantine/core';
+import { Grid, GridCol, Title, Loader, Alert } from '@mantine/core';
 
 import ClusterInfraTable from '@/app/ui/dashboard/components/clusters/infra-table'
 import ClusterInfraDetails from "@/app/ui/dashboard/components/clusters/infra-details";
@@ -25,7 +26,6 @@ export default function ClusterInfraLister() {
   const [vsphereClusters,setVsphereClusters] = useState<ClusterInfraType[]>([])
   const [selected, setSelected] = useState('')
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
 
   const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(
     WS_URL, {share: false, shouldReconnect: () => true},
@@ -36,25 +36,25 @@ export default function ClusterInfraLister() {
     filteredClusterInfra = FilterItems(selected, vsphereClusters);
   }
 
-  const updateOrAddItem = (newItem: ClusterInfraType) => {
-    const index = vsphereClusters.findIndex(item => item.name === newItem.name);
-    if (index !== -1) {
-      const updatedItems = [...vsphereClusters];
-      updatedItems[index] = newItem;
-      return updatedItems;
-    } else {
-      return [...vsphereClusters, newItem];
-    }
-  };
 
   useEffect(() => {
     if (readyState === ReadyState.OPEN) {
       sendJsonMessage({types: ['cluster-infra']});
     }
-  }, [readyState])
+  }, [readyState, sendJsonMessage])
 
   useEffect(() => {
-    let response: WSResponse = (lastJsonMessage as WSResponse)
+    const response: WSResponse = (lastJsonMessage as WSResponse)
+    const updateOrAddItem = (newItem: ClusterInfraType) => {
+      const index = vsphereClusters.findIndex(item => item.name === newItem.name);
+      if (index !== -1) {
+        const updatedItems = [...vsphereClusters];
+        updatedItems[index] = newItem;
+        return updatedItems;
+      } else {
+        return [...vsphereClusters, newItem];
+      }
+    };
     if (response?.type == "ADDED" || response?.type == "MODIFIED") {
       const data: ClusterInfraType = (response?.data as ClusterInfraType)
       setVsphereClusters(updateOrAddItem(data));
@@ -65,7 +65,7 @@ export default function ClusterInfraLister() {
       ));
     }
     setLoading(false)
-  }, [lastJsonMessage])
+  }, [lastJsonMessage, vsphereClusters])
 
   if (loading) {
     return(<div className="text-center"><Loader color="teal" size="xl"/></div>)
