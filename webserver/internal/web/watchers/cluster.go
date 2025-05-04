@@ -4,11 +4,13 @@ import (
 	"context"
 
 	"github.com/gorilla/websocket"
-	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/processor"
+
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
+
+	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/processor"
 )
 
 // WatchVSphereClusters send the websocket request with the serialized payload.
@@ -24,10 +26,10 @@ func WatchVSphereClusters(ctx context.Context, conn *websocket.Conn, objType str
 		cluster, _ := processor.ProcessClusterInfra(vsphereCluster)
 		return cluster, nil
 	}
-	// Process the websocket response and send it.
-	return processWebSocket(ctx, conn, schema.GroupVersionResource{
+	// Process the websocket response and send it back.
+	return processWebSocket(ctx, objType, conn, converter, schema.GroupVersionResource{
 		Group:    "infrastructure.cluster.x-k8s.io",
 		Version:  "v1beta1",
 		Resource: "vsphereclusters",
-	}, converter, objType)
+	})
 }

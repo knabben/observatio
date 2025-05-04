@@ -2,7 +2,6 @@ package watchers
 
 import (
 	"context"
-	"log"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -18,32 +17,39 @@ type EventResponse struct {
 	Data  interface{} `json:"data"`
 }
 
-func processWebSocket(ctx context.Context, conn *websocket.Conn, gvr schema.GroupVersionResource, converter func(event runtime.Object) (any, error), objType string) error {
-	cs, err := clusterapi.NewDynamicClient(ctx)
+// processWebSocket send the generic payload back to the websocket client.
+func processWebSocket(
+	ctx context.Context,
+	objType string,
+	conn *websocket.Conn,
+	converter func(event runtime.Object) (any, error),
+	gvr schema.GroupVersionResource,
+) error {
+	dynamicClient, err := clusterapi.NewDynamicClient(ctx)
 	if err != nil {
 		return err
 	}
 
-	watcher, err := cs.Resource(gvr).
-		Namespace("").
-		Watch(context.TODO(),
-			metav1.ListOptions{},
-		)
+	// Start a new dynamic watch to listen for generic objects.
+	watcher, err := dynamicClient.Resource(gvr).Namespace("").Watch(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
 	defer watcher.Stop()
 
+	// Iterate through the result and write back the response
+	// with formatted event.
 	for event := range watcher.ResultChan() {
-		data, _ := converter(event.Object)
-		response := EventResponse{
+		data, err := converter(event.Object)
+		if err != nil {
+			return err
+		}
+		if err = conn.WriteJSON(EventResponse{
 			Type:  string(event.Type),
 			Event: objType,
 			Data:  data,
-		}
-		if err = conn.WriteJSON(response); err != nil {
-			log.Println(err)
-			break
+		}); err != nil {
+			return err
 		}
 	}
 	return nil
