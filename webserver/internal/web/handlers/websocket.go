@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -18,7 +17,6 @@ var upgrader = websocket.Upgrader{
 
 // handleWebsocket starts the object listener based on input object request.
 func handleWebsocket(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if handleError(w, http.StatusInternalServerError, err) {
@@ -28,7 +26,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) {
 
 	_, msg, err := conn.ReadMessage()
 	if err != nil {
-		fmt.Println("Error reading message:", err)
+		log.Println("Error reading message:", err)
 		return
 	}
 
@@ -36,14 +34,20 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) {
 		Types []string `json:"types"`
 	}
 	if err := json.Unmarshal(msg, &subscribeRequest); err != nil {
-		fmt.Println("Error unmarshalling message:", err)
+		log.Println("Error unmarshalling message:", err)
 		return
 	}
 
 	for _, objType := range subscribeRequest.Types {
 		switch objType {
 		case "cluster-infra":
-			go watchers.WatchVSphereClusters(ctx, conn, objType)
+			go func() {
+				err := watchers.WatchVSphereClusters(r.Context(), conn, objType)
+				if err != nil {
+					log.Println(err)
+					return
+				}
+			}()
 		}
 	}
 }
