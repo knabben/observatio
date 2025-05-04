@@ -8,7 +8,7 @@ import { sourceCodePro400 } from "@/fonts";
 
 import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";
-import { Grid, GridCol, Title, Loader, Alert } from '@mantine/core';
+import { Grid, GridCol, Title, Loader } from '@mantine/core';
 
 import ClusterInfraTable from '@/app/ui/dashboard/components/clusters/infra-table'
 import ClusterInfraDetails from "@/app/ui/dashboard/components/clusters/infra-details";
