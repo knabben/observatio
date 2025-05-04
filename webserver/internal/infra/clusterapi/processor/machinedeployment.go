@@ -1,9 +1,10 @@
 package processor
 
 import (
+	"time"
+
 	"github.com/knabben/observatio/webserver/internal/infra/models"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
-	"time"
 )
 
 func ProcessMachineDeployment(machineDeployments []clusterv1.MachineDeployment) models.MachineDeploymentResponse {

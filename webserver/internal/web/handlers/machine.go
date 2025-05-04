@@ -1,9 +1,10 @@
 package handlers
 
 import (
+	"net/http"
+
 	"github.com/knabben/observatio/webserver/internal/infra/clusterapi"
 	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/fetchers"
-	"net/http"
 )
 
 // handleMachine returns the information about the cluster.
