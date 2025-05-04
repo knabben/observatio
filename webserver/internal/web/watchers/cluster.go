@@ -11,22 +11,23 @@ import (
 	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
 )
 
+// WatchVSphereClusters send the websocket request with the serialized payload.
 func WatchVSphereClusters(ctx context.Context, conn *websocket.Conn, objType string) error {
-	gvr := schema.GroupVersionResource{
-		Group:    "infrastructure.cluster.x-k8s.io",
-		Version:  "v1beta1",
-		Resource: "vsphereclusters",
-	}
+	// Create the converter function for CAPV cluster processing
 	converter := func(event runtime.Object) (any, error) {
 		var vsphereCluster capv.VSphereCluster
 		unstructuredObj := event.(*unstructured.Unstructured)
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(
-			unstructuredObj.UnstructuredContent(), &vsphereCluster)
-		if err != nil {
+		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(
+			unstructuredObj.UnstructuredContent(), &vsphereCluster); err != nil {
 			return nil, err
 		}
 		cluster, _ := processor.ProcessClusterInfra(vsphereCluster)
 		return cluster, nil
 	}
-	return processWebSocket(ctx, conn, gvr, converter, objType)
+	// Process the websocket response and send it.
+	return processWebSocket(ctx, conn, schema.GroupVersionResource{
+		Group:    "infrastructure.cluster.x-k8s.io",
+		Version:  "v1beta1",
+		Resource: "vsphereclusters",
+	}, converter, objType)
 }
