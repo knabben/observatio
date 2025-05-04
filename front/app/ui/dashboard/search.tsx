@@ -14,11 +14,14 @@ export default function Search({
     onDropdownClose: () => combobox.resetSelectedOption(),
   });
 
-  const comboboxOptions = options.map((item) => (
-    <Combobox.Option value={item.name} key={item.name}>
-      {item.name}
-     </Combobox.Option>
-  ));
+  let comboboxOptions;
+  if (options.length > 0) {
+    comboboxOptions = options.map((item) => (
+      <Combobox.Option value={item.name} key={item.name}>
+        {item.name}
+      </Combobox.Option>
+    ));
+  }
   return (
     <GridCol span={4}>
       <Combobox

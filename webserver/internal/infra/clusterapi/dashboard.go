@@ -2,10 +2,11 @@ package clusterapi
 
 import (
 	"context"
+	"strconv"
+
 	corev1 "k8s.io/api/core/v1"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/client-go/rest"
-	"strconv"
 
 	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/fetchers"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
