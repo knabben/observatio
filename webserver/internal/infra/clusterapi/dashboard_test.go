@@ -2,8 +2,9 @@ package clusterapi
 
 import (
 	"context"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"testing"
+
+	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 
 	"github.com/stretchr/testify/assert"
 
