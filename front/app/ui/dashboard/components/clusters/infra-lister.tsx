@@ -70,9 +70,6 @@ export default function ClusterInfraLister() {
   if (loading) {
     return(<div className="text-center"><Loader color="teal" size="xl"/></div>)
   }
-  if (error) {
-    return (<Alert variant="light" color="red" title="Endpoint Error">{error}</Alert>)
-  }
 
   return (
     <Grid justify="flex-end" align="flex-start">
