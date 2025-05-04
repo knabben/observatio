@@ -3,8 +3,10 @@ package handlers
 import (
 	"embed"
 	"encoding/json"
-	"k8s.io/apimachinery/pkg/runtime"
+
 	"net/http"
+
+	"k8s.io/apimachinery/pkg/runtime"
 
 	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
@@ -46,6 +48,9 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 
 	// Cluster API Machine
 	router.HandleFunc("/api/machines/list", handleMachines).Methods("GET")
+
+	// Websocket Handler for object watchers.
+	router.HandleFunc("/ws", handleWebsocket)
 
 	// Static React bundle hosting handler
 	if !developmentMode {

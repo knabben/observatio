@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"net/http"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/knabben/observatio/webserver/internal/infra/clusterapi"
