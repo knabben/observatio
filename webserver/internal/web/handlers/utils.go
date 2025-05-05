@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -30,6 +31,7 @@ func writeResponse(w http.ResponseWriter, object any) error {
 func handleError(w http.ResponseWriter, code int, err error) (hasError bool) {
 	hasError = err != nil
 	if hasError {
+		log.Println("ERROR: ", err)
 		http.Error(w, err.Error(), code)
 	}
 	return hasError
