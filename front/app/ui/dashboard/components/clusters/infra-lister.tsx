@@ -1,4 +1,3 @@
-/* eslint-disable-next-line react-hooks/exhaustive-deps */
 'use client';
 
 import Link from 'next/link';
@@ -36,6 +35,7 @@ export default function ClusterInfraLister() {
   useEffect(() => {
     setVsphereClusters(receiveAndPopulate(lastJsonMessage, [...vsphereClusters]))
     setLoading(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastJsonMessage, setVsphereClusters])
 
   const filteredCluster: ClusterInfraType | undefined = selected
