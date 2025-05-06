@@ -3,7 +3,6 @@
 
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
-import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { sourceCodePro400 } from "@/fonts";
 
 import Search from "@/app/ui/dashboard/search";
@@ -13,59 +12,35 @@ import { Grid, GridCol, Title, Loader } from '@mantine/core';
 import ClusterInfraTable from '@/app/ui/dashboard/components/clusters/infra-table'
 import ClusterInfraDetails from "@/app/ui/dashboard/components/clusters/infra-details";
 
-import {WS_URL} from '@/app/ui/dashboard/utils/consts'
-import {ClusterInfraType} from "@/app/ui/dashboard/components/clusters/types";
+import {ClusterInfraType, ClusterType} from "@/app/ui/dashboard/components/clusters/types";
+import {receiveAndPopulate, WebSocket} from "@/app/lib/websocket";
+import {sendInitialRequest} from "@/app/lib/websocket";
 
-type WSResponse = {
-  type: string;
-  data: any;
-}
-
-// ClusterLister: Cluster list and details component.
+/**
+ * The `ClusterInfraLister` function is a React functional component responsible for rendering
+ * a user interface to manage and display vSphere cluster infrastructure details.
+ * It handles WebSocket communication, loading states, search functionality, and conditionally
+ * displays a detailed view or a table of vSphere clusters based on the data provided.
+ */
 export default function ClusterInfraLister() {
   const [vsphereClusters,setVsphereClusters] = useState<ClusterInfraType[]>([])
   const [selected, setSelected] = useState('')
   const [loading, setLoading] = useState(true)
 
-  const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(
-    WS_URL, {share: false, shouldReconnect: () => true},
-  )
-
-  let filteredClusterInfra= undefined;
-  if (selected) {
-    filteredClusterInfra = FilterItems(selected, vsphereClusters);
-  }
-
+  const {sendJsonMessage, lastJsonMessage, readyState} = WebSocket()
 
   useEffect(() => {
-    if (readyState === ReadyState.OPEN) {
-      sendJsonMessage({types: ['cluster-infra']});
-    }
+    sendInitialRequest(readyState, "cluster-infra", sendJsonMessage)
   }, [readyState, sendJsonMessage])
 
   useEffect(() => {
-    const response: WSResponse = (lastJsonMessage as WSResponse)
-    const updateOrAddItem = (newItem: ClusterInfraType) => {
-      const index = vsphereClusters.findIndex(item => item.name === newItem.name);
-      if (index !== -1) {
-        const updatedItems = [...vsphereClusters];
-        updatedItems[index] = newItem;
-        return updatedItems;
-      } else {
-        return [...vsphereClusters, newItem];
-      }
-    };
-    if (response?.type == "ADDED" || response?.type == "MODIFIED") {
-      const data: ClusterInfraType = (response?.data as ClusterInfraType)
-      setVsphereClusters(updateOrAddItem(data));
-    } else {
-      const data = response?.data
-      setVsphereClusters(vsphereClusters.filter(
-        item => item.name !== data.name
-      ));
-    }
+    setVsphereClusters(receiveAndPopulate(lastJsonMessage, [...vsphereClusters]))
     setLoading(false)
-  }, [lastJsonMessage, vsphereClusters])
+  }, [lastJsonMessage])
+
+  const filteredCluster: ClusterType | undefined = selected
+    ? FilterItems(selected, vsphereClusters)
+    : undefined;
 
   if (loading) {
     return(<div className="text-center"><Loader color="teal" size="xl"/></div>)
@@ -84,8 +59,8 @@ export default function ClusterInfraLister() {
         options={vsphereClusters}
         onChange={setSelected}/>
       {
-        filteredClusterInfra
-          ? <ClusterInfraDetails cluster={filteredClusterInfra} />
+        filteredCluster
+          ? <ClusterInfraDetails cluster={filteredCluster} />
           : <ClusterInfraTable clusters={vsphereClusters}/>
       }
     </Grid>
