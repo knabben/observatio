@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import Link from 'next/link';
@@ -12,7 +11,7 @@ import { Grid, GridCol, Title, Loader } from '@mantine/core';
 import ClusterInfraTable from '@/app/ui/dashboard/components/clusters/infra-table'
 import ClusterInfraDetails from "@/app/ui/dashboard/components/clusters/infra-details";
 
-import {ClusterInfraType, ClusterType} from "@/app/ui/dashboard/components/clusters/types";
+import {ClusterInfraType} from "@/app/ui/dashboard/components/clusters/types";
 import {receiveAndPopulate, WebSocket} from "@/app/lib/websocket";
 import {sendInitialRequest} from "@/app/lib/websocket";
 
@@ -36,7 +35,7 @@ export default function ClusterInfraLister() {
   useEffect(() => {
     setVsphereClusters(receiveAndPopulate(lastJsonMessage, [...vsphereClusters]))
     setLoading(false)
-  }, [lastJsonMessage])
+  }, [lastJsonMessage, setVsphereClusters])
 
   const filteredCluster: ClusterInfraType | undefined = selected
     ? FilterItems(selected, vsphereClusters)

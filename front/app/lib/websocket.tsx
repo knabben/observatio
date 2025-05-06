@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import useWebSocket, {ReadyState} from "react-use-websocket";
 import {WS_URL} from "@/app/lib/consts";
 
@@ -47,8 +49,6 @@ export function sendInitialRequest(readyState: number, type: string, sendJsonMes
  * Processes a WebSocket response and updates the provided items list based on the response type.
  *
  * @param {WSResponse | null} response - The WebSocket response object, or null if no response was received.
- * @param {T[]} items - The current list of items to be updated.
- * @param {(items: T[]) => void} setItems - A callback function used to update the list of items with the new state.
  * @return {void} This function does not return a value.
  */
 export enum WSOperationType {
@@ -57,11 +57,7 @@ export enum WSOperationType {
   DELETED = "DELETED"
 }
 
-export interface NamedItem {
-  name: string;
-}
-
-export function receiveAndPopulate<T extends NamedItem>(
+export function receiveAndPopulate(
   response: any,
   items: any[],
 ): any {

@@ -6,7 +6,7 @@ import { sourceCodePro400 } from "@/fonts";
 
 import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";
-import { Grid, GridCol, Title, Badge, Alert, Loader } from '@mantine/core';
+import { Grid, GridCol, Title, Loader } from '@mantine/core';
 
 import {ClusterType} from "@/app/ui/dashboard/components/clusters/types";
 import ClusterTable from '@/app/ui/dashboard/components/clusters/table'
@@ -32,7 +32,7 @@ export default function ClusterLister() {
   useEffect(() => {
     setClusters(receiveAndPopulate(lastJsonMessage, [...clusters]))
     setLoading(false)
-  }, [lastJsonMessage])
+  }, [lastJsonMessage, setClusters])
 
   const filteredCluster: ClusterType | undefined = selected
     ? FilterItems(selected, clusters)
