@@ -38,7 +38,7 @@ export default function ClusterInfraLister() {
     setLoading(false)
   }, [lastJsonMessage])
 
-  const filteredCluster: ClusterType | undefined = selected
+  const filteredCluster: ClusterInfraType | undefined = selected
     ? FilterItems(selected, vsphereClusters)
     : undefined;
 
