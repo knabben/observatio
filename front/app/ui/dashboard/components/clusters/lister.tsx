@@ -6,64 +6,51 @@ import { sourceCodePro400 } from "@/fonts";
 
 import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";
-import { Grid, GridCol, Title, Badge, Alert, Loader } from '@mantine/core';
+import { Grid, GridCol, Title, Loader } from '@mantine/core';
 
-import { getClusterList } from "@/app/lib/data";
+import {ClusterType} from "@/app/ui/dashboard/components/clusters/types";
 import ClusterTable from '@/app/ui/dashboard/components/clusters/table'
 import ClusterDetails from "@/app/ui/dashboard/components/clusters/details";
+import {receiveAndPopulate, sendInitialRequest, WebSocket} from "@/app/lib/websocket";
 
-type Status = {
-  failed: number;
-  total: number;
-}
-// ClusterLister: Cluster list and details component.
+/**
+ * A functional component that fetches, filters, and displays a list of clusters.
+ * The component integrates WebSocket for real-time communication and enables
+ * cluster search functionality. Displays a loader while data is being fetched.
+ */
 export default function ClusterLister() {
-  const [status, setStatus] = useState<Status>({failed: 0, total: 0})
-  const [clusters,setClusters] = useState<[]>([])
-  const [selected, setSelected] = useState('')
+  const [clusters,setClusters] = useState<ClusterType[]>([])
+  const [selected,setSelected] = useState('')
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
 
-  let filteredCluster = undefined;
-  if (selected) {
-    filteredCluster = FilterItems(selected, clusters);
-  }
+  const {sendJsonMessage, lastJsonMessage, readyState} = WebSocket()
 
   useEffect(() => {
-    const fetchData = async () => {
-      const response = await getClusterList()
-      setClusters(response.clusters)
-      setLoading(false)
-      setStatus({
-        "failed": response.failed,
-        "total": response.total,
-      })
-    }
-    fetchData().catch((e) => {
-      setLoading(false)
-      setError(e.toString())
-    })
-  }, [])
+    sendInitialRequest(readyState, "cluster", sendJsonMessage)
+  }, [readyState, sendJsonMessage])
+
+  useEffect(() => {
+    setClusters(receiveAndPopulate(lastJsonMessage, [...clusters]))
+    setLoading(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastJsonMessage, setClusters])
+
+  const filteredCluster: ClusterType | undefined = selected
+    ? FilterItems(selected, clusters)
+    : undefined;
 
   if (loading) {
-      return(<div className="text-center"><Loader color="teal" size="xl"/></div>)
-  }
-  if (error) {
-    return (<Alert variant="light" color="red" title="Endpoint Error"> {error} </Alert>)
+    return (<div className="text-center"><Loader color="teal" size="xl"/></div>)
   }
 
   return (
     <Grid justify="flex-end" align="flex-start">
-      <GridCol h={60} span={6}>
+      <GridCol h={60} span={8}>
         <Link href="/dashboard/clusters">
           <Title className={sourceCodePro400.className} order={2}>
             Clusters / cluster.x-k8s.io
           </Title>
         </Link>
-      </GridCol>
-      <GridCol className="text-right" h={60} span={2}>
-        <Badge className="m-1" radius="sm" variant="dot" color="blue" size="lg">{status.total}</Badge>
-        { status.failed > 0 ? <Badge radius="sm" variant="dot" color="red" size="lg">{status.failed}</Badge> : <div></div> }
       </GridCol>
       <Search
         options={clusters}
