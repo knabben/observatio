@@ -2,68 +2,59 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import {sourceCodePro400} from "@/fonts";
 
 import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";
-import { Grid, GridCol, Title, Badge, Loader, Alert } from '@mantine/core';
+import {Grid, GridCol, Title } from '@mantine/core';
 
-import { getMachines } from "@/app/lib/data";
 import MachinesTable from "@/app/ui/dashboard/components/machines/table";
 import MachineDetails from "@/app/ui/dashboard/components/machines/details";
 
-type Status = {
-  failed: number;
-  total: number;
-}
+import {MachineType} from "@/app/ui/dashboard/components/machines/types";
+import {receiveAndPopulate, sendInitialRequest, WebSocket} from "@/app/lib/websocket";
+import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
 
-// MachineLister: List machines existent in the cluster.
-export default function MachineLister () {
-  const [status, setStatus] = useState<Status>({failed: 0, total: 0})
-  const [machines,setMachines] = useState<[]>([])
+/**
+ * MachineLister component handles listing and displaying details of machines.
+ * It manages state for machines, selected machine, and loading status.
+ * Uses WebSocket to fetch and populate machine data and renders a loader while data is being loaded.
+ * Once the data is available, it renders a search interface and displays filtered results or a table of machines.
+ */
+export default function MachineLister() {
+  const [machines, setMachines] = useState<MachineType[]>([])
   const [selected, setSelected] = useState('')
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
 
-  let filteredMachines = undefined;
-  if (selected) {
-    filteredMachines = FilterItems(selected, machines);
-  }
+  const filteredMachines = selected
+    ? FilterItems(selected, machines)
+    : undefined;
+
+  const {sendJsonMessage, lastJsonMessage, readyState} = WebSocket()
 
   useEffect(() => {
-    const fetchData = async () => {
-      const response = await getMachines();
-      setMachines(response.machines)
-      setLoading(false)
-      setStatus({
-        "failed": response.failed,
-        "total": response.total,
-      })
-    }
-    fetchData().catch((e) => {
-      setLoading(false)
-      setError(e.toString())
-    })
-  }, [])
+    sendInitialRequest(readyState, "machine", sendJsonMessage)
+    console.log(readyState)
+  }, [readyState, sendJsonMessage])
+
+  useEffect(() => {
+    setMachines(receiveAndPopulate(lastJsonMessage, [...machines]))
+    setLoading(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastJsonMessage, setMachines])
 
   if (loading) {
-    return(<div className="text-center"><Loader color="teal" size="xl"/></div>)
-  }
-  if (error) {
-    return (<Alert variant="light" color="red" title="Endpoint Error"> {error} </Alert>)
+    return <CenteredLoader/>;
   }
 
   return (
     <Grid justify="flex-end" align="flex-start">
-      <GridCol h={60} span={6}>
+      <GridCol h={60} span={8}>
         <Link href="/dashboard/clusters">
-          <Title className="hidden md:block" order={2}>
+          <Title className={sourceCodePro400.className} order={2}>
             Machines / cluster.x-k8s.io
           </Title>
         </Link>
-      </GridCol>
-      <GridCol className="text-right" h={60} span={2}>
-        <Badge className="m-1" radius="sm" variant="dot" color="blue" size="lg">{status.total}</Badge>
-        { status.failed > 0 ? <Badge radius="sm" variant="dot" color="red" size="lg">{status.failed}</Badge> : <div></div> }
       </GridCol>
       <Search
         options={machines}

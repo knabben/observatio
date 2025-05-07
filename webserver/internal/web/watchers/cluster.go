@@ -14,7 +14,21 @@ import (
 	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/processor"
 )
 
-// WatchClusters send the websocket request with the serialized payload.
+var (
+	clusterGVR = schema.GroupVersionResource{
+		Group:    "cluster.x-k8s.io",
+		Version:  "v1beta1",
+		Resource: "clusters",
+	}
+
+	clusterInfraGVR = schema.GroupVersionResource{
+		Group:    "infrastructure.cluster.x-k8s.io",
+		Version:  "v1beta1",
+		Resource: "vsphereclusters",
+	}
+)
+
+// WatchClusters watches Kubernetes cluster resources and streams events through a WebSocket connection.
 func WatchClusters(ctx context.Context, conn *websocket.Conn, objType string) error {
 	// Create the converter function for CAPI cluster processing
 	converter := func(event runtime.Object) (any, error) {
@@ -24,18 +38,18 @@ func WatchClusters(ctx context.Context, conn *websocket.Conn, objType string) er
 			unstructuredObj.UnstructuredContent(), &cluster); err != nil {
 			return nil, err
 		}
-		clusterModel, _ := processor.ProcessCluster(cluster)
-		return clusterModel, nil
+		return processor.ProcessCluster(cluster), nil
 	}
 	// Process the websocket response and send it back.
-	return processWebSocket(ctx, objType, conn, converter, schema.GroupVersionResource{
-		Group:    "cluster.x-k8s.io",
-		Version:  "v1beta1",
-		Resource: "clusters",
+	return WatchResourceViaWebSocket(ctx, WebSocketWatchConfig{
+		ObjectType: objType,
+		Conn:       conn,
+		Converter:  converter,
+		GVR:        clusterGVR,
 	})
 }
 
-// WatchVSphereClusters send the websocket request with the serialized payload.
+// WatchVSphereClusters streams events of vSphereClusters to a WebSocket connection using a dynamic Kubernetes client.
 func WatchVSphereClusters(ctx context.Context, conn *websocket.Conn, objType string) error {
 	// Create the converter function for CAPV cluster processing
 	converter := func(event runtime.Object) (any, error) {
@@ -45,13 +59,13 @@ func WatchVSphereClusters(ctx context.Context, conn *websocket.Conn, objType str
 			unstructuredObj.UnstructuredContent(), &vsphereCluster); err != nil {
 			return nil, err
 		}
-		clusterModel, _ := processor.ProcessClusterInfra(vsphereCluster)
-		return clusterModel, nil
+		return processor.ProcessClusterInfra(vsphereCluster), nil
 	}
 	// Process the websocket response and send it back.
-	return processWebSocket(ctx, objType, conn, converter, schema.GroupVersionResource{
-		Group:    "infrastructure.cluster.x-k8s.io",
-		Version:  "v1beta1",
-		Resource: "vsphereclusters",
+	return WatchResourceViaWebSocket(ctx, WebSocketWatchConfig{
+		ObjectType: objType,
+		Conn:       conn,
+		Converter:  converter,
+		GVR:        clusterInfraGVR,
 	})
 }

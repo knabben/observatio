@@ -22,7 +22,7 @@ type response interface {
 type ClusterFetcher[T input] func(ctx context.Context, c client.Client) ([]T, error)
 type ProcessCluster[T input, R response] func(clusters []T) R
 
-// FetchClusters returns and process the cluster list response
+// FetchClusters returns and processes the cluster list response
 func FetchClusters(ctx context.Context, c client.Client) (response models.ClusterResponse, err error) {
 	return ProcessClusters[clusterv1.Cluster, models.ClusterResponse](
 		ctx, c, ListClusters, processor.ProcessClusterResponse,

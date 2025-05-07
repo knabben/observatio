@@ -16,7 +16,7 @@ func FetchMachineDeployment(ctx context.Context, c client.Client) (response mode
 	if mds, err = ListMachineDeployment(ctx, c); err != nil {
 		return response, err
 	}
-	return processor.ProcessMachineDeployment(mds), nil
+	return processor.ProcessMachineDeploymentResponse(mds), nil
 }
 
 func ListMachineDeployment(ctx context.Context, c client.Client) (machineDeployments []clusterv1.MachineDeployment, err error) {

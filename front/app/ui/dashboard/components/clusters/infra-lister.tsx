@@ -6,14 +6,14 @@ import { sourceCodePro400 } from "@/fonts";
 
 import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";
-import { Grid, GridCol, Title, Loader } from '@mantine/core';
+import { Grid, GridCol, Title } from '@mantine/core';
 
 import ClusterInfraTable from '@/app/ui/dashboard/components/clusters/infra-table'
 import ClusterInfraDetails from "@/app/ui/dashboard/components/clusters/infra-details";
 
 import {ClusterInfraType} from "@/app/ui/dashboard/components/clusters/types";
-import {receiveAndPopulate, WebSocket} from "@/app/lib/websocket";
-import {sendInitialRequest} from "@/app/lib/websocket";
+import {receiveAndPopulate, sendInitialRequest, WebSocket} from "@/app/lib/websocket";
+import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
 
 /**
  * The `ClusterInfraLister` function is a React functional component responsible for rendering
@@ -25,6 +25,10 @@ export default function ClusterInfraLister() {
   const [vsphereClusters,setVsphereClusters] = useState<ClusterInfraType[]>([])
   const [selected, setSelected] = useState('')
   const [loading, setLoading] = useState(true)
+
+  const filteredCluster: ClusterInfraType | undefined = selected
+    ? FilterItems(selected, vsphereClusters)
+    : undefined;
 
   const {sendJsonMessage, lastJsonMessage, readyState} = WebSocket()
 
@@ -38,12 +42,8 @@ export default function ClusterInfraLister() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastJsonMessage, setVsphereClusters])
 
-  const filteredCluster: ClusterInfraType | undefined = selected
-    ? FilterItems(selected, vsphereClusters)
-    : undefined;
-
   if (loading) {
-    return(<div className="text-center"><Loader color="teal" size="xl"/></div>)
+    return <CenteredLoader/>;
   }
 
   return (
