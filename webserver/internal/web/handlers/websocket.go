@@ -49,13 +49,12 @@ var (
 
 // handleWebsocket starts the object listener based on the input object request.
 func handleWebsocket(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
 	var wsUpgrader = websocket.Upgrader{
 		ReadBufferSize:  websocketBufferSize,
 		WriteBufferSize: websocketBufferSize,
 		CheckOrigin:     func(r *http.Request) bool { return true },
 	}
+
 	conn, err := wsUpgrader.Upgrade(w, r, nil)
 	if handleError(w, http.StatusInternalServerError, err) {
 		return
@@ -69,17 +68,12 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) {
 	for _, objType := range subscribeRequest.Types {
 		watchHandler, exists := watchHandlers[ObjectType(objType)]
 		if !exists {
-			// ERROR
 			continue
 		}
-		go startResourceWatcher(ctx, w, conn, objType, watchHandler)
-	}
-}
-
-// startResourceWatcher initiates a watcher for the specified resource type
-func startResourceWatcher(ctx context.Context, w http.ResponseWriter, conn *websocket.Conn, objType string, watchFn websocketWatcher) {
-	if err := watchFn(ctx, conn, objType); err != nil {
-		handleError(w, http.StatusInternalServerError, err)
+		err := watchHandler(r.Context(), conn, objType)
+		if handleError(w, http.StatusInternalServerError, err) {
+			return
+		}
 	}
 }
 
