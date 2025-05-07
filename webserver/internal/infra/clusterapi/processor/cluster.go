@@ -9,7 +9,7 @@ import (
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 )
 
-// ProcessCluster converts a modeling upstream cluster object.
+// ProcessCluster transforms a clusterv1.Cluster object into a models.Cluster representation.
 func ProcessCluster(cl clusterv1.Cluster) (cluster models.Cluster) {
 	clusterClass := models.ClusterClass{IsClusterClass: false}
 	if cl.Spec.Topology != nil {
@@ -46,7 +46,6 @@ func ProcessCluster(cl clusterv1.Cluster) (cluster models.Cluster) {
 	return cluster
 }
 
-// ProcessClusterResponse returns the full response and summary of clusters objects.
 func ProcessClusterResponse(clusters []clusterv1.Cluster) models.ClusterResponse {
 	failedClusterCount := 0
 	clusterList := make([]models.Cluster, 0, len(clusters))
@@ -68,7 +67,7 @@ func isClusterFailed(cl clusterv1.Cluster) bool {
 	return !cl.Status.InfrastructureReady || !cl.Status.ControlPlaneReady
 }
 
-// ProcessClusterInfra converts a upstream CAPV object into internal model.
+// ProcessClusterInfra processes a VSphereCluster object into a ClusterInfra model for consistent infrastructure representation.
 func ProcessClusterInfra(cl capv.VSphereCluster) models.ClusterInfra {
 	var clusterOwner string
 	for _, owner := range cl.OwnerReferences {
@@ -88,7 +87,7 @@ func ProcessClusterInfra(cl capv.VSphereCluster) models.ClusterInfra {
 
 }
 
-// ProcessClusterInfraResponse returns the full response and summary of CAPV objects.
+// ProcessClusterInfraResponse generates a response of ClusterInfra models by processing a list of VSphereCluster objects.
 func ProcessClusterInfraResponse(clusters []capv.VSphereCluster) models.ClusterInfraResponse {
 	failed := 0
 	clusterList := make([]models.ClusterInfra, 0, len(clusters))
