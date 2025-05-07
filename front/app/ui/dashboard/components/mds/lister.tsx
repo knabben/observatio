@@ -1,76 +1,66 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
+import {sourceCodePro400} from "@/fonts";
 
 import Search from '@/app/ui/dashboard/search'
 import {FilterItems} from "@/app/dashboard/utils";
-import { Grid, GridCol, Title, Badge, Loader, Alert } from '@mantine/core';
+import { Grid, GridCol, Title } from '@mantine/core';
 
-import {getMachinesDeployments} from "@/app/lib/data";
 import MachineDeploymentTable from '@/app/ui/dashboard/components/mds/table'
 import MachineDeploymentDetails from "@/app/ui/dashboard/components/mds/details";
-import {sourceCodePro400} from "@/fonts";
 
-type Status = {
-  failed: number;
-  total: number;
-}
-// MDLister: List the MDs existent in the cluster.
-export default function MDLister() {
-  const [status, setStatus] = useState<Status>({failed: 0, total: 0})
-  const [mds, setMD] = useState<[]>([])
+import {MachineDeploymentType} from "@/app/ui/dashboard/components/mds/types";
+import {receiveAndPopulate, sendInitialRequest, WebSocket} from "@/app/lib/websocket";
+import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
+
+/**
+ * MachineDeploymentLister is a functional component responsible for listing machine deployments
+ * and optionally showing details for a selected deployment. It manages state for the deployments,
+ * filters based on user selection, and handles WebSocket communication for data fetching.
+ */
+export default function MachineDeploymentLister() {
+  const [machineDeployments, setMachineDeployment] = useState<MachineDeploymentType[]>([])
   const [selected, setSelected] = useState('')
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
 
-  let filteredMD = undefined;
-  if (selected) {
-    filteredMD = FilterItems(selected, mds);
-  }
+  const filteredMD: MachineDeploymentType | undefined = selected
+    ? FilterItems(selected, machineDeployments)
+    : undefined;
+
+  const {sendJsonMessage, lastJsonMessage, readyState} = WebSocket()
 
   useEffect(() => {
-    const fetchData = async () => {
-      const response = await getMachinesDeployments()
-      setMD(response.machineDeployments)
-      setLoading(false)
-      setStatus({
-        "failed": response.failed,
-        "total": response.total,
-      })
-    }
-    fetchData().catch((e) => {
-      setLoading(false)
-      setError(e.toString())
-    })
-  }, [])
+    sendInitialRequest(readyState, "machine-deployment", sendJsonMessage)
+  }, [readyState, sendJsonMessage])
+
+  useEffect(() => {
+    setMachineDeployment(receiveAndPopulate(lastJsonMessage, [...machineDeployments]))
+    setLoading(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastJsonMessage, setMachineDeployment])
 
   if (loading) {
-    return(<div className="text-center"><Loader color="teal" size="xl"/></div>)
+    return <CenteredLoader/>;
   }
-  if (error) {
-    return (<Alert variant="light" color="red" title="Endpoint Error"> {error} </Alert>)
-  }
+
   return (
     <Grid justify="flex-end" align="flex-start">
-      <GridCol h={60} span={6}>
+      <GridCol h={60} span={8}>
         <Link href="/dashboard/machinedeployments">
           <Title className={sourceCodePro400.className} order={2}>
             Machine Deployments / cluster.x-k8s.io
           </Title>
         </Link>
       </GridCol>
-      <GridCol className="text-right" h={60} span={2}>
-        <Badge className="m-1" radius="sm" variant="dot" color="blue" size="lg">{status.total}</Badge>
-        { status.failed > 0 ? <Badge radius="sm" variant="dot" color="red" size="lg">{status.failed}</Badge> : <div></div> }
-      </GridCol>
       <Search
-        options={mds}
+        options={machineDeployments}
         onChange={setSelected}/>
       {
         filteredMD
           ? <MachineDeploymentDetails md={filteredMD} />
-          : <MachineDeploymentTable mds={mds} />
+          : <MachineDeploymentTable mds={machineDeployments} />
       }
     </Grid>
   )

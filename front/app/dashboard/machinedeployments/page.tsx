@@ -1,11 +1,11 @@
 import React from "react";
-import MDLister from '@/app/ui/dashboard/components/mds/lister'
+import MachineDeploymentLister from '@/app/ui/dashboard/components/mds/lister'
 
 export default async function MachinesDeployment() {
   return (
     <div>
       <main>
-        <MDLister />
+        <MachineDeploymentLister />
       </main>
     </div>
   )
