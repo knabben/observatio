@@ -13,10 +13,10 @@ import (
 type MachineFetcher[T any] func(ctx context.Context, c client.Client) ([]T, error)
 type ProcessMachine[T any, R any] func(machines []T) R
 
-// FetchMachines returns and process the machines list response
+// FetchMachines returns and processes the machine list response
 func FetchMachines(ctx context.Context, c client.Client) (response models.MachineResponse, err error) {
 	return ProcessMachines[clusterv1.Machine, models.MachineResponse](
-		ctx, c, ListMachines, processor.ProcessMachine,
+		ctx, c, ListMachines, processor.ProcessMachineResponse,
 	)
 }
 

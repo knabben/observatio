@@ -10,7 +10,7 @@ import (
 )
 
 // ProcessCluster converts a modeling upstream cluster object.
-func ProcessCluster(cl clusterv1.Cluster) (cluster models.Cluster, failed bool) {
+func ProcessCluster(cl clusterv1.Cluster) (cluster models.Cluster) {
 	clusterClass := models.ClusterClass{IsClusterClass: false}
 	if cl.Spec.Topology != nil {
 		clusterClass = models.ClusterClass{
@@ -42,39 +42,39 @@ func ProcessCluster(cl clusterv1.Cluster) (cluster models.Cluster, failed bool) 
 		cluster.PodNetwork = cl.Spec.ClusterNetwork.Pods.String()
 		cluster.ServiceNetwork = cl.Spec.ClusterNetwork.Services.String()
 	}
-	if cl.Status.InfrastructureReady || cl.Status.ControlPlaneReady {
-		failed = true
-	}
-	return cluster, failed
+
+	return cluster
 }
 
 // ProcessClusterResponse returns the full response and summary of clusters objects.
 func ProcessClusterResponse(clusters []clusterv1.Cluster) models.ClusterResponse {
-	var (
-		failed      int
-		clusterList []models.Cluster
-	)
+	failedClusterCount := 0
+	clusterList := make([]models.Cluster, 0, len(clusters))
 	for _, cl := range clusters {
-		cluster, clusterFailed := ProcessCluster(cl)
-		if clusterFailed {
-			failed += 1
+		clusterList = append(clusterList, ProcessCluster(cl))
+		if isClusterFailed(cl) {
+			failedClusterCount++
 		}
-		clusterList = append(clusterList, cluster)
 	}
+
 	return models.ClusterResponse{
 		Total:    len(clusters),
 		Clusters: clusterList,
-		Failing:  failed,
+		Failing:  failedClusterCount,
 	}
 }
 
+func isClusterFailed(cl clusterv1.Cluster) bool {
+	return !cl.Status.InfrastructureReady || !cl.Status.ControlPlaneReady
+}
+
 // ProcessClusterInfra converts a upstream CAPV object into internal model.
-func ProcessClusterInfra(cl capv.VSphereCluster) (cluster models.ClusterInfra, failed bool) {
+func ProcessClusterInfra(cl capv.VSphereCluster) models.ClusterInfra {
 	var clusterOwner string
 	for _, owner := range cl.OwnerReferences {
 		clusterOwner = owner.Name
 	}
-	cluster = models.ClusterInfra{
+	return models.ClusterInfra{
 		Name:                 cl.Name,
 		Cluster:              clusterOwner,
 		Server:               cl.Spec.Server,
@@ -85,24 +85,18 @@ func ProcessClusterInfra(cl capv.VSphereCluster) (cluster models.ClusterInfra, f
 		Conditions:           cl.Status.Conditions,
 		Ready:                cl.Status.Ready,
 	}
-	if !cl.Status.Ready {
-		failed = true
-	}
-	return cluster, failed
+
 }
 
 // ProcessClusterInfraResponse returns the full response and summary of CAPV objects.
 func ProcessClusterInfraResponse(clusters []capv.VSphereCluster) models.ClusterInfraResponse {
-	var (
-		clusterList []models.ClusterInfra
-		failed      int
-	)
+	failed := 0
+	clusterList := make([]models.ClusterInfra, 0, len(clusters))
 	for _, cl := range clusters {
-		cluster, clusterFailed := ProcessClusterInfra(cl)
-		if clusterFailed {
-			failed += 1
+		clusterList = append(clusterList, ProcessClusterInfra(cl))
+		if !cl.Status.Ready {
+			failed++
 		}
-		clusterList = append(clusterList, cluster)
 	}
 	return models.ClusterInfraResponse{
 		Total:    len(clusters),
