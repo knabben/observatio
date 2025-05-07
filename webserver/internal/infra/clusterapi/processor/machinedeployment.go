@@ -7,6 +7,7 @@ import (
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 )
 
+// ProcessMachineDeployment converts a clusterv1.MachineDeployment object into a models.MachineDeployment structure.
 func ProcessMachineDeployment(md clusterv1.MachineDeployment) models.MachineDeployment {
 	return models.MachineDeployment{
 		Name:                md.Name,
