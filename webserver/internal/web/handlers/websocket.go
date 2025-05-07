@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -19,41 +20,66 @@ var (
 )
 
 // handleWebsocket starts the object listener based on input object request.
+const (
+	websocketBufferSize = 1024
+)
+
+// ObjectType represents supported websocket subscription types
+type ObjectType string
+
+const (
+	TypeClusterInfra      ObjectType = "cluster-infra"
+	TypeCluster           ObjectType = "cluster"
+	TypeMachine           ObjectType = "machine"
+	TypeMachineDeployment ObjectType = "machine-deployment"
+)
+
+// websocketWatcher represents a function that watches specific resource types
+type websocketWatcher func(context.Context, *websocket.Conn, string) error
+
+var (
+	// watchHandlers maps object types to their respective watch functions
+	watchHandlers = map[ObjectType]websocketWatcher{
+		TypeClusterInfra:      watchers.WatchVSphereClusters,
+		TypeCluster:           watchers.WatchClusters,
+		TypeMachine:           watchers.WatchMachines,
+		TypeMachineDeployment: watchers.WatchMachineDeployments,
+	}
+)
+
+// handleWebsocket starts the object listener based on the input object request.
 func handleWebsocket(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	var upgrader = websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
+
+	var wsUpgrader = websocket.Upgrader{
+		ReadBufferSize:  websocketBufferSize,
+		WriteBufferSize: websocketBufferSize,
 		CheckOrigin:     func(r *http.Request) bool { return true },
 	}
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn, err := wsUpgrader.Upgrade(w, r, nil)
 	if handleError(w, http.StatusInternalServerError, err) {
 		return
 	}
 
-	var subscribeRequest SubscribeRequest
-	subscribeRequest, err = parseMessage(conn)
+	subscribeRequest, err := parseMessage(conn)
 	if handleError(w, http.StatusInternalServerError, err) {
 		return
 	}
 
 	for _, objType := range subscribeRequest.Types {
-		switch objType {
-		case TYPE_CLUSTER_INFRA:
-			go func() {
-				err := watchers.WatchVSphereClusters(ctx, conn, objType)
-				if handleError(w, http.StatusInternalServerError, err) {
-					return
-				}
-			}()
-		case TYPE_CLUSTER:
-			go func() {
-				err := watchers.WatchClusters(ctx, conn, objType)
-				if handleError(w, http.StatusInternalServerError, err) {
-					return
-				}
-			}()
+		watchHandler, exists := watchHandlers[ObjectType(objType)]
+		if !exists {
+			// ERROR
+			continue
 		}
+		go startResourceWatcher(ctx, w, conn, objType, watchHandler)
+	}
+}
+
+// startResourceWatcher initiates a watcher for the specified resource type
+func startResourceWatcher(ctx context.Context, w http.ResponseWriter, conn *websocket.Conn, objType string, watchFn websocketWatcher) {
+	if err := watchFn(ctx, conn, objType); err != nil {
+		handleError(w, http.StatusInternalServerError, err)
 	}
 }
 
