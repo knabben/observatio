@@ -17,7 +17,7 @@ func ProcessMachineDeployment(md clusterv1.MachineDeployment) models.MachineDepl
 		ReadyReplicas:       md.Status.ReadyReplicas,
 		UpdatedReplicas:     md.Status.UpdatedReplicas,
 		UnavailableReplicas: md.Status.UnavailableReplicas, // nolint
-		Created:             time.Now().Sub(md.ObjectMeta.CreationTimestamp.Time).String(),
+		Created:             time.Since(md.ObjectMeta.CreationTimestamp.Time).String(),
 		Phase:               clusterv1.MachineDeploymentPhase(md.Status.Phase),
 	}
 }
