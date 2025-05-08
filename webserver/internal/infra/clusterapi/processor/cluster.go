@@ -36,7 +36,7 @@ func ProcessCluster(cl clusterv1.Cluster) (cluster models.Cluster) {
 		InfrastructureReady: cl.Status.InfrastructureReady,
 		ControlPlaneReady:   cl.Status.ControlPlaneReady,
 		Conditions:          cl.Status.Conditions,
-		Created:             time.Now().Sub(cl.ObjectMeta.CreationTimestamp.Time).String(),
+		Created:             time.Since(cl.ObjectMeta.CreationTimestamp.Time).String(),
 	}
 	if cl.Spec.ClusterNetwork != nil {
 		cluster.PodNetwork = cl.Spec.ClusterNetwork.Pods.String()
@@ -78,7 +78,7 @@ func ProcessClusterInfra(cl capv.VSphereCluster) models.ClusterInfra {
 		Cluster:              clusterOwner,
 		Server:               cl.Spec.Server,
 		Thumbprint:           cl.Spec.Thumbprint,
-		Created:              time.Now().Sub(cl.ObjectMeta.CreationTimestamp.Time).String(),
+		Created:              time.Since(cl.ObjectMeta.CreationTimestamp.Time).String(),
 		ControlPlaneEndpoint: cl.Spec.ControlPlaneEndpoint.String(),
 		Modules:              cl.Spec.ClusterModules,
 		Conditions:           cl.Status.Conditions,
