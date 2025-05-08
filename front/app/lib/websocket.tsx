@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import useWebSocket, {ReadyState} from "react-use-websocket";
-import {WS_URL} from "@/app/lib/consts";
+
+export const WS_URL = "ws://localhost:8080/ws"
 
 export type WSResponse = {
   type: string;

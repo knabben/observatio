@@ -9,24 +9,83 @@ on:
       - main
 
 jobs:
-  build:
+  # Job responsible for running linting and tests for the frontend codebase
+  # Sets up Node.js environment, installs dependencies, runs linting checks
+  # and executes frontend test suite
+  lint-test-frontend:
     runs-on: ubuntu-latest
     steps:
+      # Check out repository
       - name: Check out code
         uses: actions/checkout@v2
 
-      - name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: '1.23.1'
-
+      # Set up node version 20
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '20'
+      # Install all dependencies
+      - name: Install dependencies
+        run: cd front; npm install --include=dev
 
+      # Execute React linting checks using make command
+      - name: Run linters
+        run: make lint-frontend
+
+      # Run frontend tests using make command
+      - name: Run Tests
+        run: make run-tests-frontend
+
+  # Job responsible for running linting and tests for the backend codebase
+  # Sets up Go environment, runs linting checks, and executes backend tests
+  lint-test-backend:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Check out repository code
+      - name: Check out code
+        uses: actions/checkout@v2
+      
+      # Set up Go environment with specified version
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.23.1'
+      
+      # Execute Go linting checks using make command
+      - name: Run Linter
+        run: make lint-backend
+      
+      # Run backend tests using make command
+      - name: Run tests
+        run: make run-tests-backend
+
+  # Build job runs after successful completion of lint and test jobs
+  # Responsible for building both frontend and backend applications
+  build:
+    runs-on: ubuntu-latest
+    needs: [ "lint-test-backend", "lint-test-frontend" ]
+    steps:
+      # Check out repository code
+      - name: Check out code
+        uses: actions/checkout@v2
+      
+      # Set up Go environment for backend build
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.23.1'
+      
+      # Set up Node.js environment for frontend build
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+      
+      # Install frontend dependencies
       - name: Install dependencies
         run: cd front; npm install
-
+      
+      # Execute build process for both frontend and backend
       - name: Run Build
         run: make build
