@@ -2,7 +2,7 @@
 
 import useWebSocket, {ReadyState} from "react-use-websocket";
 
-export const WS_URL = "ws://localhost:8080/ws"
+export const WS_URL = typeof window !== 'undefined' ? `ws://${window.location.hostname}:8080/ws` : 'ws://localhost:8080/ws';
 
 export type WSResponse = {
   type: string;
