@@ -31,9 +31,15 @@ help: ## Display this help
 ## --------------------------------------
 ##@ lint:
 
-.PHONY: lint-go
-lint-go: ## Lint codebase
+.PHONY: lint-backend
+lint-backend: ## Lint codebase
 	docker run --rm -v $(PWD)/webserver:/app -w /app golangci/golangci-lint golangci-lint run -v --fix
+
+.PHONY: lint-frontend
+lint-frontend: ## Lint codebase
+	cd front; \
+	npm run lint
+
 
 ## --------------------------------------
 ## Development targets
@@ -56,6 +62,12 @@ run-tests-backend:
 run-frontend:  ## Run the frontend locally
 	pushd front; \
 	pnpm run dev; \
+	popd;
+
+.PHONY: run-tests-frontend
+run-tests-frontend:
+	pushd front; \
+	npm run test; \
 	popd;
 
 ## --------------------------------------
