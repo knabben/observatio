@@ -58,6 +58,7 @@ The backend server will start and listen for WebSocket connections. By default, 
 3. Run tests for the frontend:
    ```bash
    make run-tests-frontend
+   ```
  
 
 The frontend development server will start and be available at http://localhost:3000.
