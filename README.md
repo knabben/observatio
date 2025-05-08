@@ -19,8 +19,8 @@ and ensure robust management of their cloud-native environments.
 ### Prerequisites
 
 - Go 1.23.1
-- Node.js and npm
-- Make
+- Node.js and pnpm
+- Linux and Make
 
 ### Backend Setup
 
