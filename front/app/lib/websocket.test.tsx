@@ -5,7 +5,6 @@ import {ReadyState} from "react-use-websocket";
 import {describe, it, expect, jest} from "@jest/globals";
 
 describe("sendInitialRequest", () => {
-
   it("should send the initial request when WebSocket connection is open", () => {
     const mockSendJsonMessage = jest.fn();
     const readyState = ReadyState.OPEN;
