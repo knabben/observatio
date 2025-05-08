@@ -2,7 +2,7 @@
 
 import {sendInitialRequest} from "./websocket";
 import {ReadyState} from "react-use-websocket";
-import {describe, it, expect} from "@jest/globals";
+import {describe, it, expect, jest} from "@jest/globals";
 
 describe("sendInitialRequest", () => {
 
