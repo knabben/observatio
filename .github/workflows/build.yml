@@ -30,12 +30,11 @@ jobs:
 
       # Execute React linting checks using make command
       - name: Run linters
-        run: cd front; npm run lint
+        run: make lint-frontend
 
       # Run frontend tests using make command
       - name: Run Tests
-        run: cd front; npm run test
-
+        run: make run-tests-frontend
 
   # Job responsible for running linting and tests for the backend codebase
   # Sets up Go environment, runs linting checks, and executes backend tests
@@ -55,7 +54,7 @@ jobs:
       
       # Execute Go linting checks using make command
       - name: Run Linter
-        run: make lint-go
+        run: make lint-backend
       
       # Run backend tests using make command
       - name: Run tests
