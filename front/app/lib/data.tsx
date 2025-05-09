@@ -1,4 +1,4 @@
-export const URL = typeof window !== 'undefined' ? `http://${window.location.hostname}:8080/` : 'http://localhost:8080/';
+export const URL = typeof window !== 'undefined' ? `http://${window.location.hostname}:8080` : 'http://localhost:8080';
 
 // ----- Dashboard -----
 
