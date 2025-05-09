@@ -123,7 +123,7 @@ func Test_ClusterSummary(t *testing.T) {
 			Build()
 		summary, err := GenerateClusterSummary(context.Background(), c)
 		assert.NoError(t, err)
-		assert.Equal(t, 0, summary.Failed)
-		assert.Equal(t, 1, summary.Provisioned)
+		assert.Equal(t, 0, summary.ClusterFailed)
+		assert.Equal(t, 1, summary.ClusterProvisioned)
 	}
 }
