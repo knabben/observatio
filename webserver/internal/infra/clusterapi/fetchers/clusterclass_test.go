@@ -1,4 +1,4 @@
-package clusterapi
+package fetchers
 
 import (
 	"context"
