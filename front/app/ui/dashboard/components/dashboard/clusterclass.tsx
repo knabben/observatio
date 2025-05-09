@@ -5,7 +5,6 @@ import {Table, Card, Text} from '@mantine/core';
 import {getClusterClasses} from "@/app/lib/data";
 import Header from "@/app/ui/dashboard/utils/header";
 import {roboto, sourceCodePro400} from "@/fonts";
-import {ClusterClass, Conditions} from './types';
 import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
 
 type Conditions = {
@@ -38,8 +37,8 @@ export const useClusterClasses = () => {
     const fetchClusterClasses = async () => {
       try {
         setIsLoading(true);
-        const data = await getClusterClasses();
-        setClusterClasses(data);
+        const response = await getClusterClasses();
+        setClusterClasses(response);
       } catch (error) {
         handleFetchError(error as Error)
       } finally {
@@ -85,36 +84,24 @@ const ClusterClassRow: React.FC<{ clusterClass: ClusterClass }> = ({clusterClass
 export default function ClusterClassLister() {
   const {clusterClasses, isLoading, error} = useClusterClasses();
 
-  if (isLoading) {
-    return (
-      <Card shadow="md" className={sourceCodePro400.className} padding="lg" radius="md" withBorder>
-        <CenteredLoader />
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card shadow="md" className={sourceCodePro400.className} padding="lg" radius="md" withBorder>
-        <Text c="red">{error}</Text>
-      </Card>
-    );
-  }
-
   return (
     <Card shadow="md" className={roboto.className} radius="md" withBorder>
       <Header title="Cluster Class"/>
-      <Table striped highlightOnHover>
-        <TableHeader/>
-        <Table.Tbody className="text-sm">
-          {clusterClasses.map((clusterClass) => (
-            <ClusterClassRow
-              key={`${clusterClass.namespace}-${clusterClass.name}`}
-              clusterClass={clusterClass}
-            />
-          ))}
-        </Table.Tbody>
-      </Table>
+      {isLoading && <CenteredLoader />}
+      {error && <Text c="red">{error}</Text>}
+      {!isLoading && !error && (
+        <Table striped highlightOnHover>
+          <TableHeader/>
+          <Table.Tbody className="text-sm">
+            {clusterClasses.map((clusterClass) => (
+              <ClusterClassRow
+                key={`${clusterClass.namespace}-${clusterClass.name}`}
+                clusterClass={clusterClass}
+              />
+            ))}
+          </Table.Tbody>
+        </Table>
+      )}
     </Card>
   );
 }

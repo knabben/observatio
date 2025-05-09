@@ -6,8 +6,7 @@ import {getClusterSummary} from "@/app/lib/data";
 import Header from "@/app/ui/dashboard/utils/header";
 import {RadialBarChart} from "@mantine/charts";
 import {sourceCodePro400} from "@/fonts";
-import { CenteredLoader } from '../../utils/loader';
-import {useClusterClasses} from "@/app/ui/dashboard/components/dashboard/clusterclass";
+import { CenteredLoader } from '@/app/ui/dashboard/utils/loader';
 
 type ClusterSummary = {
   name: string;
@@ -66,35 +65,23 @@ export const useClusterSummary = () => {
 export default function ClusterSummary() {
   const {summary, isLoading, error} = useClusterSummary();
 
-  if (isLoading) {
-    return (
-      <Card shadow="md" className={sourceCodePro400.className} padding="lg" radius="md" withBorder>
-        <CenteredLoader />
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card shadow="md" className={sourceCodePro400.className} padding="lg" radius="md" withBorder>
-        <Text c="red">{error}</Text>
-      </Card>
-    );
-  }
-
   return (
     <Card shadow="md" className={sourceCodePro400.className} padding="lg" radius="md" withBorder>
       <Header title="Clusters Health"/>
+      {isLoading && <CenteredLoader />}
+      {error && <Text c="red">{error}</Text>}
+      {!error && !isLoading && (
       <Grid justify="center" align="center" ta="center">
-        <Grid.Col span={6}>
-          {summary.map((item: ClusterSummary, index: number) => (
-            <div key={index}>{item.value} {item.name}</div>
-          ))}
-        </Grid.Col>
-        <Grid.Col span={6}>
-          <RadialBarChart data={summary} dataKey="value" h={250}/>
-        </Grid.Col>
-      </Grid>
+          <Grid.Col span={6}>
+            {summary.map((item: ClusterSummary, index: number) => (
+              <div key={index}>{item.value} {item.name}</div>
+            ))}
+          </Grid.Col>
+          <Grid.Col span={6}>
+            <RadialBarChart data={summary} dataKey="value" h={250}/>
+          </Grid.Col>
+        </Grid>
+      )}
     </Card>
   );
 }
