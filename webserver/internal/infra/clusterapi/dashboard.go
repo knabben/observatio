@@ -17,10 +17,22 @@ import (
 // ClusterSummary defines the summary of cluster states from a kubeconfig.
 type ClusterSummary struct {
 	// Provisioned stores the number of running clusters.
-	Provisioned int `json:"provisioned"`
+	ClusterProvisioned int `json:"provisioned"`
 
 	// Failed stores the number of failing clusters.
-	Failed int `json:"failed"`
+	ClusterFailed int `json:"failed"`
+
+	// MachineDeploymentProvisioned stores the number of running machine deployments within the cluster.
+	MachineDeploymentProvisioned int `json:"machineDeploymentProvisioned"`
+
+	// MachineDeploymentFailed stores the number of machine deployments that have failed.
+	MachineDeploymentFailed int `json:"machineDeploymentFailed"`
+
+	// MachineProvisioned represents the count of successfully provisioned machines.
+	MachineProvisioned int `json:"machineProvisioned"`
+
+	// MachineFailed stores the number of failing machines.
+	MachineFailed int `json:"machineFailed"`
 }
 
 // GenerateClusterSummary returns the entire cluster summary from a kubeconfig.

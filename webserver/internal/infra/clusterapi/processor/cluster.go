@@ -11,9 +11,9 @@ import (
 
 // ProcessCluster transforms a clusterv1.Cluster object into a models.Cluster representation.
 func ProcessCluster(cl clusterv1.Cluster) (cluster models.Cluster) {
-	clusterClass := models.ClusterClass{IsClusterClass: false}
+	clusterClass := models.ClusterClassType{IsClusterClass: false}
 	if cl.Spec.Topology != nil {
-		clusterClass = models.ClusterClass{
+		clusterClass = models.ClusterClassType{
 			IsClusterClass:       true,
 			ClassName:            cl.Spec.Topology.Class,
 			ClassNamespace:       cl.Spec.Topology.ClassNamespace,
