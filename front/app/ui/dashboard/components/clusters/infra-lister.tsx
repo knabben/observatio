@@ -37,7 +37,8 @@ export default function ClusterInfraLister() {
   }, [readyState, sendJsonMessage])
 
   useEffect(() => {
-    setVsphereClusters(receiveAndPopulate(lastJsonMessage, [...vsphereClusters]))
+    const newVsphereClusters: ClusterInfraType[] = receiveAndPopulate(lastJsonMessage, [...vsphereClusters])
+    setVsphereClusters(newVsphereClusters.sort((a: ClusterInfraType, b: ClusterInfraType) => a.name.localeCompare(b.name)))
     setLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastJsonMessage, setVsphereClusters])

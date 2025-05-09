@@ -4,9 +4,8 @@ import React, {useState, useEffect} from 'react';
 import {Card, Grid} from '@mantine/core';
 import {getClusterSummary} from "@/app/lib/data";
 import Header from "@/app/ui/dashboard/utils/header";
+import {RadialBarChart} from "@mantine/charts";
 import {sourceCodePro400} from "@/fonts";
-import {RadialBarChart, PieChart} from "@mantine/charts";
-
 
 type Summary = {
   name: string,

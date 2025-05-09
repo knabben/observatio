@@ -34,11 +34,11 @@ export default function MachineLister() {
 
   useEffect(() => {
     sendInitialRequest(readyState, "machine", sendJsonMessage)
-    console.log(readyState)
   }, [readyState, sendJsonMessage])
 
   useEffect(() => {
-    setMachines(receiveAndPopulate(lastJsonMessage, [...machines]))
+    const newMachines = receiveAndPopulate(lastJsonMessage, [...machines])
+    setMachines(newMachines.sort((a: MachineType, b: MachineType) => a.name.localeCompare(b.cluster)))
     setLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastJsonMessage, setMachines])

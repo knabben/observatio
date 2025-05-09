@@ -30,7 +30,8 @@ export default function ClusterLister() {
   }, [readyState, sendJsonMessage])
 
   useEffect(() => {
-    setClusters(receiveAndPopulate(lastJsonMessage, [...clusters]))
+    const newClusters: ClusterType[] = receiveAndPopulate(lastJsonMessage, [...clusters])
+    setClusters(newClusters.sort((a: ClusterType, b: ClusterType) => a.name.localeCompare(b.name)))
     setLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastJsonMessage, setClusters])
