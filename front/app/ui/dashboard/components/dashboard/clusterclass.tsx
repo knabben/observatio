@@ -4,7 +4,7 @@ import React, {useState, useEffect} from 'react';
 import {Table, Card, Text} from '@mantine/core';
 import {getClusterClasses} from "@/app/lib/data";
 import Header from "@/app/ui/dashboard/utils/header";
-import {roboto, sourceCodePro400} from "@/fonts";
+import {roboto} from "@/fonts";
 import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
 
 type Conditions = {
