@@ -51,7 +51,7 @@ func GenerateClusterSummary(ctx context.Context, c client.Client) (summary Clust
 		}
 		failed += 1
 	}
-	return ClusterSummary{Provisioned: provisioned, Failed: failed}, nil
+	return ClusterSummary{ClusterProvisioned: provisioned, ClusterFailed: failed}, nil
 }
 
 // Services defines the service name and path.
