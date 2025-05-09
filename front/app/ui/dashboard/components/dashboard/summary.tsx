@@ -1,44 +1,87 @@
 'use client';
 
 import React, {useState, useEffect} from 'react';
-import {Card, Grid, Space, Text} from '@mantine/core';
+import {Card, Grid,Text} from '@mantine/core';
 import {getClusterSummary} from "@/app/lib/data";
 import Header from "@/app/ui/dashboard/utils/header";
+import {RadialBarChart} from "@mantine/charts";
 import {sourceCodePro400} from "@/fonts";
+import { CenteredLoader } from '@/app/ui/dashboard/utils/loader';
 
-type Summary = {
-  failed?: bigint
-  provisioned?: bigint,
+type ClusterSummary = {
+  name: string;
+  value: number;
+  color: string;
+};
+
+type ClusterSummaryResponse = {
+  provisioned: number;
+  failed: number;
+};
+
+const CLUSTER_STATUS_COLORS = {
+  RUNNING: '#39b69d',
+  FAILED: '#f53f5e',
+} as const;
+
+const transformSummaryData = (response: ClusterSummaryResponse): ClusterSummary[] => [
+  {name: 'Running', value: response.provisioned, color: CLUSTER_STATUS_COLORS.RUNNING},
+  {name: 'Failed', value: response.failed, color: CLUSTER_STATUS_COLORS.FAILED},
+];
+
+export const useClusterSummary = () => {
+  const [summary, setSummary] = useState<ClusterSummary[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFetchError = (error: Error) => {
+    console.error('Failed to fetch cluster summary:', error);
+    setError('Failed to load cluster summary');
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    const fetchSummary = async () => {
+      try {
+        const response = await getClusterSummary();
+        setSummary(transformSummaryData(response));
+      } catch (error) {
+        handleFetchError(error as Error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchSummary();
+  }, []);
+
+  return {summary, isLoading, error};
 }
 
-// Summary : Resume clusters statuses.
+/**
+ * ClusterSummary is a React functional component that displays a summary of cluster health
+ * statistics in a card layout. It fetches cluster summary data, including the number of
+ * running and failed clusters, and presents the data both in textual and graphical formats.
+ */
 export default function ClusterSummary() {
-  const [clusterSummary, setClusterSummary] = useState<Summary>({});
-
-  useEffect( () => {
-    const fetch = async  () => {
-      setClusterSummary(await getClusterSummary())
-    }
-    fetch().catch( (e) => { console.error('error', e) })
-  }, [])
+  const {summary, isLoading, error} = useClusterSummary();
 
   return (
     <Card shadow="md" className={sourceCodePro400.className} padding="lg" radius="md" withBorder>
       <Header title="Clusters Health"/>
-      <div style={{ resize: 'vertical', overflow: 'hidden', maxHeight: '100%' }}>
-        <Grid ta="center">
+      {isLoading && <CenteredLoader />}
+      {error && <Text c="red">{error}</Text>}
+      {!error && !isLoading && (
+      <Grid justify="center" align="center" ta="center">
           <Grid.Col span={6}>
-            <Text size="lg">Provisioned</Text>
-            <Space h="lg" />
-            <div className="text-5xl text-[#39b69d]">{clusterSummary.provisioned}</div>
+            {summary.map((item: ClusterSummary, index: number) => (
+              <div key={index}>{item.value} {item.name}</div>
+            ))}
           </Grid.Col>
           <Grid.Col span={6}>
-            Failing
-            <Space h="lg"/>
-            <div className="text-5xl text-[#e01003]">{clusterSummary.failed}</div>
+            <RadialBarChart data={summary} dataKey="value" h={250}/>
           </Grid.Col>
         </Grid>
-      </div>
+      )}
     </Card>
   );
 }

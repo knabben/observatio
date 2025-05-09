@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/knabben/observatio/webserver/internal/infra/clusterapi"
+	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/fetchers"
+	"github.com/knabben/observatio/webserver/internal/infra/models"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -75,19 +77,19 @@ func handleSummaryCluster(w http.ResponseWriter, r *http.Request) {
 
 // handleClusterClass returns the available cluster classes in the mgmt cluster.
 func handleClusterClasses(w http.ResponseWriter, r *http.Request) {
-	var clusterClasses []clusterapi.ClusterClass
-
 	cli, err := clusterapi.NewClientWithScheme(r.Context(), scheme)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err)
 		return
 	}
-	if clusterClasses, err = clusterapi.FetchClusterClass(r.Context(), cli); err != nil {
+
+	var clusterClasses models.ClusterClassResponse
+	if clusterClasses, err = fetchers.FetchClusterClass(r.Context(), cli); err != nil {
 		writeError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	if err = writeResponse(w, clusterClasses); err != nil {
+	if err = writeResponse(w, clusterClasses.ClusterClasses); err != nil {
 		writeError(w, http.StatusInternalServerError, err)
 		return
 	}

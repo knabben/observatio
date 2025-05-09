@@ -1,4 +1,3 @@
-import ClusterInfo from '@/app/ui/dashboard/components/dashboard/clusterinfo'
 import ClusterVersions from '@/app/ui/dashboard/components/dashboard/versions'
 import ClusterSummary from '@/app/ui/dashboard/components/dashboard/summary'
 import ClusterClass from '@/app/ui/dashboard/components/dashboard/clusterclass'
@@ -20,12 +19,12 @@ export default async function Dashboard() {
       <GridCol span={5}>
         <ClusterSummary />
         <Space h="md"/>
-        <ClusterInfo />
+        <ClusterVersions />
+        <Space h="md"/>
+        <ClusterClass />
       </GridCol>
       <GridCol span={7}>
-        <ClusterClass />
         <Space h="md"/>
-        <ClusterVersions />
       </GridCol>
     </Grid>
   );

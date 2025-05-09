@@ -21,8 +21,8 @@ type ClusterInfraResponse struct {
 	Clusters []ClusterInfra `json:"clusters"`
 }
 
-// ClusterClass stores the topology definition for a Cluster
-type ClusterClass struct {
+// ClusterClassType stores the topology definition for a Cluster
+type ClusterClassType struct {
 	IsClusterClass            bool                                  `json:"isClusterClass,omitempty"`
 	ClassName                 string                                `json:"className,omitempty"`
 	ClassNamespace            string                                `json:"classNamespace,omitempty"`
@@ -37,7 +37,7 @@ type Cluster struct {
 	Name                string               `json:"name"`
 	Namespace           string               `json:"namespace"`
 	Paused              bool                 `json:"paused"`
-	ClusterClass        ClusterClass         `json:"clusterClass"`
+	ClusterClass        ClusterClassType     `json:"clusterClass"`
 	PodNetwork          string               `json:"podNetwork"`
 	ServiceNetwork      string               `json:"serviceNetwork"`
 	Phase               string               `json:"phase"`

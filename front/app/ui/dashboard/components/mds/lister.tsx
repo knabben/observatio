@@ -11,9 +11,9 @@ import { Grid, GridCol, Title } from '@mantine/core';
 import MachineDeploymentTable from '@/app/ui/dashboard/components/mds/table'
 import MachineDeploymentDetails from "@/app/ui/dashboard/components/mds/details";
 
-import {MachineDeploymentType} from "@/app/ui/dashboard/components/mds/types";
 import {receiveAndPopulate, sendInitialRequest, WebSocket} from "@/app/lib/websocket";
 import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
+import {MachineDeploymentType} from "@/app/ui/dashboard/components/mds/types";
 
 /**
  * MachineDeploymentLister is a functional component responsible for listing machine deployments
@@ -36,7 +36,8 @@ export default function MachineDeploymentLister() {
   }, [readyState, sendJsonMessage])
 
   useEffect(() => {
-    setMachineDeployment(receiveAndPopulate(lastJsonMessage, [...machineDeployments]))
+    const newMds = receiveAndPopulate(lastJsonMessage, [...machineDeployments])
+    setMachineDeployment(newMds.sort((a: MachineDeploymentType, b: MachineDeploymentType) => a.name.localeCompare(b.cluster)))
     setLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastJsonMessage, setMachineDeployment])

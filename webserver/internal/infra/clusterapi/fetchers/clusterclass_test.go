@@ -1,4 +1,4 @@
-package clusterapi
+package fetchers
 
 import (
 	"context"
@@ -43,6 +43,6 @@ func Test_FetchClusterClass(t *testing.T) {
 			Build()
 		ccs, err := FetchClusterClass(context.Background(), c)
 		assert.NoError(t, err)
-		assert.Len(t, ccs, 1)
+		assert.Len(t, ccs.ClusterClasses, 1)
 	}
 }
