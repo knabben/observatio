@@ -5,6 +5,11 @@ import { Pill, Table, Indicator, Space, SimpleGrid } from '@mantine/core';
 import {roboto, sourceCodePro400} from "@/fonts";
 import Panel from "@/app/ui/dashboard/utils/panel";
 
+/**
+ * Displays infrastructure details of a given cluster, including cluster specifications,
+ * vSphere cluster conditions, and associated modules.
+ * It renders details in a structured layout using grid, cards, panels, and tables.
+ */
 export default function ClusterInfraDetails({
   cluster,
 }: { cluster: ClusterInfraType }) {
