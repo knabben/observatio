@@ -1,11 +1,12 @@
 'use client';
 
 import React, {useState, useEffect} from 'react';
-import {Table, Card, Text} from '@mantine/core';
+import {Table, Card, Text, Chip} from '@mantine/core';
 import {getClusterClasses} from "@/app/lib/data";
 import Header from "@/app/ui/dashboard/utils/header";
 import {roboto} from "@/fonts";
 import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
+import { XMarkIcon } from '@heroicons/react/24/outline';
 
 type Conditions = {
   type: string,
@@ -66,11 +67,15 @@ const ClusterClassRow: React.FC<{ clusterClass: ClusterClass }> = ({clusterClass
     <Table.Td>{clusterClass.name}</Table.Td>
     <Table.Td>{clusterClass.namespace}</Table.Td>
     <Table.Td>{clusterClass.generation}</Table.Td>
-    {clusterClass.conditions.map((condition) => (
-      <Table.Td key={`${condition.type}-${condition.lastTransitionTime}`} rowSpan={1}>
-        {condition.type} - {condition.status}
-      </Table.Td>
-    ))}
+    <Table.Td rowSpan={1}>
+      {
+        clusterClass.conditions.map((condition, index) => (
+          condition.status
+          ? <Chip key={index} className="p-1" defaultChecked color="teal" variant="light">{condition.type}</Chip>
+          : <Chip key={index} defaultChecked icon={<XMarkIcon />} color="red" variant="light">{condition.type}</Chip>
+        ))
+      }
+    </Table.Td>
   </Table.Tr>
 );
 

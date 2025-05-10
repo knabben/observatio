@@ -4,12 +4,12 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/knabben/observatio/webserver/internal/infra/models"
 	corev1 "k8s.io/api/core/v1"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/client-go/rest"
 
 	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/fetchers"
-	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -17,10 +17,10 @@ import (
 // ClusterSummary defines the summary of cluster states from a kubeconfig.
 type ClusterSummary struct {
 	// Provisioned stores the number of running clusters.
-	ClusterProvisioned int `json:"provisioned"`
+	ClusterProvisioned int `json:"clusterProvisioned"`
 
 	// Failed stores the number of failing clusters.
-	ClusterFailed int `json:"failed"`
+	ClusterFailed int `json:"clusterFailed"`
 
 	// MachineDeploymentProvisioned stores the number of running machine deployments within the cluster.
 	MachineDeploymentProvisioned int `json:"machineDeploymentProvisioned"`
@@ -37,21 +37,32 @@ type ClusterSummary struct {
 
 // GenerateClusterSummary returns the entire cluster summary from a kubeconfig.
 func GenerateClusterSummary(ctx context.Context, c client.Client) (summary ClusterSummary, err error) {
-	var (
-		provisioned, failed int
-		clusters            []clusterv1.Cluster
-	)
-	if clusters, err = fetchers.ListClusters(ctx, c); err != nil {
+	// fetch clusters objects
+	var clusterResponse models.ClusterResponse
+	if clusterResponse, err = fetchers.FetchClusters(ctx, c); err != nil {
 		return summary, err
 	}
-	for _, cluster := range clusters {
-		if clusterv1.ClusterPhase(cluster.Status.Phase) == clusterv1.ClusterPhaseProvisioned {
-			provisioned += 1
-			continue
-		}
-		failed += 1
+
+	// fetch machine deployment objects
+	var mdResponse models.MachineDeploymentResponse
+	if mdResponse, err = fetchers.FetchMachineDeployment(ctx, c); err != nil {
+		return summary, err
 	}
-	return ClusterSummary{ClusterProvisioned: provisioned, ClusterFailed: failed}, nil
+
+	// fetch machine objects
+	var machineResponse models.MachineResponse
+	if machineResponse, err = fetchers.FetchMachines(ctx, c); err != nil {
+		return summary, err
+	}
+
+	return ClusterSummary{
+		ClusterProvisioned:           clusterResponse.Total - clusterResponse.Failing,
+		ClusterFailed:                clusterResponse.Failing,
+		MachineProvisioned:           machineResponse.Total - machineResponse.Failing,
+		MachineFailed:                machineResponse.Failing,
+		MachineDeploymentProvisioned: mdResponse.Total - mdResponse.Failing,
+		MachineDeploymentFailed:      mdResponse.Failing,
+	}, nil
 }
 
 // Services defines the service name and path.

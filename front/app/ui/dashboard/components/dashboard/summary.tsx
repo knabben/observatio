@@ -1,7 +1,7 @@
 'use client';
 
 import React, {useState, useEffect} from 'react';
-import {Card, Grid,Text} from '@mantine/core';
+import {Card, Grid, SimpleGrid, Text} from '@mantine/core';
 import {getClusterSummary} from "@/app/lib/data";
 import Header from "@/app/ui/dashboard/utils/header";
 import {RadialBarChart} from "@mantine/charts";
@@ -15,8 +15,12 @@ type ClusterSummary = {
 };
 
 type ClusterSummaryResponse = {
-  provisioned: number;
-  failed: number;
+  clusterProvisioned: number;
+  clusterFailed: number;
+  machineProvisioned: number;
+  machineFailed: number;
+  machineDeploymentProvisioned: number;
+  machineDeploymentFailed: number;
 };
 
 const CLUSTER_STATUS_COLORS = {
@@ -25,8 +29,12 @@ const CLUSTER_STATUS_COLORS = {
 } as const;
 
 const transformSummaryData = (response: ClusterSummaryResponse): ClusterSummary[] => [
-  {name: 'Running', value: response.provisioned, color: CLUSTER_STATUS_COLORS.RUNNING},
-  {name: 'Failed', value: response.failed, color: CLUSTER_STATUS_COLORS.FAILED},
+  {name: 'Cluster running', value: response.clusterProvisioned, color: CLUSTER_STATUS_COLORS.RUNNING},
+  {name: 'Cluster failed', value: response.clusterFailed, color: CLUSTER_STATUS_COLORS.FAILED},
+  {name: 'Machine D. running', value: response.machineDeploymentProvisioned, color: CLUSTER_STATUS_COLORS.RUNNING},
+  {name: 'Machine D. failed', value: response.machineDeploymentFailed, color: CLUSTER_STATUS_COLORS.FAILED},
+  {name: 'Machine provisioned', value: response.machineProvisioned, color: CLUSTER_STATUS_COLORS.RUNNING},
+  {name: 'Machine failed', value: response.machineFailed, color: CLUSTER_STATUS_COLORS.FAILED},
 ];
 
 export const useClusterSummary = () => {
@@ -71,11 +79,16 @@ export default function ClusterSummary() {
       {isLoading && <CenteredLoader />}
       {error && <Text c="red">{error}</Text>}
       {!error && !isLoading && (
-      <Grid justify="center" align="center" ta="center">
+      <Grid align="center" ta="center">
           <Grid.Col span={6}>
-            {summary.map((item: ClusterSummary, index: number) => (
-              <div key={index}>{item.value} {item.name}</div>
-            ))}
+            <SimpleGrid cols={2} verticalSpacing="sm">
+              {summary.map((item: ClusterSummary, index: number) => (
+                <>
+                  <div className="text-left">{item.name}</div>
+                  <div key={index}>{item.value}</div>
+                </>
+              ))}
+            </SimpleGrid>
           </Grid.Col>
           <Grid.Col span={6}>
             <RadialBarChart data={summary} dataKey="value" h={250}/>
