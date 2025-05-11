@@ -20,8 +20,8 @@ export default function MDTable({
             <Table.Th>Namespace</Table.Th>
             <Table.Th>Replicas</Table.Th>
             <Table.Th>Cluster</Table.Th>
-            <Table.Th>Age</Table.Th>
             <Table.Th ta="center">Phase</Table.Th>
+            <Table.Th ta="center">Age</Table.Th>
             <Table.Th ta="center">Status</Table.Th>
           </Table.Tr>
         </Table.Thead>
@@ -33,8 +33,8 @@ export default function MDTable({
                 <Table.Td>{md.namespace}</Table.Td>
                 <Table.Td>{md.replicas}</Table.Td>
                 <Table.Td>{md.cluster}</Table.Td>
-                <Table.Td>{md.created}</Table.Td>
                 <Table.Td ta="center">{md.phase}</Table.Td>
+                <Table.Td ta="center">{md.created}</Table.Td>
                 <Table.Td ta="center">
                   {md.unavailableReplicas == 0
                     ? <Indicator inline processing color="green" size={15}/>

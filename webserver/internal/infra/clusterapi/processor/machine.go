@@ -39,7 +39,7 @@ func ProcessMachine(m clusterv1.Machine) models.Machine {
 		Version:             version,
 		BootstrapReady:      m.Status.BootstrapReady,
 		InfrastructureReady: m.Status.InfrastructureReady,
-		Created:             time.Since(m.ObjectMeta.CreationTimestamp.Time).String(),
+		Created:             formatDuration(time.Since(m.ObjectMeta.CreationTimestamp.Time)),
 		Bootstrap:           bootstrap,
 		Phase:               clusterv1.MachinePhase(m.Status.Phase),
 	}
