@@ -50,6 +50,7 @@ type Cluster struct {
 // ClusterInfra stores the definition for CAPV
 type ClusterInfra struct {
 	Name                 string               `json:"name"`
+	Namespace            string               `json:"namespace"`
 	Cluster              string               `json:"cluster"`
 	Thumbprint           string               `json:"thumbprint"`
 	Created              string               `json:"created"`

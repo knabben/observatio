@@ -45,6 +45,7 @@ export type Modules = {
 
 export type ClusterInfraType = {
   name: string,
+  namespace: string,
   cluster: string,
   created: string,
   controlPlaneEndpoint: string,

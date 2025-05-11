@@ -75,6 +75,7 @@ func ProcessClusterInfra(cl capv.VSphereCluster) models.ClusterInfra {
 	}
 	return models.ClusterInfra{
 		Name:                 cl.Name,
+		Namespace:            cl.Namespace,
 		Cluster:              clusterOwner,
 		Server:               cl.Spec.Server,
 		Thumbprint:           cl.Spec.Thumbprint,
