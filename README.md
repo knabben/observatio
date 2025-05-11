@@ -51,8 +51,8 @@ The backend server will start and listen for WebSocket connections. By default, 
    ```
 
 2. Run the development server:
-   make run-frontend
    ```bash
+   make run-frontend
    ```
 
 3. Run tests for the frontend:
