@@ -20,10 +20,9 @@ export default async function Dashboard() {
         <ClusterSummary />
         <Space h="md"/>
         <ClusterClassLister />
-        <Space h="md"/>
-        <ClusterVersions />
       </GridCol>
       <GridCol span={7}>
+        <ClusterVersions />
         <Space h="md"/>
       </GridCol>
     </Grid>
