@@ -84,8 +84,8 @@ export default function ClusterSummary() {
             <SimpleGrid cols={2} verticalSpacing="sm">
               {summary.map((item: ClusterSummary, index: number) => (
                 <>
-                  <div className="text-left">{item.name}</div>
-                  <div key={index}>{item.value}</div>
+                  <div key="sum-{index}" className="text-left">{item.name}</div>
+                  <div key="sum-v-{index}">{item.value}</div>
                 </>
               ))}
             </SimpleGrid>

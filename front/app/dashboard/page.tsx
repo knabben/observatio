@@ -1,6 +1,7 @@
-import ClusterVersions from '@/app/ui/dashboard/components/dashboard/versions'
-import ClusterSummary from '@/app/ui/dashboard/components/dashboard/summary'
+import ClusterVersions from '@/app/ui/dashboard/components/dashboard/clusterversions'
+import ClusterSummary from '@/app/ui/dashboard/components/dashboard/clustersummary'
 import ClusterClassLister from '@/app/ui/dashboard/components/dashboard/clusterclass'
+import ClusterHierarchy from '@/app/ui/dashboard/components/dashboard/clusterhierarchy'
 
 import { sourceCodePro400 } from "@/fonts";
 import Link from 'next/link';
@@ -24,6 +25,7 @@ export default async function Dashboard() {
       <GridCol span={7}>
         <ClusterVersions />
         <Space h="md"/>
+        <ClusterHierarchy />
       </GridCol>
     </Grid>
   );
