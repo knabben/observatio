@@ -19,8 +19,8 @@ export default function MachinesTable({
             <Table.Th>Name</Table.Th>
             <Table.Th>Namespace</Table.Th>
             <Table.Th>Version</Table.Th>
-            <Table.Th>Node</Table.Th>
             <Table.Th>Cluster</Table.Th>
+            <Table.Th ta="center">Age</Table.Th>
             <Table.Th ta="center">Status</Table.Th>
           </Table.Tr>
         </Table.Thead>
@@ -31,8 +31,8 @@ export default function MachinesTable({
                 <Table.Td>{machine.name}</Table.Td>
                 <Table.Td>{machine.namespace}</Table.Td>
                 <Table.Td>{machine.version}</Table.Td>
-                <Table.Td>{machine.nodeName}</Table.Td>
                 <Table.Td>{machine.cluster}</Table.Td>
+                <Table.Td ta="center">{machine.created}</Table.Td>
                 <Table.Td ta="center">
                   {machine.bootstrapReady && machine.infrastructureReady
                     ? <Indicator inline processing color="green" size={15}/>
