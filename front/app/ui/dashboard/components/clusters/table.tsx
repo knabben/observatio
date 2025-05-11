@@ -21,10 +21,8 @@ export default function ClusterTable({
             <Table.Th>Name</Table.Th>
             <Table.Th>Namespace</Table.Th>
             <Table.Th>Version</Table.Th>
-            <Table.Th>Age</Table.Th>
             <Table.Th>Phase</Table.Th>
-            <Table.Th ta="center">Paused</Table.Th>
-            <Table.Th ta="center">isClusterClass</Table.Th>
+            <Table.Th ta="center">Age</Table.Th>
             <Table.Th ta="center">Status</Table.Th>
           </Table.Tr>
         </Table.Thead>
@@ -35,10 +33,8 @@ export default function ClusterTable({
                 <Table.Td>{cluster.name}</Table.Td>
                 <Table.Td>{cluster.namespace}</Table.Td>
                 <Table.Td>{cluster.clusterClass.kubernetesVersion}</Table.Td>
-                <Table.Td>{cluster.created}</Table.Td>
                 <Table.Td>{cluster.phase}</Table.Td>
-                <Table.Td ta="center"><Pill size="md">{cluster.paused.toString()}</Pill></Table.Td>
-                <Table.Td ta="center"><Pill size="md">{cluster.clusterClass.isClusterClass.toString()}</Pill></Table.Td>
+                <Table.Td ta="center">{cluster.created}</Table.Td>
                 <Table.Td ta="center">
                   {cluster.controlPlaneReady && cluster.infrastructureReady
                     ? <Indicator inline processing color="green" size={15}/>
