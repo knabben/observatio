@@ -158,3 +158,10 @@ func GenerateComponentVersions(ctx context.Context, c client.Client) (components
 	}
 	return components, nil
 }
+
+type Hierarchy struct {
+}
+
+func GenerateCAPIHiearchy(ctx context.Context, c client.Client) (hierarchy Hierarchy, err error) {
+	return hierarchy, err
+}
