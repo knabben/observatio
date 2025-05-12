@@ -37,17 +37,18 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	router.HandleFunc("/api/clusters/list", handleClusterList).Methods("GET")
 	router.HandleFunc("/api/clusters/infra/list", handleClusterInfraList).Methods("GET")
 
-	// Cluster API dashboard handlers
+	// Cluster API dashboard Handlers
 	router.HandleFunc("/api/clusters/info", handleClusterInfo).Methods("GET")
 	router.HandleFunc("/api/clusters/components", handleComponentsVersion).Methods("GET")
 	router.HandleFunc("/api/clusters/summary", handleSummaryCluster).Methods("GET")
 	router.HandleFunc("/api/clusters/classes", handleClusterClasses).Methods("GET")
 
-	// Cluster API Machine Deployments
+	// Cluster API Machine Deployments Handlers
 	router.HandleFunc("/api/machinesdeployment/list", handleMachineDeployments).Methods("GET")
 
-	// Cluster API Machine
+	// Cluster API Machine Handlers
 	router.HandleFunc("/api/machines/list", handleMachines).Methods("GET")
+	router.HandleFunc("/api/machines/infra/list", handleMachineInfra).Methods("GET")
 
 	// Websocket Handler for object watchers.
 	router.HandleFunc("/ws", handleWebsocket)

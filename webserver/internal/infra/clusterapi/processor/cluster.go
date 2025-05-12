@@ -36,7 +36,7 @@ func ProcessCluster(cl clusterv1.Cluster) (cluster models.Cluster) {
 		InfrastructureReady: cl.Status.InfrastructureReady,
 		ControlPlaneReady:   cl.Status.ControlPlaneReady,
 		Conditions:          cl.Status.Conditions,
-		Created:             formatDuration(time.Since(cl.ObjectMeta.CreationTimestamp.Time)),
+		Created:             formatDuration(time.Since(cl.CreationTimestamp.Time)),
 	}
 	if cl.Spec.ClusterNetwork != nil {
 		cluster.PodNetwork = cl.Spec.ClusterNetwork.Pods.String()
@@ -79,13 +79,12 @@ func ProcessClusterInfra(cl capv.VSphereCluster) models.ClusterInfra {
 		Cluster:              clusterOwner,
 		Server:               cl.Spec.Server,
 		Thumbprint:           cl.Spec.Thumbprint,
-		Created:              formatDuration(time.Since(cl.ObjectMeta.CreationTimestamp.Time)),
+		Created:              formatDuration(time.Since(cl.CreationTimestamp.Time)),
 		ControlPlaneEndpoint: cl.Spec.ControlPlaneEndpoint.String(),
 		Modules:              cl.Spec.ClusterModules,
 		Conditions:           cl.Status.Conditions,
 		Ready:                cl.Status.Ready,
 	}
-
 }
 
 // ProcessClusterInfraResponse generates a response of ClusterInfra models by processing a list of VSphereCluster objects.
