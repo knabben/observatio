@@ -2,7 +2,8 @@ import {MachineInfraType} from "@/app/ui/dashboard/components/machines/types";
 import {roboto} from "@/fonts";
 import Panel from "@/app/ui/dashboard/utils/panel";
 import React from "react";
-import {Card, Grid, GridCol, Indicator, Pill, SimpleGrid, Space, Table} from "@mantine/core";
+import {Card, Chip, Grid, GridCol, Indicator, Pill, SimpleGrid, Space, Table} from "@mantine/core";
+import { XMarkIcon } from '@heroicons/react/24/outline';
 
 export default function MachineInfraDetails({
   machine
@@ -10,7 +11,7 @@ export default function MachineInfraDetails({
   return (
     <GridCol className={roboto.className} span={12}>
       <Card withBorder shadow="sm" padding="lg" radius="md">
-        <SimpleGrid className="text-center" cols={3}>
+        <SimpleGrid className="text-center" cols={2}>
           <div>
             <span className="font-bold">Name: </span>
             {
@@ -98,10 +99,15 @@ export default function MachineInfraDetails({
           <Table variant="vertical">
             <Table.Tbody className="text-sm">
               {
-                machine.conditions?.map((condition) => (
-                  <Table.Tr key={condition.type}>
-                    <Table.Th>{condition.type}</Table.Th>
-                    <Table.Td><Pill size="sm">{condition.status}</Pill></Table.Td>
+                machine.conditions?.map((condition, ic) => (
+                  <Table.Tr key={ic}>
+                    <Table.Td>
+                      {
+                        condition.status
+                        ? <Chip key={ic} className="p-1" defaultChecked color="teal" variant="light">{condition.type}</Chip>
+                        : <Chip key={ic} defaultChecked icon={<XMarkIcon />} color="red" variant="light">{condition.type}</Chip>
+                      }
+                    </Table.Td>
                     <Table.Td>{condition.lastTransitionTime}</Table.Td>
                   </Table.Tr>
                 ))
