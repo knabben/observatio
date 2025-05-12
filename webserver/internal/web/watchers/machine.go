@@ -2,7 +2,6 @@ package watchers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gorilla/websocket"
 	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
@@ -58,7 +57,6 @@ func WatchMachinesInfra(ctx context.Context, conn *websocket.Conn, objType strin
 			unstructuredObj.UnstructuredContent(), &machine); err != nil {
 			return nil, err
 		}
-		fmt.Println(machine)
 		return processor.ProcessMachineInfra(machine), nil
 	}
 	// Process the websocket response and send it back.

@@ -2,7 +2,7 @@ import {MachineInfraType} from "@/app/ui/dashboard/components/machines/types";
 import {roboto} from "@/fonts";
 import Panel from "@/app/ui/dashboard/utils/panel";
 import React from "react";
-import {Card, Chip, Grid, GridCol, Indicator, Pill, SimpleGrid, Space, Table} from "@mantine/core";
+import {Card, Chip, Grid, GridCol, Indicator, SimpleGrid, Space, Table} from "@mantine/core";
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
 export default function MachineInfraDetails({

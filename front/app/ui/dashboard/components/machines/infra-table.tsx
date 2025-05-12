@@ -1,5 +1,4 @@
 import {MachineInfraType} from "@/app/ui/dashboard/components/machines/types";
-import {ClusterInfraType} from "@/app/ui/dashboard/components/clusters/types";
 import {roboto} from "@/fonts";
 import React from "react";
 import {GridCol, Indicator, Table} from "@mantine/core";
