@@ -5,7 +5,7 @@ import { Text, Space, Tabs, TabsList, TabsTab, TabsPanel } from '@mantine/core'
 
 export default async function Machines() {
   return (
-    <Tabs color="#aaf16a" defaultValue="clusters">
+    <Tabs color="#aaf16a" defaultValue="machine">
       <TabsList>
         <TabsTab value="machine">
           <Text size="md" fw={700}>Machines</Text>
@@ -18,7 +18,7 @@ export default async function Machines() {
         <Space h="lg" />
         <MachineLister />
       </TabsPanel>
-      <TabsPanel value="infra-machine">
+      <TabsPanel value="machine-vsphere">
         <Space h="lg" />
         <MachineInfraLister />
       </TabsPanel>

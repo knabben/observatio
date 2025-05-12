@@ -1,4 +1,10 @@
-// Cluster table + details types and models.
+// Machine table + details types and models.
+
+type Conditions = {
+  type: string,
+  status: boolean,
+  lastTransitionTime: string,
+}
 
 export type MachineType = {
   name: string,
@@ -16,5 +22,20 @@ export type MachineType = {
 }
 
 export type MachineInfraType = {
-  name: string
+  name: string,
+  namespace: string,
+  providerID: string,
+  failureDomain: string,
+  powerOffMode: string,
+  template: string,
+  cloneMode: string,
+  numCPUs: number,
+  numCoresPerSocket: number,
+  memoryMiB: number,
+  diskGiB: number,
+  ready: boolean,
+  failureReason: string,
+  failureMessage: string,
+  created: string,
+  conditions: Conditions[]
 }
