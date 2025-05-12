@@ -31,6 +31,7 @@ const (
 	TypeClusterInfra      ObjectType = "cluster-infra"
 	TypeCluster           ObjectType = "cluster"
 	TypeMachine           ObjectType = "machine"
+	TypeMachineInfra      ObjectType = "machine-infra"
 	TypeMachineDeployment ObjectType = "machine-deployment"
 )
 
@@ -43,6 +44,7 @@ var (
 		TypeClusterInfra:      watchers.WatchVSphereClusters,
 		TypeCluster:           watchers.WatchClusters,
 		TypeMachine:           watchers.WatchMachines,
+		TypeMachineInfra:      watchers.WatchMachinesInfra,
 		TypeMachineDeployment: watchers.WatchMachineDeployments,
 	}
 )
