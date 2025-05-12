@@ -7,7 +7,6 @@ import { Text, Space, Tabs, TabsList, TabsTab, TabsPanel } from '@mantine/core'
 export default async function Clusters() {
   return (
       <Tabs color="#aaf16a" defaultValue="clusters">
-
         <TabsList>
           <TabsTab value="clusters">
             <Text size="md" fw={700}>Clusters</Text>
