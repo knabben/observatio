@@ -9,6 +9,13 @@ type MachineResponse struct {
 	Machines []Machine `json:"machines"`
 }
 
+// MachineInfraResponse stores the list of machines in the cluster.
+type MachineInfraResponse struct {
+	Total    int            `json:"total"`
+	Failing  int            `json:"failing"`
+	Machines []MachineInfra `json:"machines"`
+}
+
 // Machine stores a machine detail.
 type Machine struct {
 	Name                string                 `json:"name"`
@@ -23,4 +30,8 @@ type Machine struct {
 	BootstrapReady      bool                   `json:"bootstrapReady"`
 	InfrastructureReady bool                   `json:"infrastructureReady"`
 	Phase               clusterv1.MachinePhase `json:"phase"`
+}
+
+type MachineInfra struct {
+	Name string `json:"name"`
 }
