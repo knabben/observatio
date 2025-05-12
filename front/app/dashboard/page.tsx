@@ -23,9 +23,9 @@ export default async function Dashboard() {
         <ClusterClassLister />
       </GridCol>
       <GridCol span={7}>
-        <ClusterVersions />
-        <Space h="md"/>
         <ClusterHierarchy />
+        <Space h="md"/>
+        <ClusterVersions />
       </GridCol>
     </Grid>
   );
