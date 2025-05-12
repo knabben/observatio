@@ -1,9 +1,10 @@
 import React from "react";
 import {ClusterInfraType} from "@/app/ui/dashboard/components/clusters/types";
-import {Card, Grid, GridCol} from "@mantine/core";
+import {Card, Chip, Grid, GridCol} from "@mantine/core";
 import { Pill, Table, Indicator, Space, SimpleGrid } from '@mantine/core';
 import {roboto, sourceCodePro400} from "@/fonts";
 import Panel from "@/app/ui/dashboard/utils/panel";
+import { XMarkIcon } from '@heroicons/react/24/outline';
 
 /**
  * Displays infrastructure details of a given cluster, including cluster specifications,
@@ -55,24 +56,7 @@ export default function ClusterInfraDetails({
             </Table>
           }/>
           <Space h="md" />
-          <Panel title="vSphere Cluster Conditions" content={
-              <Table variant="vertical">
-                <Table.Tbody className="text-sm">
-                  {
-                    cluster.conditions?.map((condition) => (
-                      <Table.Tr key={condition.type}>
-                        <Table.Th>{condition.type}</Table.Th>
-                        <Table.Td><Pill size="sm">{condition.status}</Pill></Table.Td>
-                        <Table.Td>{condition.lastTransitionTime}</Table.Td>
-                      </Table.Tr>
-                    ))
-                  }
-                </Table.Tbody>
-              </Table>
-          }></Panel>
-        </GridCol>
-        <Space h="md" />
-        <GridCol span={6}>
+
           <Panel title="Cluster Modules" content={
             <Table horizontalSpacing="sm" verticalSpacing="sm">
               <Table.Thead>
@@ -95,6 +79,29 @@ export default function ClusterInfraDetails({
               </Table.Tbody>
             </Table>
           }/>
+        </GridCol>
+        <Space h="md" />
+        <GridCol span={6}>
+          <Panel title="vSphere Cluster Conditions" content={
+            <Table variant="vertical">
+              <Table.Tbody className="text-sm">
+                {
+                  cluster.conditions?.map((condition,ic) => (
+                    <Table.Tr key={condition.type}>
+                      <Table.Td>
+                        {
+                          condition.status
+                            ? <Chip key={ic} className="p-1" defaultChecked color="teal" variant="light">{condition.type}</Chip>
+                            : <Chip key={ic} defaultChecked icon={<XMarkIcon />} color="red" variant="light">{condition.type}</Chip>
+                        }
+                      </Table.Td>
+                      <Table.Td>{condition.lastTransitionTime}</Table.Td>
+                    </Table.Tr>
+                  ))
+                }
+              </Table.Tbody>
+            </Table>
+          }></Panel>
         </GridCol>
       </Grid>
     </GridCol>
