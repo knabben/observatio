@@ -3,7 +3,7 @@ package models
 import (
 	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
-	"sigs.k8s.io/cluster-api/errors"
+	"sigs.k8s.io/cluster-api/errors" // nolint
 )
 
 // MachineResponse stores the list of machines in the cluster.
@@ -120,4 +120,8 @@ type MachineInfra struct {
 	// Conditions represents the conditions of a MachineInfra including
 	// type, status, and last update time.
 	Conditions clusterv1.Conditions `json:"conditions,omitempty"`
+
+	// Created represents the creation time of a MachineInfra, stored as a string in
+	// the provided timezone.
+	Created string `json:"created"`
 }

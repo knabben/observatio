@@ -2,6 +2,7 @@ package watchers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gorilla/websocket"
 	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
@@ -13,11 +14,18 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-var machineGVR = schema.GroupVersionResource{
-	Group:    "cluster.x-k8s.io",
-	Version:  "v1beta1",
-	Resource: "machines",
-}
+var (
+	machineGVR = schema.GroupVersionResource{
+		Group:    "cluster.x-k8s.io",
+		Version:  "v1beta1",
+		Resource: "machines",
+	}
+	machineInfraGVR = schema.GroupVersionResource{
+		Group:    "infrastructure.cluster.x-k8s.io",
+		Version:  "v1beta1",
+		Resource: "vspheremachines",
+	}
+)
 
 // WatchMachines watches Kubernetes cluster resources and streams events through a WebSocket connection.
 func WatchMachines(ctx context.Context, conn *websocket.Conn, objType string) error {
@@ -50,6 +58,7 @@ func WatchMachinesInfra(ctx context.Context, conn *websocket.Conn, objType strin
 			unstructuredObj.UnstructuredContent(), &machine); err != nil {
 			return nil, err
 		}
+		fmt.Println(machine)
 		return processor.ProcessMachineInfra(machine), nil
 	}
 	// Process the websocket response and send it back.
@@ -57,6 +66,6 @@ func WatchMachinesInfra(ctx context.Context, conn *websocket.Conn, objType strin
 		ObjectType: objType,
 		Conn:       conn,
 		Converter:  converter,
-		GVR:        machineGVR,
+		GVR:        machineInfraGVR,
 	})
 }

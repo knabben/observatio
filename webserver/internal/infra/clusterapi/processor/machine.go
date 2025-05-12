@@ -42,7 +42,7 @@ func ProcessMachine(m clusterv1.Machine) models.Machine {
 		Version:             version,
 		BootstrapReady:      m.Status.BootstrapReady,
 		InfrastructureReady: m.Status.InfrastructureReady,
-		Created:             formatDuration(time.Since(m.ObjectMeta.CreationTimestamp.Time)),
+		Created:             formatDuration(time.Since(m.CreationTimestamp.Time)),
 		Bootstrap:           bootstrap,
 		Phase:               clusterv1.MachinePhase(m.Status.Phase),
 	}
@@ -92,6 +92,7 @@ func ProcessMachineInfra(machine capv.VSphereMachine) models.MachineInfra {
 		Ready:             machine.Status.Ready,
 		FailureReason:     machine.Status.FailureReason,
 		FailureMessage:    stringPointer(machine.Status.FailureMessage),
+		Created:           formatDuration(time.Since(machine.CreationTimestamp.Time)),
 		Conditions:        machine.Status.Conditions,
 	}
 }
