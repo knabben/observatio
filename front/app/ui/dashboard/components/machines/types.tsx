@@ -14,3 +14,7 @@ export type MachineType = {
   infrastructureReady: boolean,
   phase: string,
 }
+
+export type MachineInfraType = {
+  name: string
+}
