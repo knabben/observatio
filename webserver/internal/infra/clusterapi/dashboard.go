@@ -2,8 +2,8 @@ package clusterapi
 
 import (
 	"context"
-	"fmt"
 	"strconv"
+	"sync"
 
 	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/fetchers"
 	"github.com/knabben/observatio/webserver/internal/infra/models"
@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/client-go/rest"
+	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
 	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -160,24 +161,32 @@ func GenerateComponentVersions(ctx context.Context, c client.Client) (components
 	return components, nil
 }
 
-type ClusterTopology struct {
-}
-
 func GenerateClusterTopology(ctx context.Context, c client.Client) (topology ClusterTopology, err error) {
-	machines, err := fetchers.ListMachineInfra(ctx, c)
-	if err != nil {
+	var machines []capv.VSphereMachine
+	if machines, err = fetchers.ListMachineInfra(ctx, c); err != nil {
 		return topology, err
 	}
 
-	for _, machine := range machines {
-		gvk := machine.GroupVersionKind() // assuming 'machine' is the instance you need the GVK from
-		gvr, _ := meta.UnsafeGuessKindToResource(gvk)
-		err := fetchOwnerHierarchy(ctx, machine.OwnerReferences, gvr, machine.Namespace, machine.Name)
-		if err != nil {
-			return topology, err
-		}
-		fmt.Println("----")
+	topology = ClusterTopology{
+		Nodes: make([]Node, 0),
+		Edges: make([]Edge, 0),
 	}
+
+	var wg sync.WaitGroup
+	for _, machine := range machines {
+		wg.Add(1)
+		go func(wg *sync.WaitGroup) error {
+			defer wg.Done()
+			gvr, _ := meta.UnsafeGuessKindToResource(machine.GroupVersionKind())
+			return topology.fetchOwnerHierarchy(ctx, machine.OwnerReferences, ObjectInfo{
+				GVR:       gvr,
+				Namespace: machine.Namespace,
+				Name:      machine.Name,
+			})
+		}(&wg)
+		break
+	}
+	wg.Wait()
 
 	return topology, err
 }

@@ -12,36 +12,122 @@ import (
 	"k8s.io/client-go/dynamic"
 )
 
-type {
-
+// Node represents a graph node with an identifier,
+// metadata, and its positional coordinates.
+type Node struct {
+	Id   string `json:"id"`
+	Data struct {
+		Label string `json:"label"`
+	} `json:"data"`
+	Position struct {
+		X int32 `json:"x"`
+		Y int32 `json:"y"`
+	} `json:"position"`
 }
 
-// fetchOwnerHierarchy traverse with bfs and create edges between nodes
-func fetchOwnerHierarchy(ctx context.Context, owners []metav1.OwnerReference, gvr schema.GroupVersionResource, namespace, name string) (err error) {
-	fmt.Println(name, namespace, gvr)
-	cc, _ := NewDynamicClient(ctx)
+// Edge represents a single connection between two nodes in a graph,
+// identified by an Id with source and destination nodes.
+type Edge struct {
+	Id     string `json:"id"`
+	Source string `json:"source"`
+	Target string `json:"target"`
+}
 
+type ClusterTopology struct {
+	Nodes []Node `json:"nodes"`
+	Edges []Edge `json:"edges"`
+}
+
+func (cl *ClusterTopology) AddNode(gvr schema.GroupVersionResource, namespace string, name string) (node Node) {
+	id := name + gvr.Group + gvr.Version + namespace
+	node = Node{
+		Id: id, Data: struct {
+			Label string `json:"label"`
+		}{Label: name},
+	}
+	if !cl.Find(&node) {
+		cl.Nodes = append(cl.Nodes, node)
+	}
+	fmt.Println("ADDING: ", id, name)
+	return node
+}
+
+func (cl *ClusterTopology) AddEdge(current, owner Node) {
+	cl.Edges = append(cl.Edges, Edge{
+		Id:     current.Id + owner.Id,
+		Source: current.Id,
+		Target: owner.Id,
+	})
+}
+
+func (cl *ClusterTopology) Find(node *Node) bool {
+	for _, n := range cl.Nodes {
+		if n.Id == node.Id {
+			return true
+		}
+	}
+	return false
+}
+
+// ObjectInfo holds the information needed to process an object
+type ObjectInfo struct {
+	GVR       schema.GroupVersionResource
+	Namespace string
+	Name      string
+}
+
+// ErrOwnerHierarchyFetch indicates an error occurred while fetching the owner hierarchy
+type ErrOwnerHierarchyFetch struct {
+	Msg string
+	Err error
+}
+
+func (e *ErrOwnerHierarchyFetch) Error() string {
+	return fmt.Sprintf("failed to fetch owner hierarchy: %s: %v", e.Msg, e.Err)
+}
+
+// fetchOwnerHierarchy builds a hierarchy of resource owners using breadth-first traversal
+func (cl *ClusterTopology) fetchOwnerHierarchy(ctx context.Context, owners []metav1.OwnerReference, currentResource ObjectInfo) error {
+	dynamicClient, err := NewDynamicClient(ctx)
+	if err != nil {
+		return &ErrOwnerHierarchyFetch{Msg: "failed to create dynamic client", Err: err}
+	}
+
+	// Adding current resource
+	var current = cl.AddNode(currentResource.GVR, currentResource.Namespace, currentResource.Name)
 	for _, owner := range owners {
-		ownerGVR := convertGVK(owner)
-		fmt.Println(ownerGVR, owner.Name, namespace)
-
-		parentOwners, err := FetchOwnerReferences(cc, ownerGVR, namespace, owner.Name)
-		if err != nil {
-			return err
+		// Adding owner node and edge
+		cl.AddEdge(current, cl.AddNode(convertGVK(owner), currentResource.Namespace, owner.Name))
+		if err := cl.processParentOwner(ctx, dynamicClient, owner, currentResource.Namespace); err != nil {
+			return &ErrOwnerHierarchyFetch{Msg: "failed to process owner", Err: err}
 		}
+	}
+	return nil
+}
 
-		if len(parentOwners) > 0 {
-			if err := fetchOwnerHierarchy(ctx, parentOwners, ownerGVR, namespace, owner.Name); err != nil {
-				return err
-			}
+// processParentOwner handles the processing of a single owner reference
+func (cl *ClusterTopology) processParentOwner(ctx context.Context, client *dynamic.DynamicClient, owner metav1.OwnerReference, namespace string) error {
+	parentOwners, err := cl.fetchOwnerReferences(client, convertGVK(owner), namespace, owner.Name)
+	if err != nil {
+		return err
+	}
+
+	if len(parentOwners) > 0 {
+		currentOwner := ObjectInfo{
+			GVR:       convertGVK(owner),
+			Namespace: namespace,
+			Name:      owner.Name,
 		}
+		return cl.fetchOwnerHierarchy(ctx, parentOwners, currentOwner)
 	}
 	return nil
 }
 
 // FetchOwnerReferences retrieves the owner references of a Kubernetes resource identified by GroupVersionResource, namespace, and name.
 // It returns a slice of OwnerReference objects or an error if the retrieval or conversion fails.
-func FetchOwnerReferences(c *dynamic.DynamicClient, gvr schema.GroupVersionResource, namespace, name string) (owners []metav1.OwnerReference, err error) {
+func (cl *ClusterTopology) fetchOwnerReferences(
+	c *dynamic.DynamicClient, gvr schema.GroupVersionResource, namespace, name string,
+) (owners []metav1.OwnerReference, err error) {
 	var resource *unstructured.Unstructured
 	if resource, err = c.Resource(gvr).Namespace(namespace).Get(context.TODO(), name, metav1.GetOptions{}); err != nil {
 		return owners, err
