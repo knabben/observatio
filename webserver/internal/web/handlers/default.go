@@ -42,6 +42,7 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	router.HandleFunc("/api/clusters/components", handleComponentsVersion).Methods("GET")
 	router.HandleFunc("/api/clusters/summary", handleSummaryCluster).Methods("GET")
 	router.HandleFunc("/api/clusters/classes", handleClusterClasses).Methods("GET")
+	router.HandleFunc("/api/clusters/topology", handleClusterTopology).Methods("GET")
 
 	// Cluster API Machine Deployments Handlers
 	router.HandleFunc("/api/machinesdeployment/list", handleMachineDeployments).Methods("GET")

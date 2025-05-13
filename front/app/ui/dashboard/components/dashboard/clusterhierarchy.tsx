@@ -62,10 +62,16 @@ export const initialNodes = [
     data: { label: 'Node 3' },
     position: { x: 300, y: 150 },
   },
+  {
+    id: '4',
+    data: { label: 'Node 4' },
+    position: { x: 200, y: 0 },
+  },
 ];
 export const initialEdges = [
   { id: 'e1-2', source: '1', target: '2' },
-  { id: 'e1-3', source: '1', target: '3',  animated: true  },
+  { id: 'e1-3', source: '4', target: '2' },
+  { id: 'e1-4', source: '3', target: '1' },
 ];
 export default function ClusterHierarchy() {
   const {hierarchy, isLoading, error} = useClusterHierarchy();

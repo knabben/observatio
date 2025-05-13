@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -29,4 +30,9 @@ func NewClientWithScheme(ctx context.Context, scheme *runtime.Scheme) (client.Cl
 // NewDynamicClient returns a dynamic client for unstructured object access.
 func NewDynamicClient(ctx context.Context) (*dynamic.DynamicClient, error) {
 	return dynamic.NewForConfig(ctx.Value("config").(*rest.Config))
+}
+
+// NewDiscoveryClient returns a DiscoveryClient configured with provided rest.Config.
+func NewDiscoveryClient(ctx context.Context) (*discovery.DiscoveryClient, error) {
+	return discovery.NewDiscoveryClientForConfig(ctx.Value("config").(*rest.Config))
 }
