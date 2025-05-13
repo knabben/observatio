@@ -4,18 +4,12 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/fetchers"
 	"github.com/knabben/observatio/webserver/internal/infra/models"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
-	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -186,61 +180,4 @@ func GenerateClusterTopology(ctx context.Context, c client.Client) (topology Clu
 	}
 
 	return topology, err
-}
-
-// fetchOwnerHierarchy traverse with bfs and create edges between nodes
-func fetchOwnerHierarchy(ctx context.Context, owners []metav1.OwnerReference, gvr schema.GroupVersionResource, namespace, name string) (err error) {
-	fmt.Println(name, namespace, gvr)
-	cc, _ := NewDynamicClient(ctx)
-
-	for _, owner := range owners {
-		// convert GVK to GVR, so it's possible to fetch object owners
-		ownerGVR := convertGVK(owner)
-		fmt.Println(ownerGVR, owner.Name, namespace)
-
-		parentOwners, err := FetchOwnerReferences(cc, ownerGVR, namespace, owner.Name)
-		if err != nil {
-			return err
-		}
-
-		if len(parentOwners) > 0 {
-			if err := fetchOwnerHierarchy(ctx, parentOwners, ownerGVR, namespace, owner.Name); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-func convertGVK(obj metav1.OwnerReference) schema.GroupVersionResource {
-	splits := strings.Split(obj.APIVersion, "/")
-	return schema.GroupVersionResource{
-		Group:    splits[0],
-		Version:  splits[1],
-		Resource: strings.ToLower(obj.Kind) + "s", // assuming it's following the usual convention of kind to resource conversion
-	}
-}
-
-func FetchOwnerReferences(c *dynamic.DynamicClient, gvr schema.GroupVersionResource, namespace, name string) (owners []metav1.OwnerReference, err error) {
-	var resource *unstructured.Unstructured
-	if resource, err = c.Resource(gvr).Namespace(namespace).Get(context.TODO(), name, metav1.GetOptions{}); err != nil {
-		return owners, err
-	}
-	ownerList, exists, err := unstructured.NestedSlice(resource.Object, "metadata", "ownerReferences")
-	if err != nil || !exists {
-		return nil, err
-	}
-	var ownerRefs []metav1.OwnerReference
-	for _, ownerRef := range ownerList {
-		data, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&ownerRef)
-		if err != nil {
-			return nil, err
-		}
-		var ref metav1.OwnerReference
-		if err = runtime.DefaultUnstructuredConverter.FromUnstructured(data, &ref); err != nil {
-			return nil, err
-		}
-		ownerRefs = append(ownerRefs, ref)
-	}
-	return ownerRefs, nil
 }
