@@ -53,7 +53,7 @@ run-backend:  ## Build the binary using local golang
 	popd;
 
 .PHONY: run-tests-backend
-run-tests-backend:
+run-tests-backend:  ## Run backend tests
 	pushd webserver; \
 	go test ./... ;\
 	popd;
@@ -65,7 +65,7 @@ run-frontend:  ## Run the frontend locally
 	popd;
 
 .PHONY: run-tests-frontend
-run-tests-frontend:
+run-tests-frontend:  ## Run frontend tests
 	pushd front; \
 	npm run test; \
 	popd;
@@ -76,7 +76,7 @@ run-tests-frontend:
 ##@ build:
 
 .PHONY: build
-build:
+build:  ## Build the full stack
 	pushd front; \
 		npm run build; \
 		find ${BUILD_PATH} ! -name 'index.html' -type f -exec rm -fr {} +; \

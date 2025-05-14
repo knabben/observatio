@@ -1,7 +1,7 @@
 'use client';
 
 import React, {useState, useEffect} from 'react';
-import {Card, Grid, SimpleGrid, Text} from '@mantine/core';
+import {Card, Grid, SimpleGrid, Text, Title} from '@mantine/core';
 import {getClusterSummary} from "@/app/lib/data";
 import Header from "@/app/ui/dashboard/utils/header";
 import {RadialBarChart} from "@mantine/charts";
@@ -83,10 +83,9 @@ export default function ClusterSummary() {
           <Grid.Col span={6}>
             <SimpleGrid cols={2} verticalSpacing="sm">
               {summary.map((item: ClusterSummary, index: number) => (
-                <>
-                  <div className="text-left">{item.name}</div>
-                  <div key={index}>{item.value}</div>
-                </>
+                <div key={index}>
+                  <div className="text-left">{item.name}<Title order={3} c={item.color}>{item.value}</Title></div>
+                </div>
               ))}
             </SimpleGrid>
           </Grid.Col>

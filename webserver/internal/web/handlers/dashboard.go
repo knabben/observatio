@@ -94,3 +94,26 @@ func handleClusterClasses(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+// handleClusterTopology returns the cluster topology by owners
+func handleClusterTopology(w http.ResponseWriter, r *http.Request) {
+	var (
+		ctx      = r.Context()
+		topology clusterapi.ClusterTopology
+	)
+
+	cli, err := clusterapi.NewClientWithScheme(ctx, scheme)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+	if topology, err = clusterapi.GenerateClusterTopology(ctx, cli); err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	if err = writeResponse(w, topology); err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+}

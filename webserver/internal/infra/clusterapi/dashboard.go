@@ -4,12 +4,12 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/fetchers"
 	"github.com/knabben/observatio/webserver/internal/infra/models"
 	corev1 "k8s.io/api/core/v1"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/client-go/rest"
-
-	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/fetchers"
+	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
 	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -159,9 +159,12 @@ func GenerateComponentVersions(ctx context.Context, c client.Client) (components
 	return components, nil
 }
 
-type Hierarchy struct {
-}
-
-func GenerateCAPIHiearchy(ctx context.Context, c client.Client) (hierarchy Hierarchy, err error) {
-	return hierarchy, err
+// GenerateClusterTopology generates the cluster topology by building the owner-reference
+// hierarchy for VSphereMachine resources.
+func GenerateClusterTopology(ctx context.Context, c client.Client) (topology ClusterTopology, err error) {
+	var machines []capv.VSphereMachine
+	if machines, err = fetchers.ListMachineInfra(ctx, c); err != nil {
+		return topology, err
+	}
+	return processOwnerHierarchy(ctx, machines)
 }

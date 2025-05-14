@@ -22,6 +22,11 @@ export async function getClusterClasses() {
   return res.json()
 }
 
+export async function getClusterHierarchy() {
+  const res = await fetch(`${URL}/api/clusters/topology`)
+  return res.json()
+}
+
 // ----- Clusters -----
 
 export async function getClusterList() {
