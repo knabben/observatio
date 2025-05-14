@@ -10,7 +10,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 
 type Conditions = {
   type: string,
-  status: boolean,
+  status: string,
   lastTransitionTime: string,
 }
 
@@ -70,7 +70,7 @@ const ClusterClassRow: React.FC<{ clusterClass: ClusterClass }> = ({clusterClass
     <Table.Td rowSpan={1}>
       {
         clusterClass.conditions.map((condition, index) => (
-          condition.status
+          condition.status.toLowerCase() === 'true'
           ? <Chip key={index} className="p-1" defaultChecked color="teal" variant="light">{condition.type}</Chip>
           : <Chip key={index} defaultChecked icon={<XMarkIcon />} color="red" variant="light">{condition.type}</Chip>
         ))

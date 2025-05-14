@@ -103,7 +103,7 @@ export default function MachineInfraDetails({
                   <Table.Tr key={ic}>
                     <Table.Td>
                       {
-                        condition.status
+                        condition.status.toLowerCase() == "true"
                         ? <Chip key={ic} className="p-1" defaultChecked color="teal" variant="light">{condition.type}</Chip>
                         : <Chip key={ic} defaultChecked icon={<XMarkIcon />} color="red" variant="light">{condition.type}</Chip>
                       }

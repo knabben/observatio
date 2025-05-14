@@ -2,7 +2,7 @@
 
 type Conditions = {
   type: string,
-  status: boolean,
+  status: string,
   lastTransitionTime: string,
 }
 
