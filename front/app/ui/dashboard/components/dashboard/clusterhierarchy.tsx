@@ -8,9 +8,9 @@ import {Card, Text} from "@mantine/core";
 
 import {
   ReactFlow,
-    addEdge,
-    useEdgesState,
-    useNodesState,
+  addEdge,
+  useEdgesState,
+  useNodesState, Connection,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -20,6 +20,15 @@ type Node = {
   data: {
     label: string,
   },
+  position: {
+    x: number,
+    y: number,
+  },
+  style: {
+    background: string,
+    color: string,
+    border: string,
+  }
 }
 
 type Edge = {
@@ -70,7 +79,7 @@ export function RenderTopology({
   const [edges, setEdges, onEdgesChange] = useEdgesState(hierarchy?.edges);
 
   const onConnect = useCallback(
-    (connection) => setEdges((eds) => addEdge(connection, eds)),
+    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
     [setEdges],);
 
   return (
