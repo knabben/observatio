@@ -1,8 +1,6 @@
 'use client'
 
-
 import React, {useState,useEffect,useCallback} from "react";
-import {roboto} from "@/fonts";
 import Header from "@/app/ui/dashboard/utils/header";
 import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
 import {getClusterHierarchy} from "@/app/lib/data";
@@ -16,9 +14,25 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
+type Node = {
+  id: string,
+  type: string,
+  data: {
+    label: string,
+  },
+}
+
+type Edge = {
+  id: string,
+  source: string,
+  target: string,
+  type: string,
+  animated: boolean,
+}
+
 type Hierarchy = {
-  nodes: any[],
-  edges: any[],
+  nodes: Node[],
+  edges: Edge[],
 }
 
 export const useClusterHierarchy = () => {
@@ -48,39 +62,15 @@ export const useClusterHierarchy = () => {
   }, []);
   return {hierarchy, isLoading, error};
 };
-//
-// export const initialNodes = [
-//   {
-//     id: '1',
-//     data: { label: 'Node 1' },
-//     position: { x: 150, y: 0 },
-//     style: { backgroundColor: '#6ede87', color: '#000000' },
-//   },
-//   {
-//     id: '2',
-//     data: { label: 'Node 2' },
-//     position: { x: 0, y: 150 },
-//   },
-//   {
-//     id: '3',
-//     data: { label: 'Node 3' },
-//     position: { x: 300, y: 150 },
-//   },
-//
-// ];
-// export const initialEdges = [
-//   { id: 'e1-2', source: '1', target: '2' },
-//   { id: 'e1-3', source: '4', target: '2' },
-//   { id: 'e1-4', source: '3', target: '1' },
-// ];
+
 export function RenderTopology({
   hierarchy,
 }: {hierarchy: Hierarchy}) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(hierarchy?.nodes);
+  const [nodes, , onNodesChange] = useNodesState(hierarchy?.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(hierarchy?.edges);
 
   const onConnect = useCallback(
-    (connection: any) => setEdges((eds) => addEdge(connection, eds)),
+    (connection) => setEdges((eds) => addEdge(connection, eds)),
     [setEdges],);
 
   return (
@@ -102,7 +92,7 @@ export default function ClusterHierarchy() {
           {isLoading && <CenteredLoader />}
           {error && <Text c="red">{error}</Text>}
           {
-            // @ts-ignore
+            // @ts-expect-error undefined is not assignable to type 'false'
             !isLoading  && <RenderTopology hierarchy={hierarchy} />
           }
       </div>

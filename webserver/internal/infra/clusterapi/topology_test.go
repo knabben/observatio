@@ -53,7 +53,12 @@ func TestClusterTopology_AddEdge(t *testing.T) {
 
 func TestClusterTopology_Find(t *testing.T) {
 	tp := NewClusterTopology()
-	node := tp.AddNode(ObjectInfo{Name: "node1", GVR: schema.GroupVersionResource{Group: "group1", Version: "v1", Resource: "res1"}, Index: 1})
+	node := tp.AddNode(ObjectInfo{
+		Name:      "node1",
+		GVR:       schema.GroupVersionResource{Group: "group1", Version: "v1", Resource: "res1"},
+		PositionX: 1,
+		PositionY: 1,
+	})
 
 	found := tp.Find(&node)
 	if !found {
