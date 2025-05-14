@@ -13,7 +13,8 @@ func TestClusterTopology_AddNode(t *testing.T) {
 		GVR: schema.GroupVersionResource{
 			Group: "group1", Version: "v1", Resource: "res1",
 		},
-		Index: 1,
+		PositionY: 1,
+		PositionX: 1,
 	}
 	node := tp.AddNode(obj)
 
@@ -27,8 +28,18 @@ func TestClusterTopology_AddNode(t *testing.T) {
 
 func TestClusterTopology_AddEdge(t *testing.T) {
 	tp := NewClusterTopology()
-	node1 := tp.AddNode(ObjectInfo{Name: "node1", GVR: schema.GroupVersionResource{Group: "group1", Version: "v1", Resource: "res1"}, Index: 1})
-	node2 := tp.AddNode(ObjectInfo{Name: "node2", GVR: schema.GroupVersionResource{Group: "group1", Version: "v1", Resource: "res1"}, Index: 2})
+	node1 := tp.AddNode(ObjectInfo{
+		Name:      "node1",
+		GVR:       schema.GroupVersionResource{Group: "group1", Version: "v1", Resource: "res1"},
+		PositionY: 1,
+		PositionX: 1,
+	})
+	node2 := tp.AddNode(ObjectInfo{
+		Name:      "node2",
+		GVR:       schema.GroupVersionResource{Group: "group1", Version: "v1", Resource: "res1"},
+		PositionY: 2,
+		PositionX: 2,
+	})
 
 	tp.AddEdge(node1, node2)
 
