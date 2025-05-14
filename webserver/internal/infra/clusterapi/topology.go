@@ -1,5 +1,20 @@
 package clusterapi
 
+import (
+	"fmt"
+
+	"k8s.io/apimachinery/pkg/runtime/schema"
+)
+
+// ObjectInfo holds the information needed to process an object
+type ObjectInfo struct {
+	GVR       schema.GroupVersionResource
+	Namespace string
+	Name      string
+	PositionX int32
+	PositionY int32
+}
+
 // NodeData represents the data content of a Node
 type NodeData struct {
 	Label string `json:"label"`
@@ -11,12 +26,41 @@ type NodePosition struct {
 	Y int32 `json:"y"`
 }
 
+type NodeStyle struct {
+	BackgroundColor string `json:"backgroundColor"`
+	Color           string `json:"color"`
+}
+
 // Node represents a graph node with an identifier,
 // metadata, and its positional coordinates.
 type Node struct {
 	Id       string       `json:"id"`
 	Data     NodeData     `json:"data"`
 	Position NodePosition `json:"position"`
+	Style    NodeStyle    `json:"style"`
+}
+
+var styles = map[int32]NodeStyle{
+	0: NodeStyle{
+		BackgroundColor: "#47556A",
+		Color:           "#ffffff",
+	},
+	150: NodeStyle{
+		BackgroundColor: "#DC8525",
+		Color:           "#ffffff",
+	},
+	300: NodeStyle{
+		BackgroundColor: "#72BA34",
+		Color:           "#ffffff",
+	},
+	350: NodeStyle{
+		BackgroundColor: "#018978",
+		Color:           "#ffffff",
+	},
+	450: NodeStyle{
+		BackgroundColor: "#0E779A",
+		Color:           "#ffffff",
+	},
 }
 
 // generateNodeID creates a unique identifier for a node
@@ -24,9 +68,16 @@ func generateNodeID(info ObjectInfo) string {
 	return info.Name + info.GVR.String()
 }
 
+func generateStyle(info ObjectInfo) NodeStyle {
+	if _, ok := styles[info.PositionY]; ok {
+		return styles[info.PositionY]
+	}
+	return NodeStyle{}
+}
+
 // formatNodeLabel creates a formatted label for a node
 func formatNodeLabel(info ObjectInfo) string {
-	return info.Name + "\n" + info.GVR.String()
+	return fmt.Sprintf("%s\n%s", info.Name, info.GVR.Resource)
 }
 
 // NewNode creates a new Node instance with the given ObjectInfo
@@ -37,9 +88,10 @@ func NewNode(info ObjectInfo) Node {
 			Label: formatNodeLabel(info),
 		},
 		Position: NodePosition{
-			X: int32(info.Index),
-			Y: int32(info.Index),
+			X: info.PositionX,
+			Y: info.PositionY,
 		},
+		Style: generateStyle(info),
 	}
 }
 

@@ -15,14 +15,6 @@ import (
 	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
 )
 
-// ObjectInfo holds the information needed to process an object
-type ObjectInfo struct {
-	GVR       schema.GroupVersionResource
-	Namespace string
-	Name      string
-	Index     int
-}
-
 // ErrOwnerHierarchyFetch indicates an error occurred while fetching the owner hierarchy
 type ErrOwnerHierarchyFetch struct {
 	Msg string
@@ -45,7 +37,8 @@ func processOwnerHierarchy(ctx context.Context, machines []capv.VSphereMachine) 
 			GVR:       gvr,
 			Namespace: machine.Namespace,
 			Name:      machine.Name,
-			Index:     idx,
+			PositionX: int32(idx) * 150,
+			PositionY: 0,
 		})
 	}
 
@@ -70,7 +63,7 @@ func (cl *ClusterTopology) fetchOwnerHierarchy(ctx context.Context, owners []met
 	}
 
 	var current = cl.AddNode(currentResource)
-	for idx, owner := range owners {
+	for _, owner := range owners {
 		// Adding owner node and edge - creates a directed edge from the current resource to its owner,
 		// with the owner node being added to the graph if it doesn't already exist. This establishes
 		// the parent-child relationship in the ownership hierarchy visualization.
@@ -78,7 +71,8 @@ func (cl *ClusterTopology) fetchOwnerHierarchy(ctx context.Context, owners []met
 			GVR:       convertGVK(owner),
 			Namespace: currentResource.Namespace,
 			Name:      owner.Name,
-			Index:     idx,
+			PositionX: currentResource.PositionX,
+			PositionY: currentResource.PositionY + 150,
 		}
 		cl.AddEdge(current, cl.AddNode(currentOwner))
 		if err := cl.processParentOwner(ctx, dynamicClient, currentOwner); err != nil {

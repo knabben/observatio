@@ -97,7 +97,7 @@ export default function ClusterHierarchy() {
   const {hierarchy, isLoading, error} = useClusterHierarchy();
   return (
     <Card shadow="md" radius="md" withBorder className="text-center" >
-      <div style={{ width: '800px', height: '500px' }}>
+      <div style={{ width: '860px', height: '500px' }}>
         <Header title="Cluster Topology"/>
           {isLoading && <CenteredLoader />}
           {error && <Text c="red">{error}</Text>}
