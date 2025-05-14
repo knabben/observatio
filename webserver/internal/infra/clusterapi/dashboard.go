@@ -2,14 +2,11 @@ package clusterapi
 
 import (
 	"context"
-	"fmt"
 	"strconv"
-	"sync"
 
 	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/fetchers"
 	"github.com/knabben/observatio/webserver/internal/infra/models"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/meta"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/client-go/rest"
 	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
@@ -162,9 +159,8 @@ func GenerateComponentVersions(ctx context.Context, c client.Client) (components
 	return components, nil
 }
 
-// GenerateClusterTopology generates the cluster topology by building the owner-reference hierarchy for VSphereMachine resources.
-// It retrieves infrastructure machines and processes their owner references to establish nodes and edges in the topology graph.
-// Returns the constructed ClusterTopology object or an error if the processing fails.
+// GenerateClusterTopology generates the cluster topology by building the owner-reference
+// hierarchy for VSphereMachine resources.
 func GenerateClusterTopology(ctx context.Context, c client.Client) (topology ClusterTopology, err error) {
 	var machines []capv.VSphereMachine
 	if machines, err = fetchers.ListMachineInfra(ctx, c); err != nil {
