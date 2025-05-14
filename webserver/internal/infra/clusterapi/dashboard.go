@@ -2,6 +2,7 @@ package clusterapi
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"sync"
 
@@ -161,32 +162,13 @@ func GenerateComponentVersions(ctx context.Context, c client.Client) (components
 	return components, nil
 }
 
+// GenerateClusterTopology generates the cluster topology by building the owner-reference hierarchy for VSphereMachine resources.
+// It retrieves infrastructure machines and processes their owner references to establish nodes and edges in the topology graph.
+// Returns the constructed ClusterTopology object or an error if the processing fails.
 func GenerateClusterTopology(ctx context.Context, c client.Client) (topology ClusterTopology, err error) {
 	var machines []capv.VSphereMachine
 	if machines, err = fetchers.ListMachineInfra(ctx, c); err != nil {
 		return topology, err
 	}
-
-	topology = ClusterTopology{
-		Nodes: make([]Node, 0),
-		Edges: make([]Edge, 0),
-	}
-
-	var wg sync.WaitGroup
-	for _, machine := range machines {
-		wg.Add(1)
-		go func(wg *sync.WaitGroup) error {
-			defer wg.Done()
-			gvr, _ := meta.UnsafeGuessKindToResource(machine.GroupVersionKind())
-			return topology.fetchOwnerHierarchy(ctx, machine.OwnerReferences, ObjectInfo{
-				GVR:       gvr,
-				Namespace: machine.Namespace,
-				Name:      machine.Name,
-			})
-		}(&wg)
-		break
-	}
-	wg.Wait()
-
-	return topology, err
+	return processOwnerHierarchy(ctx, machines)
 }
