@@ -13,6 +13,7 @@ import (
 )
 
 func TestProcessClusterInfra(t *testing.T) {
+	created := time.Now()
 	tests := []struct {
 		name     string
 		cluster  capv.VSphereCluster
@@ -25,7 +26,7 @@ func TestProcessClusterInfra(t *testing.T) {
 					Name:      "cluster1",
 					Namespace: "default",
 					CreationTimestamp: metav1.Time{
-						Time: time.Now().Add(-10 * time.Minute),
+						Time: created.Add(-10 * time.Minute),
 					},
 				},
 				Spec: capv.VSphereClusterSpec{},
@@ -40,7 +41,7 @@ func TestProcessClusterInfra(t *testing.T) {
 				Server:               "",
 				Thumbprint:           "",
 				Created:              "10m",
-				ControlPlaneEndpoint: "",
+				ControlPlaneEndpoint: ":0",
 				Modules:              nil,
 				Conditions:           nil,
 				Ready:                true,
@@ -56,7 +57,7 @@ func TestProcessClusterInfra(t *testing.T) {
 						{Name: "owner-cluster"},
 					},
 					CreationTimestamp: metav1.Time{
-						Time: time.Now().Add(-1 * time.Hour),
+						Time: created.Add(-1 * time.Hour),
 					},
 				},
 				Spec: capv.VSphereClusterSpec{
@@ -72,8 +73,8 @@ func TestProcessClusterInfra(t *testing.T) {
 				Cluster:              "owner-cluster",
 				Server:               "https://server.example.com",
 				Thumbprint:           "",
-				Created:              "1h",
-				ControlPlaneEndpoint: "",
+				Created:              "1h 0m",
+				ControlPlaneEndpoint: ":0",
 				Modules:              nil,
 				Conditions:           nil,
 				Ready:                false,
@@ -86,7 +87,7 @@ func TestProcessClusterInfra(t *testing.T) {
 					Name:      "cluster3",
 					Namespace: "custom",
 					CreationTimestamp: metav1.Time{
-						Time: time.Now().Add(-30 * time.Second),
+						Time: created.Add(-30 * time.Second),
 					},
 				},
 				Spec: capv.VSphereClusterSpec{
@@ -101,8 +102,8 @@ func TestProcessClusterInfra(t *testing.T) {
 				Cluster:              "",
 				Server:               "",
 				Thumbprint:           "",
-				Created:              "30s",
-				ControlPlaneEndpoint: "",
+				Created:              "0m",
+				ControlPlaneEndpoint: ":0",
 				Modules:              nil,
 				Conditions:           nil,
 				Ready:                false,
@@ -132,8 +133,8 @@ func TestProcessClusterInfra(t *testing.T) {
 				Cluster:              "",
 				Server:               "",
 				Thumbprint:           "",
-				Created:              "5h",
-				ControlPlaneEndpoint: "",
+				Created:              "5h 0m",
+				ControlPlaneEndpoint: ":0",
 				Modules:              []capv.ClusterModule{},
 				Conditions:           nil,
 				Ready:                true,
@@ -146,7 +147,7 @@ func TestProcessClusterInfra(t *testing.T) {
 					Name:      "cluster5",
 					Namespace: "prod",
 					CreationTimestamp: metav1.Time{
-						Time: time.Now().Add(-2 * time.Minute),
+						Time: created.Add(-2 * time.Minute),
 					},
 				},
 				Spec: capv.VSphereClusterSpec{
@@ -279,7 +280,9 @@ func TestProcessClusterResponse(t *testing.T) {
 						Name: "healthy-cluster-1",
 					},
 					Status: clusterv1.ClusterStatus{
-						Phase: "Running",
+						Phase:               "Running",
+						InfrastructureReady: true,
+						ControlPlaneReady:   true,
 					},
 				},
 				{
@@ -287,7 +290,9 @@ func TestProcessClusterResponse(t *testing.T) {
 						Name: "healthy-cluster-2",
 					},
 					Status: clusterv1.ClusterStatus{
-						Phase: "Running",
+						Phase:               "Running",
+						InfrastructureReady: true,
+						ControlPlaneReady:   true,
 					},
 				},
 			},
@@ -300,7 +305,9 @@ func TestProcessClusterResponse(t *testing.T) {
 							Name: "healthy-cluster-1",
 						},
 						Status: clusterv1.ClusterStatus{
-							Phase: "Running",
+							Phase:               "Running",
+							InfrastructureReady: true,
+							ControlPlaneReady:   true,
 						},
 					}),
 					ProcessCluster(clusterv1.Cluster{
@@ -308,7 +315,9 @@ func TestProcessClusterResponse(t *testing.T) {
 							Name: "healthy-cluster-2",
 						},
 						Status: clusterv1.ClusterStatus{
-							Phase: "Running",
+							Phase:               "Running",
+							InfrastructureReady: true,
+							ControlPlaneReady:   true,
 						},
 					}),
 				},
@@ -322,7 +331,9 @@ func TestProcessClusterResponse(t *testing.T) {
 						Name: "healthy-cluster",
 					},
 					Status: clusterv1.ClusterStatus{
-						Phase: "Running",
+						Phase:               "Running",
+						InfrastructureReady: true,
+						ControlPlaneReady:   true,
 					},
 				},
 				{
@@ -330,7 +341,8 @@ func TestProcessClusterResponse(t *testing.T) {
 						Name: "failed-cluster",
 					},
 					Status: clusterv1.ClusterStatus{
-						Phase: "Failed",
+						Phase:               "Failed",
+						InfrastructureReady: false,
 					},
 				},
 			},
@@ -343,7 +355,9 @@ func TestProcessClusterResponse(t *testing.T) {
 							Name: "healthy-cluster",
 						},
 						Status: clusterv1.ClusterStatus{
-							Phase: "Running",
+							Phase:               "Running",
+							InfrastructureReady: true,
+							ControlPlaneReady:   true,
 						},
 					}),
 					ProcessCluster(clusterv1.Cluster{
@@ -351,7 +365,8 @@ func TestProcessClusterResponse(t *testing.T) {
 							Name: "failed-cluster",
 						},
 						Status: clusterv1.ClusterStatus{
-							Phase: "Failed",
+							Phase:               "Failed",
+							InfrastructureReady: false,
 						},
 					}),
 				},
