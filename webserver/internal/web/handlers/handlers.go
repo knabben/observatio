@@ -41,7 +41,7 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	router.HandleFunc("/api/machines/infra/list", kubernetes.HandleMachineInfra).Methods("GET")
 
 	// Websocket Handler for object watchers.
-	router.HandleFunc("/ws", system.handleWebsocket)
+	router.HandleFunc("/ws", system.HandleWebsocket)
 
 	// Static React bundle hosting handler
 	if !developmentMode {

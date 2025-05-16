@@ -50,8 +50,8 @@ var (
 	}
 )
 
-// handleWebsocket starts the object listener based on the input object request.
-func handleWebsocket(w http.ResponseWriter, r *http.Request) {
+// HandleWebsocket starts the object listener based on the input object request.
+func HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 	var wsUpgrader = websocket.Upgrader{
 		ReadBufferSize:  websocketBufferSize,
 		WriteBufferSize: websocketBufferSize,

@@ -102,18 +102,18 @@ func HandleClusterTopology(w http.ResponseWriter, r *http.Request) {
 		topology clusterapi.ClusterTopology
 	)
 
-	cli, err := clusterapi.NewClientWithScheme(ctx, system.scheme)
-	if err != nil {
-		system.writeError(w, http.StatusInternalServerError, err)
-		return
-	}
-	if topology, err = clusterapi.GenerateClusterTopology(ctx, cli); err != nil {
-		system.writeError(w, http.StatusInternalServerError, err)
+	cli, err := clusterapi.NewClientWithScheme(ctx, system.Scheme)
+	if system.HandleError(w, http.StatusInternalServerError, err) {
 		return
 	}
 
-	if err = system.writeResponse(w, topology); err != nil {
-		system.writeError(w, http.StatusInternalServerError, err)
+	topology, err = clusterapi.GenerateClusterTopology(ctx, cli)
+	if system.HandleError(w, http.StatusInternalServerError, err) {
+		return
+	}
+
+	err = system.WriteResponse(w, topology)
+	if system.HandleError(w, http.StatusInternalServerError, err) {
 		return
 	}
 }
