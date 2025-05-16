@@ -8,10 +8,13 @@ import (
 	"github.com/knabben/observatio/webserver/internal/web/handlers/system"
 )
 
+// RequestBody represents the structure of a request payload.
 type RequestBody struct {
 	Request string `json:"request"`
 }
 
+// HandleClaude processes an HTTP POST request, decodes the request body,
+// and communicates with the Claude LLM service.
 func HandleClaude(w http.ResponseWriter, r *http.Request) {
 	var reqBody RequestBody
 	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
