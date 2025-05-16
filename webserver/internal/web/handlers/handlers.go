@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/knabben/observatio/webserver/internal/web/handlers/kubernetes"
+	"github.com/knabben/observatio/webserver/internal/web/handlers/llm"
 	"github.com/knabben/observatio/webserver/internal/web/handlers/system"
 )
 
@@ -42,6 +43,9 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 
 	// Websocket Handler for object watchers.
 	router.HandleFunc("/ws", system.HandleWebsocket)
+
+	// Anthropic LLM handlers
+	router.HandleFunc("/api/llm", llm.HandleClaude).Methods("POST")
 
 	// Static React bundle hosting handler
 	if !developmentMode {
