@@ -1,4 +1,4 @@
-package handlers
+package system
 
 import (
 	"embed"
@@ -9,9 +9,9 @@ import (
 )
 
 type SPAHandler struct {
-	staticFS   embed.FS
-	staticPath string
-	indexPath  string
+	StaticFS   embed.FS
+	StaticPath string
+	IndexPath  string
 }
 
 func (h SPAHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -21,9 +21,9 @@ func (h SPAHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	path = filepath.Join(h.staticPath, path)
-	if _, err = h.staticFS.Open(path); os.IsNotExist(err) {
-		index, err := h.staticFS.ReadFile(filepath.Join(h.staticPath, h.indexPath))
+	path = filepath.Join(h.StaticPath, path)
+	if _, err = h.StaticFS.Open(path); os.IsNotExist(err) {
+		index, err := h.StaticFS.ReadFile(filepath.Join(h.StaticPath, h.IndexPath))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -41,7 +41,7 @@ func (h SPAHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var files fs.FS
-	files, err = fs.Sub(h.staticFS, h.staticPath)
+	files, err = fs.Sub(h.StaticFS, h.StaticPath)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -21,6 +21,7 @@
     "@mantine/notifications": "^7.17.4",
     "@mantine/nprogress": "^7.17.4",
     "@mantine/spotlight": "^7.17.4",
+    "@tabler/icons-react": "^3.33.0",
     "@xyflow/react": "^12.6.0",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
