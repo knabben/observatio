@@ -1,8 +1,9 @@
-package handlers
+package system
 
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/knabben/observatio/webserver/internal/web/watchers"
@@ -19,7 +20,7 @@ var (
 	TYPE_CLUSTER       = "cluster"
 )
 
-// handleWebsocket starts the object listener based on input object request.
+// handleWebsocket starts the object listener based on the input object request.
 const (
 	websocketBufferSize = 1024
 )
@@ -49,8 +50,8 @@ var (
 	}
 )
 
-// handleWebsocket starts the object listener based on the input object request.
-func handleWebsocket(w http.ResponseWriter, r *http.Request) {
+// HandleWebsocket starts the object listener based on the input object request.
+func HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 	var wsUpgrader = websocket.Upgrader{
 		ReadBufferSize:  websocketBufferSize,
 		WriteBufferSize: websocketBufferSize,
@@ -94,4 +95,14 @@ func parseMessage(conn *websocket.Conn) (subscribeRequest SubscribeRequest, err 
 	}
 
 	return subscribeRequest, nil
+}
+
+// handleError write down an error with code to the writer response.
+func handleError(w http.ResponseWriter, code int, err error) (hasError bool) {
+	hasError = err != nil
+	if hasError {
+		log.Println("ERROR: ", err)
+		http.Error(w, err.Error(), code)
+	}
+	return hasError
 }
