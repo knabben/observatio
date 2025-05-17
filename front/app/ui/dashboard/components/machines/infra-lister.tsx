@@ -4,9 +4,8 @@ import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { sourceCodePro400 } from "@/fonts";
 
-import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";
-import { Grid, GridCol, Title } from '@mantine/core';
+import {Grid, GridCol, Title} from '@mantine/core';
 
 import MachineInfraDetails from '@/app/ui/dashboard/components/machines/infra-details'
 import MachineInfraTable from '@/app/ui/dashboard/components/machines/infra-table'
@@ -14,11 +13,20 @@ import MachineInfraTable from '@/app/ui/dashboard/components/machines/infra-tabl
 import {MachineInfraType} from "@/app/ui/dashboard/components/machines/types";
 import {receiveAndPopulate, sendInitialRequest, WebSocket} from "@/app/lib/websocket";
 import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
+import {IconArrowBigLeft} from "@tabler/icons-react";
 
 export default function MachineInfraLister() {
   const [vsphereMachine ,setVsphereMachine] = useState<MachineInfraType[]>([])
-  const [selected, setSelected] = useState('')
+  const [selected, setSelected] = useState<string>('')
   const [loading, setLoading] = useState(true)
+
+  const handleSelect = (machine: MachineInfraType | null) => {
+    if (machine === null) {
+      setSelected('')
+    }
+    // @ts-expect-error machine
+    setSelected(machine?.name)
+  }
 
   const filteredCluster: MachineInfraType | undefined = selected
     ? FilterItems(selected, vsphereMachine)
@@ -43,20 +51,20 @@ export default function MachineInfraLister() {
 
   return (
     <Grid justify="flex-end" align="flex-start">
-      <GridCol h={60} span={8}>
+      <GridCol span={11}>
         <Link href="/dashboard/machines">
           <Title className={sourceCodePro400.className} order={2}>
             VSphereMachine / infrastructure.cluster.x-k8s.io/v1beta1
           </Title>
         </Link>
       </GridCol>
-      <Search
-        options={vsphereMachine}
-        onChange={setSelected}/>
+      <GridCol span={1} className="flex justify-end items-center">
+        <IconArrowBigLeft onClick={() => handleSelect(null)} size={32} className="cursor-pointer hover:opacity-70"/>
+      </GridCol>
       {
         filteredCluster
           ? <MachineInfraDetails machine={filteredCluster} />
-          : <MachineInfraTable machines={vsphereMachine}/>
+          : <MachineInfraTable select={handleSelect} machines={vsphereMachine}/>
       }
     </Grid>
   );

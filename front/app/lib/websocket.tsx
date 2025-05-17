@@ -51,9 +51,7 @@ export function receiveAndPopulate(
   if (!response?.data) {
     return [];
   }
-
   const isUpdateOperation = isItemUpdateOperation(response.type);
-
   if (isUpdateOperation) {
     return updateItemsList(items, response.data)
   } else {
