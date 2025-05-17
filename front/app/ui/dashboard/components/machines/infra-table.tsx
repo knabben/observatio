@@ -21,7 +21,7 @@ export default function MachineInfraTable({
             <Table.Th>ProviderID</Table.Th>
             <Table.Th>Template</Table.Th>
             <Table.Th>Age</Table.Th>
-            <Table.Th ta="center">Status</Table.Th>
+            <Table.Th>Status</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody className="text-sm">
@@ -29,7 +29,7 @@ export default function MachineInfraTable({
             machines?.map( (machine: MachineInfraType) => (
               <Table.Tr className={roboto.className} key={machine.name}>
                 <Table.Td>
-                  <a className="font-semibold cursor-pointer hover:opacity-70" onClick={() => select(machine)}>{machine.name}</a>
+                  <a className="cursor-pointer hover:opacity-70" onClick={() => select(machine)}>{machine.name}</a>
                 </Table.Td>
                 <Table.Td>
                   <Badge variant="light" color="gray"> {machine.namespace} </Badge>
@@ -37,11 +37,12 @@ export default function MachineInfraTable({
                 <Table.Td>{machine.providerID}</Table.Td>
                 <Table.Td>{machine.template}</Table.Td>
                 <Table.Td>{machine.created}</Table.Td>
-                <Table.Td ta="center">
-                  {machine.ready
-                    ? <Indicator inline processing color="green" size={15}/>
-                    : <Indicator inline processing color="red" size={15}/>
-                  }
+                <Table.Td className="text-center align-middle">
+                {
+                  machine.ready
+                  ? <Indicator inline processing color="green" size={22}/>
+                  : <Indicator inline processing color="red" size={22}/>
+                }
                 </Table.Td>
               </Table.Tr>
             ))
