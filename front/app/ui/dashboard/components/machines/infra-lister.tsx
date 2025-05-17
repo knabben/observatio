@@ -4,9 +4,8 @@ import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { sourceCodePro400 } from "@/fonts";
 
-import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";
-import {Card, Grid, GridCol, Group, SimpleGrid, Title, Text} from '@mantine/core';
+import {Grid, GridCol, Title} from '@mantine/core';
 
 import MachineInfraDetails from '@/app/ui/dashboard/components/machines/infra-details'
 import MachineInfraTable from '@/app/ui/dashboard/components/machines/infra-table'
@@ -14,13 +13,7 @@ import MachineInfraTable from '@/app/ui/dashboard/components/machines/infra-tabl
 import {MachineInfraType} from "@/app/ui/dashboard/components/machines/types";
 import {receiveAndPopulate, sendInitialRequest, WebSocket} from "@/app/lib/websocket";
 import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
-import {IconArrowBigLeft, IconCircleDashedLetterN, IconDeviceImacCog, IconStackMiddle} from "@tabler/icons-react";
-
-type Counter = {
-  cluster: string[],
-  namespace: string[],
-  healthy: string[],
-}
+import {IconArrowBigLeft} from "@tabler/icons-react";
 
 export default function MachineInfraLister() {
   const [vsphereMachine ,setVsphereMachine] = useState<MachineInfraType[]>([])
@@ -31,7 +24,7 @@ export default function MachineInfraLister() {
     if (machine === null) {
       setSelected('')
     }
-    // @ts-ignore
+    // @ts-expect-error machine
     setSelected(machine?.name)
   }
 

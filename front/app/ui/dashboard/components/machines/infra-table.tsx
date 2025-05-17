@@ -10,7 +10,6 @@ export default function MachineInfraTable({
   machines: MachineInfraType[],
   select: (machine: MachineInfraType) => void
 }) {
-  // @ts-ignore
   return (
     <GridCol span={12}>
       <Table highlightOnHover>
