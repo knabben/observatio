@@ -21,6 +21,7 @@ import {IconCheck, IconCpu, IconDatabase, IconDeviceFloppy, IconX} from "@tabler
 export default function MachineInfraDetails({
   machine
 }: {machine: MachineInfraType}) {
+  console.log(machine)
   return (
       <GridCol className={roboto.className} span={12}>
         <Card withBorder shadow="sm" padding="md" radius="md">
@@ -28,11 +29,11 @@ export default function MachineInfraDetails({
             <div className="flex items-center h-full">
               <Group justify="flex-start">
                 {
-                  machine.ready
+                  machine.status.ready
                     ? <IconCheck size={40} color="teal"/>
                     : <IconX color="red" size={40}/>
                 }
-                <Text className="text-bold" fw={700}>{machine.name}</Text>
+                <Text className="text-bold" fw={700}>{machine.metadata?.name}</Text>
               </Group>
             </div>
             <div>
@@ -40,16 +41,17 @@ export default function MachineInfraDetails({
                 <Stack gap="sm" justify="center">
                   <Text size="sm">Namespace</Text>
                   <Text size="xl">
-                    {machine.namespace}
+                    {machine.metadata?.namespace}
                   </Text>
                 </Stack>
                 <Stack gap="sm" justify="center">
                   <Text size="sm">Created</Text>
                   <Text size="xl">
-                    {machine.created}
+                    {machine.age}
                   </Text>
                 </Stack>
-              </Group>
+
+            </Group>
             </div>
           </SimpleGrid>
         </Card>
@@ -66,17 +68,27 @@ export default function MachineInfraDetails({
             <Panel title="Specification" content={
               <Table variant="vertical">
                 <Table.Tbody className="text-sm">
+                  {
+                    machine.metadata?.ownerReferences.length > 0 &&
+                    <Table.Tr>
+                      <Table.Th w={260}>Owner</Table.Th>
+                      <Table.Td>
+                        {machine.metadata?.ownerReferences[0].name}
+                      </Table.Td>
+                    </Table.Tr>
+                  }
                   <Table.Tr>
                     <Table.Th w={260}><Text fw={500}>Namespace</Text></Table.Th>
                     <Table.Td>
-                      <Text style={{ wordBreak: 'break-all' }}>{machine.namespace}</Text>
+                      <Text style={{ wordBreak: 'break-all' }}>{machine.metadata?.namespace}</Text>
                     </Table.Td>
                   </Table.Tr>
                   <Table.Tr>
                     <Table.Th w={260}><Text fw={500}>Provider</Text></Table.Th>
                     <Table.Td>{machine.providerID}</Table.Td>
                   </Table.Tr>
-                  { machine.failureDomain &&
+                  {
+                    machine.failureDomain &&
                     <Table.Tr>
                       <Table.Th w={260}><Text fw={500}>Failure Domain</Text></Table.Th>
                       <Table.Td>{machine.failureDomain}</Table.Td>
@@ -106,7 +118,8 @@ export default function MachineInfraDetails({
                       <Table.Th w={260}><Text fw={500}><Group><IconCpu />CPUs</Group></Text></Table.Th>
                       <Table.Td>{machine.numCPUs}</Table.Td>
                     </Table.Tr>
-                    { machine.numCoresPerSocket &&
+                    {
+                      machine.numCoresPerSocket &&
                       <Table.Tr>
                         <Table.Th>CPU Per Socket</Table.Th>
                         <Table.Td>{machine.numCoresPerSocket}</Table.Td>
@@ -120,14 +133,6 @@ export default function MachineInfraDetails({
                       <Table.Th w={260}><Text fw={500}><Group><IconDeviceFloppy />Disk size</Group></Text></Table.Th>
                       <Table.Td>{machine.diskGiB} GiB</Table.Td>
                     </Table.Tr>
-                    <Table.Tr>
-                      <Table.Th w={260}><Text fw={500}>Failure Reason</Text></Table.Th>
-                      <Table.Td>{machine.failureReason}</Table.Td>
-                    </Table.Tr>
-                    <Table.Tr>
-                      <Table.Th w={260}><Text fw={500}>Failure Message</Text></Table.Th>
-                      <Table.Td>{machine.failureMessage}</Table.Td>
-                    </Table.Tr>
                   </Table.Tbody>
                 </Table>
               } />
@@ -140,7 +145,7 @@ export default function MachineInfraDetails({
             <Table variant="vertical">
               <Table.Tbody className="text-sm">
                 {
-                  machine.conditions?.map((condition, ic) => (
+                  machine.status.conditions?.map((condition, ic) => (
                     <Table.Tr key={ic}>
                       <Table.Td>
                         {
@@ -150,6 +155,9 @@ export default function MachineInfraDetails({
                         }
                       </Table.Td>
                       <Table.Td>{condition.lastTransitionTime}</Table.Td>
+                      <Table.Td>{condition.severity}</Table.Td>
+                      <Table.Td>{condition.reason}</Table.Td>
+                      <Table.Td>{condition.message}</Table.Td>
                     </Table.Tr>
                   ))
                 }

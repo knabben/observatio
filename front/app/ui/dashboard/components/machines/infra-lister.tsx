@@ -25,7 +25,7 @@ export default function MachineInfraLister() {
       setSelected('')
     }
     // @ts-expect-error machine
-    setSelected(machine?.name)
+    setSelected(machine.metadata?.name)
   }
 
   const filteredMachine: MachineInfraType | undefined = selected
@@ -63,7 +63,6 @@ export default function MachineInfraLister() {
       <GridCol span={3} className="flex justify-end items-center">
         { selected &&
           <div>
-            <span className="text-sm text-gray-500">{selected}</span>
             <IconArrowBigLeft onClick={() => handleSelect(null)} size={32} className="cursor-pointer hover:opacity-70"/>
           </div>
         }

@@ -2,7 +2,10 @@
 
 type Conditions = {
   type: string,
+  reason: string,
+  severity: string,
   status: string,
+  message: string,
   lastTransitionTime: string,
 }
 
@@ -32,14 +35,14 @@ export type MachineInfraMeta = {
   annotations: {
     [key: string]: string
   },
-  OwnerReferences: {
+  ownerReferences: {
     kind: string,
     name: string,
     uid: string,
     apiVersion: string,
     controller: boolean,
     blockOwnerDeletion: boolean,
-  }
+  }[]
 }
 
 export type MachineInfraType = {
