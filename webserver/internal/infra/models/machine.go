@@ -1,9 +1,11 @@
 package models
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/cluster-api/errors"
+
 	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
-	"sigs.k8s.io/cluster-api/errors" // nolint
 )
 
 // MachineResponse stores the list of machines in the cluster.
@@ -68,15 +70,63 @@ type Machine struct {
 	Phase clusterv1.MachinePhase `json:"phase"`
 }
 
+type MachineInfraVCenter struct {
+	// Template is a string field representing a template for MachineInfra.
+	Template string `json:"template,omitempty"`
+
+	// Server is the IP address or FQDN of the vSphere server on which
+	Server string `json:"server,omitempty"`
+
+	// Thumbprint is toohe colon-separated SHA-1 checksum of the given vCenter server's host certificate
+	Thumbprint string `json:"thumbprint,omitempty"`
+
+	// Folder is the name, inventory path, managed object reference or the managed
+	// object ID of the folder in which the virtual machine is created/located.
+	// +optional
+	Folder string `json:"folder,omitempty"`
+
+	// Datastore is the name, inventory path, managed object reference or the managed
+	// object ID of the datastore in which the virtual machine is created/located.
+	// +optional
+	Datastore string `json:"datastore,omitempty"`
+
+	// StoragePolicyName of the storage policy to use with this
+	// Virtual Machine
+	// +optional
+	StoragePolicyName string `json:"storagePolicyName,omitempty"`
+
+	// ResourcePool is the name, inventory path, managed object reference or the managed
+	// object ID in which the virtual machine is created/located.
+	// +optional
+	ResourcePool string `json:"resourcePool,omitempty"`
+
+	// Network is the network configuration for this machine's VM.
+	Network capv.NetworkSpec `json:"network"`
+}
+
+// MachineInfraStatus represents the status details of a machine's infrastructure.
+type MachineInfraStatus struct {
+	// Ready indicates if the machine infrastructure is ready for use.
+	Ready bool `json:"ready"`
+
+	// FailureReason represents the reason for the failure of a MachineInfra instance.
+	FailureReason *errors.MachineStatusError `json:"failureReason,omitempty"`
+
+	// FailureMessage is the message associated with the failure of a MachineInfra instance.
+	FailureMessage string `json:"failureMessage,omitempty"`
+
+	// Conditions represents the conditions of a MachineInfra including
+	// type, status, and last update time.
+	Conditions clusterv1.Conditions `json:"conditions,omitempty"`
+
+	// Addresses represents the multiple addresses of the machine.
+	Addresses map[string]string `json:"addresses"`
+}
+
 // MachineInfra represents the infra details of a machine including its name,
 // namespace, memory, disk, and failure information.
 type MachineInfra struct {
-	// MachineInfra represents the infra details of a machine including its name,
-	// namespace, memory, disk, and failure information.
-	Name string `json:"name,omitempty"`
-
-	// Namespace represents the namespace where the machine infrastructure resides.
-	Namespace string `json:"namespace,omitempty"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	// ProviderID represents the unique identifier of the machine provider.
 	ProviderID string `json:"providerID,omitempty"`
@@ -86,9 +136,6 @@ type MachineInfra struct {
 
 	// PowerOffMode represents the power off mode of a MachineInfra instance.
 	PowerOffMode capv.VirtualMachinePowerOpMode `json:"powerOffMode,omitempty"`
-
-	// Template is a string field representing a template for MachineInfra.
-	Template string `json:"template,omitempty"`
 
 	// CloneMode represents the mode for cloning in the machine infrastructure.
 	CloneMode capv.CloneMode `json:"cloneMode,omitempty"`
@@ -108,20 +155,6 @@ type MachineInfra struct {
 	// infrastructure.
 	DiskGiB int32 `json:"diskGiB,omitempty"`
 
-	// Ready indicates if the machine infrastructure is ready for use.
-	Ready bool `json:"ready"`
-
-	// FailureReason represents the reason for the failure of a MachineInfra instance.
-	FailureReason *errors.MachineStatusError `json:"failureReason,omitempty"`
-
-	// FailureMessage is the message associated with the failure of a MachineInfra instance.
-	FailureMessage string `json:"failureMessage,omitempty"`
-
-	// Conditions represents the conditions of a MachineInfra including
-	// type, status, and last update time.
-	Conditions clusterv1.Conditions `json:"conditions,omitempty"`
-
-	// Created represents the creation time of a MachineInfra, stored as a string in
-	// the provided timezone.
-	Created string `json:"created"`
+	// Status represents the current status details of a machine's infrastructure.
+	Status capv.VSphereMachineStatus `json:"status"`
 }
