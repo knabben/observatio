@@ -79,9 +79,11 @@ func isMachineFailed(machine clusterv1.Machine) bool {
 func ProcessMachineInfra(machine capv.VSphereMachine) models.MachineInfra {
 	return models.MachineInfra{
 		ObjectMeta:        machine.ObjectMeta,
+		Age:               formatDuration(time.Since(machine.CreationTimestamp.Time)),
 		ProviderID:        stringPointer(machine.Spec.ProviderID),
 		FailureDomain:     stringPointer(machine.Spec.FailureDomain),
 		PowerOffMode:      machine.Spec.PowerOffMode,
+		Template:          machine.Spec.Template,
 		CloneMode:         machine.Spec.CloneMode,
 		NumCPUs:           machine.Spec.NumCPUs,
 		NumCoresPerSocket: machine.Spec.NumCoresPerSocket,

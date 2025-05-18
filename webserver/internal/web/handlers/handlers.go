@@ -41,11 +41,11 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	router.HandleFunc("/api/machines/list", kubernetes.HandleMachines).Methods("GET")
 	router.HandleFunc("/api/machines/infra/list", kubernetes.HandleMachineInfra).Methods("GET")
 
-	// Websocket Handler for object watchers.
-	router.HandleFunc("/ws", system.HandleWebsocket)
-
 	// Anthropic LLM handlers
 	router.HandleFunc("/api/llm", llm.HandleClaude).Methods("POST")
+
+	// Websocket Handler for object watchers.
+	router.HandleFunc("/ws", system.HandleWebsocket)
 
 	// Static React bundle hosting handler
 	if !developmentMode {

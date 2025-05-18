@@ -128,8 +128,14 @@ type MachineInfraStatus struct {
 type MachineInfra struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
+	// Age represents the time passed until the object is created.
+	Age string `json:"age,omitempty"`
+
 	// ProviderID represents the unique identifier of the machine provider.
 	ProviderID string `json:"providerID,omitempty"`
+
+	// Template represents the template used to create the machine.
+	Template string `json:"template,omitempty"`
 
 	// FailureDomain represents the failure domain of a machine infrastructure.
 	FailureDomain string `json:"failureDomain,omitempty"`
