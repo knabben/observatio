@@ -21,9 +21,29 @@ export type MachineType = {
   phase: string,
 }
 
-export type MachineInfraType = {
+export type MachineInfraMeta = {
   name: string,
   namespace: string,
+  resourceVersion: string,
+  creationTimestamp: string,
+  labels: {
+    [key: string]: string
+  },
+  annotations: {
+    [key: string]: string
+  },
+  OwnerReferences: {
+    kind: string,
+    name: string,
+    uid: string,
+    apiVersion: string,
+    controller: boolean,
+    blockOwnerDeletion: boolean,
+  }
+}
+
+export type MachineInfraType = {
+  metadata: MachineInfraMeta,
   providerID: string,
   failureDomain: string,
   powerOffMode: string,
@@ -33,9 +53,11 @@ export type MachineInfraType = {
   numCoresPerSocket: number,
   memoryMiB: number,
   diskGiB: number,
-  ready: boolean,
-  failureReason: string,
-  failureMessage: string,
-  created: string,
-  conditions: Conditions[]
+  age: string,
+  status: {
+    ready: boolean,
+    failureReason: string,
+    failureMessage: string,
+    conditions: Conditions[]
+  }
 }

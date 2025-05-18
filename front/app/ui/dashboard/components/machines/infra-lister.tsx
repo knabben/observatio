@@ -16,7 +16,7 @@ import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
 import {IconArrowBigLeft} from "@tabler/icons-react";
 
 export default function MachineInfraLister() {
-  const [vsphereMachine ,setVsphereMachine] = useState<MachineInfraType[]>([])
+  const [vsphereMachines,setVsphereMachine] = useState<MachineInfraType[]>([])
   const [selected, setSelected] = useState<string>('')
   const [loading, setLoading] = useState(true)
 
@@ -28,8 +28,8 @@ export default function MachineInfraLister() {
     setSelected(machine?.name)
   }
 
-  const filteredCluster: MachineInfraType | undefined = selected
-    ? FilterItems(selected, vsphereMachine)
+  const filteredMachine: MachineInfraType | undefined = selected
+    ? FilterItems(selected, vsphereMachines)
     : undefined;
 
   const {sendJsonMessage, lastJsonMessage, readyState} = WebSocket()
@@ -39,8 +39,10 @@ export default function MachineInfraLister() {
   }, [readyState, sendJsonMessage])
 
   useEffect(() => {
-    const newVsphereMachine: MachineInfraType[] = receiveAndPopulate(lastJsonMessage, [...vsphereMachine])
-    setVsphereMachine(newVsphereMachine.sort((a: MachineInfraType, b: MachineInfraType) => a.name.localeCompare(b.name)))
+    const newVsphereMachine: MachineInfraType[] = receiveAndPopulate(lastJsonMessage, [...vsphereMachines])
+    setVsphereMachine(newVsphereMachine.sort((a: MachineInfraType, b: MachineInfraType) =>
+      a.metadata?.name.localeCompare(b.metadata?.name))
+    )
     setLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastJsonMessage, setVsphereMachine])
@@ -51,20 +53,25 @@ export default function MachineInfraLister() {
 
   return (
     <Grid justify="flex-end" align="flex-start">
-      <GridCol span={11}>
+      <GridCol span={9}>
         <Link href="/dashboard/machines">
           <Title className={sourceCodePro400.className} order={2}>
             VSphereMachine / infrastructure.cluster.x-k8s.io/v1beta1
           </Title>
         </Link>
       </GridCol>
-      <GridCol span={1} className="flex justify-end items-center">
-        <IconArrowBigLeft onClick={() => handleSelect(null)} size={32} className="cursor-pointer hover:opacity-70"/>
+      <GridCol span={3} className="flex justify-end items-center">
+        { selected &&
+          <div>
+            <span className="text-sm text-gray-500">{selected}</span>
+            <IconArrowBigLeft onClick={() => handleSelect(null)} size={32} className="cursor-pointer hover:opacity-70"/>
+          </div>
+        }
       </GridCol>
       {
-        filteredCluster
-          ? <MachineInfraDetails machine={filteredCluster} />
-          : <MachineInfraTable select={handleSelect} machines={vsphereMachine}/>
+        filteredMachine
+          ? <MachineInfraDetails machine={filteredMachine} />
+          : <MachineInfraTable select={handleSelect} machines={vsphereMachines}/>
       }
     </Grid>
   );

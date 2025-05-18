@@ -55,7 +55,7 @@ export function receiveAndPopulate(
   if (isUpdateOperation) {
     return updateItemsList(items, response.data)
   } else {
-    return items.filter(item => item.name !== response.data.name);
+    return items.filter(item => item.metadata?.name !== response.data.metadata?.name);
   }
 }
 
@@ -69,8 +69,8 @@ function isItemUpdateOperation(type: WSOperationType): boolean {
  * If an item with the same name already exists in the list, it will be replaced
  * with the new item. Otherwise, the new item will be added to the list.
  */
-function updateItemsList<T extends { name: string }>(items: T[], newItem: T): T[] {
-  const existingItemIndex = items.findIndex(item => item.name === newItem.name);
+function updateItemsList<T extends { metadata: {name: string} }>(items: T[], newItem: T): T[] {
+  const existingItemIndex = items.findIndex(item => item.metadata?.name === newItem.metadata?.name);
 
   if (existingItemIndex !== -1) {
     return [
