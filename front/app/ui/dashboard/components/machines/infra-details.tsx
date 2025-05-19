@@ -8,20 +8,19 @@ import {
   Chip,
   GridCol,
   Group,
+  Notification,
   SimpleGrid,
   Space,
   Stack,
   Table,
   Tabs,
-  TabsPanel
+  TabsPanel, Title
 } from "@mantine/core";
-import { XMarkIcon } from '@heroicons/react/24/outline';
-import {IconCheck, IconCpu, IconDatabase, IconDeviceFloppy, IconX} from "@tabler/icons-react";
+import {IconCheck, IconCpu, IconDatabase, IconDeviceFloppy, IconX, IconCircleLetterCFilled} from "@tabler/icons-react";
 
 export default function MachineInfraDetails({
   machine
 }: {machine: MachineInfraType}) {
-  console.log(machine)
   return (
       <GridCol className={roboto.className} span={12}>
         <Card withBorder shadow="sm" padding="md" radius="md">
@@ -56,7 +55,7 @@ export default function MachineInfraDetails({
           </SimpleGrid>
         </Card>
         <Space h="md" />
-        <Tabs mb="md" defaultValue="spec">
+        <Tabs mb="md" color="#48654a" defaultValue="spec">
           <Tabs.List>
             <Tabs.Tab value="spec">Specification</Tabs.Tab>
             <Tabs.Tab value="troubleshooting">AI Troubleshooting</Tabs.Tab>
@@ -141,6 +140,7 @@ export default function MachineInfraDetails({
         </TabsPanel>
         <TabsPanel value="troubleshooting">
           <Space h="lg" />
+          <Notification withCloseButton={false} title="AI troubleshooting assistant" color="#275479">
           <Panel title="Machine conditions" content={
             <Table variant="vertical">
               <Table.Tbody className="text-sm">
@@ -151,7 +151,7 @@ export default function MachineInfraDetails({
                         {
                           condition.status.toLowerCase() == "true"
                             ? <Chip key={ic} className="p-1" defaultChecked color="teal" variant="light">{condition.type}</Chip>
-                            : <Chip key={ic} defaultChecked icon={<XMarkIcon />} color="red" variant="light">{condition.type}</Chip>
+                            : <Chip key={ic} defaultChecked color="red" variant="light">{condition.type}</Chip>
                         }
                       </Table.Td>
                       <Table.Td>{condition.lastTransitionTime}</Table.Td>
@@ -164,6 +164,7 @@ export default function MachineInfraDetails({
               </Table.Tbody>
             </Table>
           } />
+          </Notification>
         </TabsPanel>
         </Tabs>
       </GridCol>
