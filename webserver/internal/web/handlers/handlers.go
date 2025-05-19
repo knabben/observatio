@@ -42,7 +42,7 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	router.HandleFunc("/api/machines/infra/list", kubernetes.HandleMachineInfra).Methods("GET")
 
 	// Anthropic LLM handlers
-	router.HandleFunc("/api/analysis", llm.HandleClaude).Methods("POST")
+	router.HandleFunc("/api/analysis", llm.HandleClaude).Methods("POST", "OPTIONS")
 
 	// Websocket Handler for object watchers.
 	router.HandleFunc("/ws", system.HandleWebsocket)
