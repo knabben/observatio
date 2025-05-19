@@ -2,8 +2,6 @@ package models
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/cluster-api/errors"
-
 	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 )
@@ -102,25 +100,6 @@ type MachineInfraVCenter struct {
 
 	// Network is the network configuration for this machine's VM.
 	Network capv.NetworkSpec `json:"network"`
-}
-
-// MachineInfraStatus represents the status details of a machine's infrastructure.
-type MachineInfraStatus struct {
-	// Ready indicates if the machine infrastructure is ready for use.
-	Ready bool `json:"ready"`
-
-	// FailureReason represents the reason for the failure of a MachineInfra instance.
-	FailureReason *errors.MachineStatusError `json:"failureReason,omitempty"`
-
-	// FailureMessage is the message associated with the failure of a MachineInfra instance.
-	FailureMessage string `json:"failureMessage,omitempty"`
-
-	// Conditions represents the conditions of a MachineInfra including
-	// type, status, and last update time.
-	Conditions clusterv1.Conditions `json:"conditions,omitempty"`
-
-	// Addresses represents the multiple addresses of the machine.
-	Addresses map[string]string `json:"addresses"`
 }
 
 // MachineInfra represents the infra details of a machine including its name,
