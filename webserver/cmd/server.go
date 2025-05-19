@@ -49,7 +49,8 @@ func RunE(cmd *cobra.Command, args []string) error {
 	handlers.DefaultHandlers(router, development)
 
 	allowDomain := gh.AllowedOrigins([]string{"*"})
+	allowMethods := gh.AllowedMethods([]string{"GET", "POST"})
 	log.FromContext(context.Background()).Info("Listening on " + address)
 
-	return http.ListenAndServe(address, gh.CORS(allowDomain)(router))
+	return http.ListenAndServe(address, gh.CORS(allowDomain, allowMethods)(router))
 }

@@ -12,7 +12,7 @@ func (c *AnthropicClient) SendMessage(ctx context.Context) (response models.LLMR
 	msg, err = c.Client.Messages.New(ctx, anthropic.MessageNewParams{
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{
-			anthropic.NewUserMessage(anthropic.NewTextBlock(c.Message)),
+			anthropic.NewUserMessage(anthropic.NewTextBlock(c.Error)),
 		},
 		Model:         anthropic.ModelClaude3_7SonnetLatest,
 		StopSequences: []string{"```\n"},
