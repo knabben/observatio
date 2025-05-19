@@ -26,7 +26,7 @@ export default function AITroubleshooting({
   async function requestIA() {
     try {
       const response = await postAIAnalysis(reasons)
-      setAiResponse(response.data.message);
+      setAiResponse(response.data);
     } catch (error) {
       console.error('Error analyzing machine:', error);
     }
@@ -44,7 +44,7 @@ export default function AITroubleshooting({
             {aiResponse && (
               <>
                 <Space h="md"/>
-                <Textarea value={aiResponse} readOnly/>
+                {aiResponse}
               </>
             )}
           </div>

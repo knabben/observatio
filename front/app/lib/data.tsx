@@ -1,4 +1,4 @@
-export const URL = typeof window !== 'undefined' ? `http://${window.location.hostname}:8080` : 'http://localhost:8080';
+export const URL = 'http://localhost:8080';
 
 // ----- Dashboard -----
 
@@ -54,13 +54,18 @@ export async function getMachines() {
 }
 
 // ----- AI Interactions -----
+const defaultRequestConfig = {
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
+};
+
 export async function postAIAnalysis(request: string) {
   const res = await fetch(`${URL}/api/analysis`, {
+    ...defaultRequestConfig,
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({request: request}),
+    body: JSON.stringify({request}),
   });
-  return res.json()
+  return res.json();
 }
