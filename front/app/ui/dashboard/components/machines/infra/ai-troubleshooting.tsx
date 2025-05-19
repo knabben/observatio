@@ -19,7 +19,7 @@ export default function AITroubleshooting({
       machine.status.conditions
         ?.filter(condition => condition.reason)
         .map( (condition) => {
-          let mapper = condition.reason+" of type "+condition.type
+          const mapper = condition.reason+" of type "+condition.type
           if (condition.message != undefined) {
             return mapper + " with message: " + condition.message
           }
