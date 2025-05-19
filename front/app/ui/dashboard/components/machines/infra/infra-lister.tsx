@@ -7,8 +7,8 @@ import { sourceCodePro400 } from "@/fonts";
 import {FilterItems} from "@/app/dashboard/utils";
 import {Grid, GridCol, Title} from '@mantine/core';
 
-import MachineInfraDetails from '@/app/ui/dashboard/components/machines/infra-details'
-import MachineInfraTable from '@/app/ui/dashboard/components/machines/infra-table'
+import MachineInfraDetails from '@/app/ui/dashboard/components/machines/infra/infra-details'
+import MachineInfraTable from '@/app/ui/dashboard/components/machines/infra/infra-table'
 
 import {MachineInfraType} from "@/app/ui/dashboard/components/machines/types";
 import {receiveAndPopulate, sendInitialRequest, WebSocket} from "@/app/lib/websocket";
