@@ -17,8 +17,14 @@ export default function AITroubleshooting({
   useEffect(() => {
     const uniqueReasons = new Set(
       machine.status.conditions
-        ?.filter(condition => condition.message)
-        .map(condition => condition.reason+": "+condition.message)
+        ?.filter(condition => condition.reason)
+        .map( (condition) => {
+          let mapper = condition.reason+" of type "+condition.type
+          if (condition.message != undefined) {
+            return mapper + " with message: " + condition.message
+          }
+          return mapper
+        })
     );
     setReason(Array.from(uniqueReasons).join(', '));
   }, [machine.status.conditions]);
