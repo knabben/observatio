@@ -52,3 +52,15 @@ export async function getMachines() {
   const res = await fetch(`${URL}/api/machines/list`)
   return res.json()
 }
+
+// ----- AI Interactions -----
+export async function postAIAnalysis(request: string) {
+  const res = await fetch(`${URL}/api/analysis`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({request: request}),
+  });
+  return res.json()
+}
