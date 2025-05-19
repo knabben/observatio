@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 )
 
@@ -129,6 +130,99 @@ func TestProcessMachine(t *testing.T) {
 			assert.Equal(t, tt.expect.Version, result.Version)
 			assert.Equal(t, tt.expect.BootstrapReady, result.BootstrapReady)
 			assert.Equal(t, tt.expect.InfrastructureReady, result.InfrastructureReady)
+		})
+	}
+}
+
+func TestProcessMachineInfra(t *testing.T) {
+	tests := []struct {
+		name   string
+		input  capv.VSphereMachine
+		expect models.MachineInfra
+	}{
+		{
+			name: "All fields populated",
+			input: capv.VSphereMachine{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "infra-machine-1",
+					Namespace: "test-namespace",
+				},
+				Spec: capv.VSphereMachineSpec{
+					ProviderID:    strPointer("provider-id"),
+					FailureDomain: strPointer("failure-domain-1"),
+					PowerOffMode:  capv.VirtualMachinePowerOpModeTrySoft,
+					VirtualMachineCloneSpec: capv.VirtualMachineCloneSpec{
+						CloneMode:         capv.LinkedClone,
+						NumCPUs:           4,
+						NumCoresPerSocket: 2,
+						MemoryMiB:         8192,
+						DiskGiB:           100,
+					},
+				},
+				Status: capv.VSphereMachineStatus{
+					Ready: true,
+				},
+			},
+			expect: models.MachineInfra{
+				ObjectMeta:        metav1.ObjectMeta{Name: "infra-machine-1", Namespace: "test-namespace"},
+				ProviderID:        "provider-id",
+				FailureDomain:     "failure-domain-1",
+				PowerOffMode:      capv.VirtualMachinePowerOpModeTrySoft,
+				CloneMode:         capv.LinkedClone,
+				NumCPUs:           4,
+				NumCoresPerSocket: 2,
+				MemoryMiB:         8192,
+				DiskGiB:           100,
+				Status: capv.VSphereMachineStatus{
+					Ready: true,
+				},
+			},
+		},
+		{
+			name: "Minimal fields populated",
+			input: capv.VSphereMachine{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "infra-machine-2",
+				},
+				Spec: capv.VSphereMachineSpec{},
+			},
+			expect: models.MachineInfra{
+				ObjectMeta: metav1.ObjectMeta{Name: "infra-machine-2"},
+			},
+		},
+		{
+			name: "ProviderID and FailureDomain only",
+			input: capv.VSphereMachine{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "infra-machine-3",
+				},
+				Spec: capv.VSphereMachineSpec{
+					ProviderID:    strPointer("provider-id-3"),
+					FailureDomain: strPointer("failure-domain-3"),
+				},
+			},
+			expect: models.MachineInfra{
+				ObjectMeta:    metav1.ObjectMeta{Name: "infra-machine-3"},
+				ProviderID:    "provider-id-3",
+				FailureDomain: "failure-domain-3",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := ProcessMachineInfra(tt.input)
+
+			assert.Equal(t, tt.expect.ObjectMeta, result.ObjectMeta)
+			assert.Equal(t, tt.expect.ProviderID, result.ProviderID)
+			assert.Equal(t, tt.expect.FailureDomain, result.FailureDomain)
+			assert.Equal(t, tt.expect.PowerOffMode, result.PowerOffMode)
+			assert.Equal(t, tt.expect.CloneMode, result.CloneMode)
+			assert.Equal(t, tt.expect.NumCPUs, result.NumCPUs)
+			assert.Equal(t, tt.expect.NumCoresPerSocket, result.NumCoresPerSocket)
+			assert.Equal(t, tt.expect.MemoryMiB, result.MemoryMiB)
+			assert.Equal(t, tt.expect.DiskGiB, result.DiskGiB)
+			assert.Equal(t, tt.expect.Status, result.Status)
 		})
 	}
 }

@@ -78,8 +78,8 @@ func isMachineFailed(machine clusterv1.Machine) bool {
 // disk, failure information, etc.
 func ProcessMachineInfra(machine capv.VSphereMachine) models.MachineInfra {
 	return models.MachineInfra{
-		Name:              machine.Name,
-		Namespace:         machine.Namespace,
+		ObjectMeta:        machine.ObjectMeta,
+		Age:               formatDuration(time.Since(machine.CreationTimestamp.Time)),
 		ProviderID:        stringPointer(machine.Spec.ProviderID),
 		FailureDomain:     stringPointer(machine.Spec.FailureDomain),
 		PowerOffMode:      machine.Spec.PowerOffMode,
@@ -89,29 +89,35 @@ func ProcessMachineInfra(machine capv.VSphereMachine) models.MachineInfra {
 		NumCoresPerSocket: machine.Spec.NumCoresPerSocket,
 		MemoryMiB:         machine.Spec.MemoryMiB,
 		DiskGiB:           machine.Spec.DiskGiB,
-		Ready:             machine.Status.Ready,
-		FailureReason:     machine.Status.FailureReason,
-		FailureMessage:    stringPointer(machine.Status.FailureMessage),
-		Created:           formatDuration(time.Since(machine.CreationTimestamp.Time)),
-		Conditions:        machine.Status.Conditions,
+		Status:            machine.Status,
 	}
 }
 
 // ProcessMachineInfraResponse processes a list of VSphereMachines and returns MachineInfraResponse.
+// It processes each machine's infrastructure details and tracks the total count of machines,
+// the number of failing machines, and their individual infrastructure information.
 func ProcessMachineInfraResponse(machines []capv.VSphereMachine) models.MachineInfraResponse {
-	failed := 0
 	machineList := make([]models.MachineInfra, 0, len(machines))
-	for _, m := range machines {
-		machineList = append(machineList, ProcessMachineInfra(m))
-		if !m.Status.Ready {
-			failed++
-		}
+	failedMachinesCount := countFailedMachines(machines)
+	for _, machine := range machines {
+		machineList = append(machineList, ProcessMachineInfra(machine))
 	}
 	return models.MachineInfraResponse{
 		Total:    len(machines),
 		Machines: machineList,
-		Failing:  failed,
+		Failing:  failedMachinesCount,
 	}
+}
+
+// countFailedMachines returns the number of machines that are not in ready state.
+func countFailedMachines(machines []capv.VSphereMachine) int {
+	count := 0
+	for _, machine := range machines {
+		if !machine.Status.Ready {
+			count++
+		}
+	}
+	return count
 }
 
 // stringPointer returns an empty string if the input pointer is nil, otherwise returns the dereferenced string.

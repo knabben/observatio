@@ -12,13 +12,13 @@ type Client interface {
 }
 
 type AnthropicClient struct {
-	Client  anthropic.Client
-	Message string
+	Client anthropic.Client
+	Error  string
 }
 
-func NewClient(message string) Client {
+func NewClient(error string) Client {
 	return &AnthropicClient{
-		Client:  anthropic.NewClient(),
-		Message: message,
+		Client: anthropic.NewClient(),
+		Error:  error,
 	}
 }

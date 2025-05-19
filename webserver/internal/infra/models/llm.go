@@ -1,5 +1,5 @@
 package models
 
 type LLMResponse struct {
-	Response string `json:"response"`
+	Data string `json:"data"`
 }

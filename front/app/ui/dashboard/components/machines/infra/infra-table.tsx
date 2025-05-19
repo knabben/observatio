@@ -26,19 +26,19 @@ export default function MachineInfraTable({
         <Table.Tbody className="text-sm">
           {
             machines?.map( (machine: MachineInfraType) => (
-              <Table.Tr className={roboto.className} key={machine.name}>
+              <Table.Tr className={roboto.className} key={machine.metadata.name}>
                 <Table.Td>
-                  <a className="cursor-pointer hover:opacity-70" onClick={() => select(machine)}>{machine.name}</a>
+                  <a className="cursor-pointer hover:opacity-70" onClick={() => select(machine)}>{machine.metadata.name}</a>
                 </Table.Td>
                 <Table.Td>
-                  <Badge variant="light" color="gray"> {machine.namespace} </Badge>
+                  <Badge variant="light" color="gray"> {machine.metadata.namespace} </Badge>
                 </Table.Td>
                 <Table.Td>{machine.providerID}</Table.Td>
                 <Table.Td>{machine.template}</Table.Td>
-                <Table.Td>{machine.created}</Table.Td>
+                <Table.Td>{machine.age}</Table.Td>
                 <Table.Td className="text-center align-middle">
                 {
-                  machine.ready
+                  machine.status.ready
                   ? <Indicator inline processing color="green" size={22}/>
                   : <Indicator inline processing color="red" size={22}/>
                 }

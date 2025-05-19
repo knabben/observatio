@@ -12,13 +12,17 @@ func (c *AnthropicClient) SendMessage(ctx context.Context) (response models.LLMR
 	msg, err = c.Client.Messages.New(ctx, anthropic.MessageNewParams{
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{
-			anthropic.NewUserMessage(anthropic.NewTextBlock(c.Message)),
+			anthropic.NewUserMessage(anthropic.NewTextBlock(c.Error)),
 		},
 		Model:         anthropic.ModelClaude3_7SonnetLatest,
-		StopSequences: []string{"```\n"},
+		StopSequences: []string{"---\n"},
 	})
 	if err != nil {
 		return response, err
 	}
-	return models.LLMResponse{Response: msg.Content[0].Text + msg.StopSequence}, nil
+	var msgContent string
+	for _, m := range msg.Content {
+		msgContent += m.Text
+	}
+	return models.LLMResponse{Data: msgContent + msg.StopSequence}, nil
 }
