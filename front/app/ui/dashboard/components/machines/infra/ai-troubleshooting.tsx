@@ -1,18 +1,29 @@
 'use client';
 
-
 import Panel from "@/app/ui/dashboard/utils/panel";
-import {Chip, Table, Text, Notification, SimpleGrid, Button, Textarea, Space} from "@mantine/core";
+import {Chip, Table, Text, Notification, SimpleGrid, Button, Textarea, Space, Title, Stack} from "@mantine/core";
 import {IconX} from "@tabler/icons-react";
 import React, {useEffect, useState} from "react";
+import {JSX} from "react";
 import {MachineInfraType} from "@/app/ui/dashboard/components/machines/types";
 import {postAIAnalysis} from "@/app/lib/data";
+import Header from "@/app/ui/dashboard/utils/header";
+
+type AIResponse = {
+  description: string;
+  solution: string;
+}
+
+type DangerousHTML = {
+  __html: string;
+} & JSX.IntrinsicAttributes;
 
 export default function AITroubleshooting({
   machine,
 }: {machine: MachineInfraType}) {
   const [reasons, setReason] = useState("")
-  const [aiResponse, setAiResponse] = useState<string>("")
+  const [loading, setLoading] = useState(false)
+  const [aiResponse, setAiResponse] = useState<AIResponse>({description: "", solution: ""})
 
   useEffect(() => {
     const uniqueReasons = new Set(
@@ -31,8 +42,10 @@ export default function AITroubleshooting({
 
   async function requestIA() {
     try {
+      setLoading(true);
       const response = await postAIAnalysis(reasons)
-      setAiResponse(response.data);
+      setAiResponse(response);
+      setLoading(false);
     } catch (error) {
       console.error('Error analyzing machine:', error);
     }
@@ -45,18 +58,34 @@ export default function AITroubleshooting({
         {
           reasons &&
           <div>
-            <Textarea minLength={10} value={reasons} onChange={(e) => setReason(e.target.value)} readOnly/>
-            <Button bg="#a1f54d" c="#000" variant="filled" onClick={requestIA}>Get Help!</Button>
-            {aiResponse && (
+            <Stack align="flex-end" className="text-center">
+              <Textarea
+                className="min-w-full"
+                styles={{input: {height: '150px'}}}
+                value={reasons}
+                onChange={(e) => setReason(e.target.value)} />
+              {loading
+                ? <Text className="text-center text-white">Analyzing...</Text>
+                : <Button bg="#a1f54d" c="#000" variant="filled" onClick={requestIA}>Get Help!</Button>
+              }
+            </Stack>
+            {aiResponse.description && aiResponse.solution && (
               <>
                 <Space h="md"/>
-                {aiResponse}
+                <Notification color="gray" withCloseButton={false}>
+                  <Header title="Analysis and Description" />
+                  <div className="text-white" dangerouslySetInnerHTML={{__html: aiResponse.description}}/>
+                </Notification>
+                <Space h="md"/>
+                <Notification withCloseButton={false} color="#304a47">
+                  <Header title="How to fix" />
+                  <div className="text-white" dangerouslySetInnerHTML={{__html: aiResponse.solution}}/>
+                </Notification>
               </>
             )}
           </div>
         }
-        <div>
-          <Notification withCloseButton={false} color="#b61c11">
+      <div>
       <Panel title="Machine conditions" content={
         <Table variant="vertical">
           <Table.Tbody className="text-sm">
@@ -88,7 +117,7 @@ export default function AITroubleshooting({
                   <Table.Td>{condition.lastTransitionTime}</Table.Td>
                   <Table.Td>{condition.severity}</Table.Td>
                   <Table.Td>
-                    <Text c="#b61c11" className="text-bold"> {condition.message}</Text>
+                    <Text c="red" className="text-bold"> {condition.message}</Text>
                   </Table.Td>
                 </Table.Tr>
               ))
@@ -96,9 +125,8 @@ export default function AITroubleshooting({
           </Table.Tbody>
         </Table>
       } />
-          </Notification>
-      </div>
-</SimpleGrid>
+        </div>
+      </SimpleGrid>
     </Notification>
   )
 }
