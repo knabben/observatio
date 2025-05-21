@@ -1,5 +1,6 @@
 package models
 
 type LLMResponse struct {
-	Data string `json:"data"`
+	Description string `json:"description"`
+	Solution    string `json:"solution"`
 }
