@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {sourceCodePro400} from "@/fonts";
 
-import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";
 import {Grid, GridCol, Title } from '@mantine/core';
 
@@ -14,6 +13,7 @@ import MachineDetails from "@/app/ui/dashboard/components/machines/details";
 import {MachineType} from "@/app/ui/dashboard/components/machines/types";
 import {receiveAndPopulate, sendInitialRequest, WebSocket} from "@/app/lib/websocket";
 import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
+import {IconArrowBigLeft} from "@tabler/icons-react";
 
 /**
  * MachineLister component handles listing and displaying details of machines.
@@ -26,7 +26,15 @@ export default function MachineLister() {
   const [selected, setSelected] = useState('')
   const [loading, setLoading] = useState(true)
 
-  const filteredMachines = selected
+  const handleSelect = (machine: MachineType | null) => {
+    if (machine === null) {
+      setSelected('')
+    }
+    // @ts-expect-error machine
+    setSelected(machine.metadata?.name)
+  }
+
+  const filteredMachines: MachineType | undefined = selected
     ? FilterItems(selected, machines)
     : undefined;
 
@@ -38,7 +46,8 @@ export default function MachineLister() {
 
   useEffect(() => {
     const newMachines: MachineType[] = receiveAndPopulate(lastJsonMessage, [...machines])
-    setMachines(newMachines.sort((a: MachineType, b: MachineType) => a.name.localeCompare(b.name)))
+    setMachines(newMachines.sort((a: MachineType, b: MachineType) =>
+      a.metadata?.name.localeCompare(b.metadata?.name)))
     setLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastJsonMessage, setMachines])
@@ -49,20 +58,24 @@ export default function MachineLister() {
 
   return (
     <Grid justify="flex-end" align="flex-start">
-      <GridCol h={60} span={8}>
+      <GridCol span={9}>
         <Link href="/dashboard/clusters">
           <Title className={sourceCodePro400.className} order={2}>
             Machines / cluster.x-k8s.io
           </Title>
         </Link>
       </GridCol>
-      <Search
-        options={machines}
-        onChange={setSelected}/>
+      <GridCol span={3} className="flex justify-end items-center">
+        { selected &&
+          <div>
+            <IconArrowBigLeft onClick={() => handleSelect(null)} size={32} className="cursor-pointer hover:opacity-70"/>
+          </div>
+        }
+      </GridCol>
       {
         filteredMachines
           ? <MachineDetails machine={filteredMachines} />
-          : <MachinesTable machines={machines}/>
+          : <MachinesTable select={handleSelect} machines={machines}/>
       }
     </Grid>
   )

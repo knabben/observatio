@@ -63,7 +63,7 @@ export default function MachineInfraDetails({
         </TabsPanel>
         <TabsPanel value="troubleshooting">
           <Space h="lg" />
-          <AITroubleshooting machine={machine} />
+          <AITroubleshooting conditions={machine.status.conditions} />
         </TabsPanel>
         </Tabs>
       </GridCol>

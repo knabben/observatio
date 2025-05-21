@@ -49,17 +49,17 @@ func TestProcessMachine(t *testing.T) {
 				},
 			},
 			expect: models.Machine{
-				Name:                "test-machine",
-				Namespace:           "test-namespace",
-				Owner:               "owner-1",
-				Cluster:             "test-cluster",
-				NodeName:            "node-ref",
-				ProviderID:          "provider-id",
-				Version:             "v1.2.3",
-				BootstrapReady:      true,
-				InfrastructureReady: true,
-				Bootstrap:           "bootstrap-config",
-				Phase:               "Running",
+				ObjectMeta: metav1.ObjectMeta{Name: "test-machine", Namespace: "test-namespace"},
+				Cluster:    "test-cluster",
+				NodeName:   "node-ref",
+				ProviderID: "provider-id",
+				Version:    "v1.2.3",
+				Bootstrap:  "bootstrap-config",
+				Status: clusterv1.MachineStatus{
+					BootstrapReady:      true,
+					InfrastructureReady: true,
+					Phase:               "Running",
+				},
 			},
 		},
 		{
@@ -76,11 +76,15 @@ func TestProcessMachine(t *testing.T) {
 				Status: clusterv1.MachineStatus{},
 			},
 			expect: models.Machine{
-				Name:                "test-machine",
-				Namespace:           "test-namespace",
-				Cluster:             "test-cluster",
-				BootstrapReady:      false,
-				InfrastructureReady: false,
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-machine",
+					Namespace: "test-namespace",
+				},
+				Cluster: "test-cluster",
+				Status: clusterv1.MachineStatus{
+					BootstrapReady:      false,
+					InfrastructureReady: false,
+				},
 			},
 		},
 		{
@@ -97,9 +101,13 @@ func TestProcessMachine(t *testing.T) {
 				},
 			},
 			expect: models.Machine{
-				Name:      "test-machine",
-				Namespace: "test-namespace",
-				Owner:     "owner-2",
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-machine",
+					Namespace: "test-namespace",
+					OwnerReferences: []metav1.OwnerReference{
+						{Name: "owner-2"},
+					},
+				},
 			},
 		},
 		{
@@ -112,8 +120,10 @@ func TestProcessMachine(t *testing.T) {
 				},
 			},
 			expect: models.Machine{
-				Name:      "machine-no-owners",
-				Namespace: "default",
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "machine-no-owners",
+					Namespace: "default",
+				},
 			},
 		},
 	}
@@ -123,13 +133,12 @@ func TestProcessMachine(t *testing.T) {
 			result := ProcessMachine(tt.input)
 			assert.Equal(t, tt.expect.Name, result.Name)
 			assert.Equal(t, tt.expect.Namespace, result.Namespace)
-			assert.Equal(t, tt.expect.Owner, result.Owner)
 			assert.Equal(t, tt.expect.Cluster, result.Cluster)
 			assert.Equal(t, tt.expect.NodeName, result.NodeName)
 			assert.Equal(t, tt.expect.ProviderID, result.ProviderID)
 			assert.Equal(t, tt.expect.Version, result.Version)
-			assert.Equal(t, tt.expect.BootstrapReady, result.BootstrapReady)
-			assert.Equal(t, tt.expect.InfrastructureReady, result.InfrastructureReady)
+			assert.Equal(t, tt.expect.Status.BootstrapReady, result.Status.BootstrapReady)
+			assert.Equal(t, tt.expect.Status.InfrastructureReady, result.Status.InfrastructureReady)
 		})
 	}
 }

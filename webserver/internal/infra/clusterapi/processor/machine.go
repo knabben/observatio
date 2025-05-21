@@ -16,14 +16,6 @@ func ProcessMachine(m clusterv1.Machine) models.Machine {
 	if m.Status.NodeRef != nil {
 		nodeRef = m.Status.NodeRef.Name
 	}
-	var version string
-	if m.Spec.Version != nil {
-		version = *m.Spec.Version
-	}
-	var machineOwner string
-	for _, owner := range m.OwnerReferences {
-		machineOwner = owner.Name
-	}
 	var providerId string
 	if m.Spec.ProviderID != nil {
 		providerId = *m.Spec.ProviderID
@@ -33,18 +25,14 @@ func ProcessMachine(m clusterv1.Machine) models.Machine {
 		bootstrap = m.Spec.Bootstrap.ConfigRef.Name
 	}
 	return models.Machine{
-		Name:                m.Name,
-		Namespace:           m.Namespace,
-		Owner:               machineOwner,
-		Cluster:             m.Spec.ClusterName,
-		NodeName:            nodeRef,
-		ProviderID:          providerId,
-		Version:             version,
-		BootstrapReady:      m.Status.BootstrapReady,
-		InfrastructureReady: m.Status.InfrastructureReady,
-		Created:             formatDuration(time.Since(m.CreationTimestamp.Time)),
-		Bootstrap:           bootstrap,
-		Phase:               clusterv1.MachinePhase(m.Status.Phase),
+		ObjectMeta: m.ObjectMeta,
+		Age:        formatDuration(time.Since(m.CreationTimestamp.Time)),
+		Cluster:    m.Spec.ClusterName,
+		NodeName:   nodeRef,
+		ProviderID: providerId,
+		Version:    stringPointer(m.Spec.Version),
+		Bootstrap:  bootstrap,
+		Status:     m.Status,
 	}
 }
 

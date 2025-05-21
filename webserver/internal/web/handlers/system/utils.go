@@ -2,7 +2,6 @@ package system
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -42,7 +41,6 @@ func WriteResponse(w http.ResponseWriter, object any) error {
 		return err
 	}
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Println(string(response))
 	if _, err := w.Write(response); err != nil {
 		return err
 	}
@@ -52,7 +50,6 @@ func WriteResponse(w http.ResponseWriter, object any) error {
 // convertObject marshal to a generic object on a []byte return.
 func convertObject(object any) (response []byte, err error) {
 	if response, err = json.Marshal(&object); err != nil {
-		fmt.Println(err, "ERROR")
 		return make([]byte, 0), err
 	}
 	return response, nil
