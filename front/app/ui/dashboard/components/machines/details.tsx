@@ -1,9 +1,11 @@
-import {Card, Grid, GridCol} from "@mantine/core";
-import { Table, Indicator, Space, SimpleGrid } from '@mantine/core';
+import {Card, GridCol, Group, Space, Stack, Tabs, TabsPanel, Text} from "@mantine/core";
+import { SimpleGrid } from '@mantine/core';
 import React from "react";
 import {roboto} from "@/fonts";
-import Panel from "@/app/ui/dashboard/utils/panel";
 import {MachineType} from "@/app/ui/dashboard/components/machines/types";
+import {IconCheck, IconX} from "@tabler/icons-react";
+import Specification from "@/app/ui/dashboard/components/machines/specification";
+import AITroubleshooting from "@/app/ui/dashboard/components/machines/infra/ai-troubleshooting";
 
 export default function MachineDetails({
   machine,
@@ -11,59 +13,50 @@ export default function MachineDetails({
   return (
     <GridCol className={roboto.className} span={12}>
       <Card withBorder shadow="sm" padding="lg" radius="md">
-        <SimpleGrid className="text-center" cols={3}>
-          <div>
-            <span className="font-bold">Name: </span>
-            {
-              machine.infrastructureReady && machine.bootstrapReady
-              ? <Indicator offset={-3} inline withBorder position="top-end" color="green" size={10}> {machine.name} </Indicator>
-              : <Indicator  offset={-3} inline withBorder position="top-end" color="red" size={10}> {machine.name} </Indicator>
-            }
+        <SimpleGrid cols={2}>
+          <div className="flex items-center h-full">
+            <Group justify="flex-start">
+              {
+                machine.status.infrastructureReady && machine.status.bootstrapReady
+                  ? <IconCheck size={40} color="teal"/>
+                  : <IconX color="red" size={40}/>
+              }
+              <Text className="text-bold" fw={700}>{machine.metadata?.name}</Text>
+            </Group>
           </div>
-          <div><span className="font-bold">Phase: </span> {machine.phase}</div>
-          <div><span className="font-bold">Age:</span> {machine.created}</div>
+          <div>
+          <Group justify="flex-end">
+            <Stack gap="sm" justify="center">
+              <Text size="sm">Namespace</Text>
+              <Text size="xl">
+                {machine.metadata?.namespace}
+              </Text>
+            </Stack>
+            <Stack gap="sm" justify="center">
+              <Text size="sm">Created</Text>
+              <Text size="xl">
+                {machine.age}
+              </Text>
+            </Stack>
+          </Group>
+          </div>
         </SimpleGrid>
       </Card>
       <Space h="md" />
-      <Grid>
-        <GridCol span={12}>
-          <Panel title="Specification" content={
-            <Table
-              variant="vertical">
-              <Table.Tbody className="text-sm">
-                <Table.Tr>
-                  <Table.Th w={260}>Namespace</Table.Th>
-                  <Table.Td>{machine.namespace}</Table.Td>
-                </Table.Tr>
-                <Table.Tr>
-                  <Table.Th>Cluster</Table.Th>
-                  <Table.Td>{machine.cluster}</Table.Td>
-                </Table.Tr>
-                <Table.Tr>
-                  <Table.Th>Owner</Table.Th>
-                  <Table.Td>{machine.owner}</Table.Td>
-                </Table.Tr>
-                <Table.Tr>
-                  <Table.Th>Bootstrap</Table.Th>
-                  <Table.Td>{machine.bootstrap}</Table.Td>
-                </Table.Tr>
-                <Table.Tr>
-                  <Table.Th>Node</Table.Th>
-                  <Table.Td>{machine.nodeName}</Table.Td>
-                </Table.Tr>
-                <Table.Tr>
-                  <Table.Th>ProviderID</Table.Th>
-                  <Table.Td>{machine.providerID}</Table.Td>
-                </Table.Tr>
-                <Table.Tr>
-                  <Table.Th>Version</Table.Th>
-                  <Table.Td>{machine.version}</Table.Td>
-                </Table.Tr>
-              </Table.Tbody>
-            </Table>
-          } />
-        </GridCol>
-      </Grid>
+      <Tabs mb="md" color="#48654a" defaultValue="spec">
+        <Tabs.List>
+          <Tabs.Tab value="spec">Specification</Tabs.Tab>
+          <Tabs.Tab value="troubleshooting">AI Troubleshooting</Tabs.Tab>
+        </Tabs.List>
+        <TabsPanel value="spec">
+          <Space h="lg" />
+          <Specification machine={machine} />
+        </TabsPanel>
+        <TabsPanel value="troubleshooting">
+          <Space h="lg" />
+          <AITroubleshooting conditions={machine.status.conditions} />
+        </TabsPanel>
+      </Tabs>
     </GridCol>
   )
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import React from "react";
-import { Indicator, Table } from '@mantine/core';
+import {Badge, Indicator, Table} from '@mantine/core';
 import { GridCol } from '@mantine/core';
 import {MachineType} from "@/app/ui/dashboard/components/machines/types";
 import {roboto} from "@/fonts";
@@ -32,7 +32,9 @@ export default function MachinesTable({
                 <Table.Td>
                   <a className="cursor-pointer hover:opacity-70" onClick={() => select(machine)}>{machine.metadata.name}</a>
                 </Table.Td>
-                <Table.Td>{machine.metadata.namespace}</Table.Td>
+                <Table.Td>
+                  <Badge variant="light" color="gray"> {machine.metadata.namespace} </Badge>
+                </Table.Td>
                 <Table.Td>{machine.version}</Table.Td>
                 <Table.Td>{machine.cluster}</Table.Td>
                 <Table.Td ta="center">{machine.age}</Table.Td>

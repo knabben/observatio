@@ -4,7 +4,7 @@ import Panel from "@/app/ui/dashboard/utils/panel";
 import {Chip, Table, Text, Notification, SimpleGrid, Button, Textarea, Space, Stack} from "@mantine/core";
 import {IconX} from "@tabler/icons-react";
 import React, {useEffect, useState} from "react";
-import {MachineInfraType} from "@/app/ui/dashboard/components/machines/types";
+import {Conditions} from "@/app/ui/dashboard/components/machines/types";
 import {postAIAnalysis} from "@/app/lib/data";
 import Header from "@/app/ui/dashboard/utils/header";
 
@@ -14,15 +14,15 @@ type AIResponse = {
 }
 
 export default function AITroubleshooting({
-  machine,
-}: {machine: MachineInfraType}) {
+  conditions,
+}: {conditions: Conditions[]}) {
   const [reasons, setReason] = useState("")
   const [loading, setLoading] = useState(false)
   const [aiResponse, setAiResponse] = useState<AIResponse>({description: "", solution: ""})
 
   useEffect(() => {
     const uniqueReasons = new Set(
-      machine.status.conditions
+      conditions
         ?.filter(condition => condition.reason)
         .map( (condition) => {
           const mapper = condition.reason+" of type "+condition.type
@@ -33,7 +33,7 @@ export default function AITroubleshooting({
         })
     );
     setReason(Array.from(uniqueReasons).join(', '));
-  }, [machine.status.conditions]);
+  }, [conditions]);
 
   async function requestIA() {
     try {
@@ -85,7 +85,7 @@ export default function AITroubleshooting({
         <Table variant="vertical">
           <Table.Tbody className="text-sm">
             {
-              machine.status.conditions?.map((condition, ic) => (
+              conditions?.map((condition, ic) => (
                 <Table.Tr key={ic}>
                   <Table.Td>
                     {

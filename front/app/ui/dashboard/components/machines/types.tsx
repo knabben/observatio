@@ -58,7 +58,7 @@ export type MachineMeta = {
   }[]
 }
 
-type Conditions = {
+export type Conditions = {
   type: string,
   reason: string,
   severity: string,
