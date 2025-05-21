@@ -58,7 +58,7 @@ export default function MachineLister() {
 
   return (
     <Grid justify="flex-end" align="flex-start">
-      <GridCol h={60} span={8}>
+      <GridCol span={9}>
         <Link href="/dashboard/clusters">
           <Title className={sourceCodePro400.className} order={2}>
             Machines / cluster.x-k8s.io
@@ -75,7 +75,7 @@ export default function MachineLister() {
       {
         filteredMachines
           ? <MachineDetails machine={filteredMachines} />
-          : <MachinesTable machines={machines}/>
+          : <MachinesTable select={handleSelect} machines={machines}/>
       }
     </Grid>
   )

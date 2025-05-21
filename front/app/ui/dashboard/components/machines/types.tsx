@@ -3,18 +3,17 @@
  */
 export type MachineType = {
   metadata: MachineMeta,
-  name: string,
-  namespace: string,
-  owner: string,
   bootstrap: string,
   cluster: string,
   nodeName: string,
   providerID: string,
   version: string,
-  created: string,
-  bootstrapReady: boolean,
-  infrastructureReady: boolean,
-  phase: string,
+  age: string,
+  status: {
+    bootstrapReady: boolean,
+    infrastructureReady: boolean,
+    conditions: Conditions[]
+  }
 }
 
 
