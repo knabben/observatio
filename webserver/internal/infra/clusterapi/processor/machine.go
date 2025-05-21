@@ -26,6 +26,7 @@ func ProcessMachine(m clusterv1.Machine) models.Machine {
 	}
 	return models.Machine{
 		ObjectMeta: m.ObjectMeta,
+		Age:        formatDuration(time.Since(m.CreationTimestamp.Time)),
 		Cluster:    m.Spec.ClusterName,
 		NodeName:   nodeRef,
 		ProviderID: providerId,
