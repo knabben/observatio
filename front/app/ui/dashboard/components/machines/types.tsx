@@ -1,15 +1,8 @@
-// Machine table + details types and models.
-
-type Conditions = {
-  type: string,
-  reason: string,
-  severity: string,
-  status: string,
-  message: string,
-  lastTransitionTime: string,
-}
-
+/**
+ * Represents the details and metadata associated with a machine type.
+ */
 export type MachineType = {
+  metadata: MachineMeta,
   name: string,
   namespace: string,
   owner: string,
@@ -24,7 +17,28 @@ export type MachineType = {
   phase: string,
 }
 
-export type MachineInfraMeta = {
+
+export type MachineInfraType = {
+  metadata: MachineMeta,
+  providerID: string,
+  failureDomain: string,
+  powerOffMode: string,
+  template: string,
+  cloneMode: string,
+  numCPUs: number,
+  numCoresPerSocket: number,
+  memoryMiB: number,
+  diskGiB: number,
+  age: string,
+  status: {
+    ready: boolean,
+    failureReason: string,
+    failureMessage: string,
+    conditions: Conditions[]
+  }
+}
+
+export type MachineMeta = {
   name: string,
   namespace: string,
   resourceVersion: string,
@@ -45,22 +59,11 @@ export type MachineInfraMeta = {
   }[]
 }
 
-export type MachineInfraType = {
-  metadata: MachineInfraMeta,
-  providerID: string,
-  failureDomain: string,
-  powerOffMode: string,
-  template: string,
-  cloneMode: string,
-  numCPUs: number,
-  numCoresPerSocket: number,
-  memoryMiB: number,
-  diskGiB: number,
-  age: string,
-  status: {
-    ready: boolean,
-    failureReason: string,
-    failureMessage: string,
-    conditions: Conditions[]
-  }
+type Conditions = {
+  type: string,
+  reason: string,
+  severity: string,
+  status: string,
+  message: string,
+  lastTransitionTime: string,
 }

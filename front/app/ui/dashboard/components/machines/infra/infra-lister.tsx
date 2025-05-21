@@ -15,6 +15,11 @@ import {receiveAndPopulate, sendInitialRequest, WebSocket} from "@/app/lib/webso
 import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
 import {IconArrowBigLeft} from "@tabler/icons-react";
 
+/**
+ * A functional component that fetches, manages, and displays a list of vSphere machines along with their infrastructure details.
+ * It uses WebSocket messaging to receive and update machine details in real time.
+ * The component allows for selecting a specific machine to display its details or displaying the entire list in a table format.
+ */
 export default function MachineInfraLister() {
   const [vsphereMachines,setVsphereMachine] = useState<MachineInfraType[]>([])
   const [selected, setSelected] = useState<string>('')
