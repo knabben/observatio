@@ -21,6 +21,5 @@ export default function MachineInfraLister() {
         <MachineInfraTable select={handleSelect} machines={items}/>
       )}
       title="Machine Infra / infrastructure.cluster.x-k8s.io/v1beta1"
-      titleLink="/dashboard/machines"
     />
 }

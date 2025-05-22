@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import React, {useEffect} from 'react';
 import { sourceCodePro400 } from "@/fonts";
 
@@ -33,7 +32,6 @@ export default function BaseLister<T extends object>({
   renderDetails,
   renderTable,
   title,
-  titleLink
 }: BaseListerProps<T>) {
   const [items, setItems] = useState<T[]>(initialItems)
   const [selected, setSelected] = useState('')
@@ -75,11 +73,9 @@ export default function BaseLister<T extends object>({
   return (
     <Grid justify="flex-end" align="flex-start">
       <GridCol span={9}>
-        <Link href={titleLink}>
-          <Title className={sourceCodePro400.className} order={2}>
-            {title}
-          </Title>
-        </Link>
+        <Title className={sourceCodePro400.className} order={2}>
+          {title}
+        </Title>
       </GridCol>
       <GridCol span={3} className="flex justify-end items-center">
         { selected &&
