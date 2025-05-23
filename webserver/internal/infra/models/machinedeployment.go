@@ -40,15 +40,6 @@ type MachineDeployment struct {
 	// +optional
 	TemplateVersion *string `json:"templateversion,omitempty"`
 
-	// ReadyReplicas represents the number of replicas that are currently in the ready state.
-	ReadyReplicas int32 `json:"readyReplicas"`
-
-	// UnavailableReplicas represents the number of replicas that are not available in the machine deployment.
-	UnavailableReplicas int32 `json:"unavailableReplicas"`
-
-	// UpdatedReplicas specifies the number of replicas that have been successfully updated to match the desired state.
-	UpdatedReplicas int32 `json:"updatedReplicas"`
-
 	// Status represents the current status details of a machine deployment's infrastructure.
 	Status clusterv1.MachineDeploymentStatus `json:"status"`
 }

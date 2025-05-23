@@ -10,15 +10,13 @@ import (
 // ProcessMachineDeployment converts a clusterv1.MachineDeployment object into a models.MachineDeployment structure.
 func ProcessMachineDeployment(md clusterv1.MachineDeployment) models.MachineDeployment {
 	return models.MachineDeployment{
-		Name:                md.Name,
-		Namespace:           md.Namespace,
-		Cluster:             md.Spec.ClusterName,
-		Replicas:            md.Status.Replicas,
-		ReadyReplicas:       md.Status.ReadyReplicas,
-		UpdatedReplicas:     md.Status.UpdatedReplicas,
-		UnavailableReplicas: md.Status.UnavailableReplicas, // nolint
-		Created:             formatDuration(time.Since(md.CreationTimestamp.Time)),
-		Phase:               clusterv1.MachineDeploymentPhase(md.Status.Phase),
+		ObjectMeta:                md.ObjectMeta,
+		Cluster:                   md.Spec.ClusterName,
+		Age:                       formatDuration(time.Since(md.CreationTimestamp.Time)),
+		TemplateBootstrap:         md.Spec.Template.Spec.Bootstrap,
+		TemplateInfrastructureRef: md.Spec.Template.Spec.InfrastructureRef,
+		TemplateVersion:           md.Spec.Template.Spec.Version,
+		Status:                    md.Status,
 	}
 }
 
@@ -27,7 +25,7 @@ func ProcessMachineDeploymentResponse(machineDeployments []clusterv1.MachineDepl
 	clusterMDs := make([]models.MachineDeployment, 0, len(machineDeployments))
 	for _, md := range machineDeployments {
 		clusterMDs = append(clusterMDs, ProcessMachineDeployment(md))
-		if md.Status.UnavailableReplicas > 0 { // nolint
+		if md.Status.ReadyReplicas != md.Status.Replicas { // nolint
 			failed += 1
 		}
 	}
