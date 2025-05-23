@@ -1,22 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import {sourceCodePro400} from "@/fonts";
-
-import {FilterItems} from "@/app/dashboard/utils";
-import {Grid, GridCol, Title } from '@mantine/core';
-
+import React from 'react';
 import MachinesTable from "@/app/ui/dashboard/components/machines/table";
 import MachineDetails from "@/app/ui/dashboard/components/machines/details";
 
-import {MachineInfraType, MachineType} from "@/app/ui/dashboard/components/machines/types";
-import {receiveAndPopulate, sendInitialRequest, WebSocket} from "@/app/lib/websocket";
-import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
-import {IconArrowBigLeft} from "@tabler/icons-react";
+import {MachineType} from "@/app/ui/dashboard/components/machines/types";
 import BaseLister from "@/app/ui/dashboard/base/lister";
-import MachineInfraDetails from "@/app/ui/dashboard/components/machines/infra/infra-details";
-import MachineInfraTable from "@/app/ui/dashboard/components/machines/infra/infra-table";
 
 /**
  * MachineLister component handles listing and displaying details of machines.
