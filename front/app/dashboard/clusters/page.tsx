@@ -1,7 +1,7 @@
 import React from "react";
 
 import ClusterLister from '@/app/ui/dashboard/components/clusters/lister'
-import ClusterInfraLister from '@/app/ui/dashboard/components/clusters/infra-lister'
+import ClusterInfraLister from '@/app/ui/dashboard/components/clusters/infra/infra-lister'
 import { Text, Space, Tabs, TabsList, TabsTab, TabsPanel } from '@mantine/core'
 
 export default async function Clusters() {

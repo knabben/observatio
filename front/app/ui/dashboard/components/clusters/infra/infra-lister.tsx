@@ -8,8 +8,8 @@ import Search from "@/app/ui/dashboard/search";
 import {FilterItems} from "@/app/dashboard/utils";
 import { Grid, GridCol, Title } from '@mantine/core';
 
-import ClusterInfraTable from '@/app/ui/dashboard/components/clusters/infra-table'
-import ClusterInfraDetails from "@/app/ui/dashboard/components/clusters/infra-details";
+import ClusterInfraTable from '@/app/ui/dashboard/components/clusters/infra/infra-table'
+import ClusterInfraDetails from "@/app/ui/dashboard/components/clusters/infra/infra-details";
 
 import {ClusterInfraType} from "@/app/ui/dashboard/components/clusters/types";
 import {receiveAndPopulate, sendInitialRequest, WebSocket} from "@/app/lib/websocket";
