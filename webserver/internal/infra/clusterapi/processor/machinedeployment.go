@@ -11,6 +11,7 @@ import (
 func ProcessMachineDeployment(md clusterv1.MachineDeployment) models.MachineDeployment {
 	return models.MachineDeployment{
 		ObjectMeta:                md.ObjectMeta,
+		Replicas:                  md.Status.Replicas,
 		Cluster:                   md.Spec.ClusterName,
 		Age:                       formatDuration(time.Since(md.CreationTimestamp.Time)),
 		TemplateBootstrap:         md.Spec.Template.Spec.Bootstrap,
