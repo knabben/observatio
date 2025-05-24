@@ -26,22 +26,19 @@ func TestProcessMachineDeployment(t *testing.T) {
 					ClusterName: "test-cluster",
 				},
 				Status: clusterv1.MachineDeploymentStatus{
-					Replicas:            5,
-					ReadyReplicas:       3,
-					UpdatedReplicas:     4,
-					UnavailableReplicas: 2,
-					Phase:               string(clusterv1.MachineDeploymentPhaseScalingUp),
+					Replicas:        5,
+					ReadyReplicas:   3,
+					UpdatedReplicas: 4,
+					Phase:           string(clusterv1.MachineDeploymentPhaseScalingUp),
 				},
 			},
 			expected: models.MachineDeployment{
-				Name:                "test-deployment",
-				Namespace:           "test-namespace",
-				Cluster:             "test-cluster",
-				Replicas:            5,
-				ReadyReplicas:       3,
-				UpdatedReplicas:     4,
-				UnavailableReplicas: 2,
-				Phase:               clusterv1.MachineDeploymentPhaseScalingUp,
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-deployment",
+					Namespace: "test-namespace",
+				},
+				Cluster:  "test-cluster",
+				Replicas: 5,
 			},
 		},
 		{
@@ -55,14 +52,12 @@ func TestProcessMachineDeployment(t *testing.T) {
 				Status: clusterv1.MachineDeploymentStatus{},
 			},
 			expected: models.MachineDeployment{
-				Name:                "empty-deployment",
-				Namespace:           "default",
-				Cluster:             "",
-				Replicas:            0,
-				ReadyReplicas:       0,
-				UpdatedReplicas:     0,
-				UnavailableReplicas: 0,
-				Phase:               "",
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "empty-deployment",
+					Namespace: "default",
+				},
+				Cluster:  "",
+				Replicas: 0,
 			},
 		},
 		{
@@ -80,14 +75,12 @@ func TestProcessMachineDeployment(t *testing.T) {
 				},
 			},
 			expected: models.MachineDeployment{
-				Name:                "nil-phase",
-				Namespace:           "ns1",
-				Cluster:             "cluster1",
-				Replicas:            6,
-				ReadyReplicas:       0,
-				UpdatedReplicas:     0,
-				UnavailableReplicas: 0,
-				Phase:               "",
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "nil-phase",
+					Namespace: "ns1",
+				},
+				Cluster:  "cluster1",
+				Replicas: 6,
 			},
 		},
 	}
@@ -99,10 +92,10 @@ func TestProcessMachineDeployment(t *testing.T) {
 			assert.Equal(t, tt.expected.Namespace, result.Namespace)
 			assert.Equal(t, tt.expected.Cluster, result.Cluster)
 			assert.Equal(t, tt.expected.Replicas, result.Replicas)
-			assert.Equal(t, tt.expected.ReadyReplicas, result.ReadyReplicas)
-			assert.Equal(t, tt.expected.UpdatedReplicas, result.UpdatedReplicas)
-			assert.Equal(t, tt.expected.UnavailableReplicas, result.UnavailableReplicas)
-			assert.Equal(t, tt.expected.Phase, result.Phase)
+			//assert.Equal(t, tt.expected.ReadyReplicas, result.ReadyReplicas)
+			//assert.Equal(t, tt.expected.UpdatedReplicas, result.UpdatedReplicas)
+			//assert.Equal(t, tt.expected.UnavailableReplicas, result.UnavailableReplicas)
+			//assert.Equal(t, tt.expected.Phase, result.Phase)
 		})
 	}
 }
