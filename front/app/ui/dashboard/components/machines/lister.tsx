@@ -15,7 +15,7 @@ import BaseLister from "@/app/ui/dashboard/base/lister";
  */
 export default function MachineLister() {
   return <BaseLister
-    objectType="machineinfra"
+    objectType="machine-infra"
     items={[]}
     renderDetails={(item: MachineType) => <MachineDetails machine={item}/>}
     renderTable={(items : MachineType[], handleSelect) =>  (
