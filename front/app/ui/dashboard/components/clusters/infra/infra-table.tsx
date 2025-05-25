@@ -14,7 +14,6 @@ export default function ClusterInfraTable({
   clusters: ClusterInfraType[]
   select: (cluster: ClusterInfraType) => void
 }) {
-  console.log(clusters)
   return (
     <GridCol span={12}>
       <Table highlightOnHover>
