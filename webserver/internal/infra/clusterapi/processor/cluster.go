@@ -73,16 +73,14 @@ func ProcessClusterInfra(cl capv.VSphereCluster) models.ClusterInfra {
 		clusterOwner = owner.Name
 	}
 	return models.ClusterInfra{
-		Name:                 cl.Name,
-		Namespace:            cl.Namespace,
+		ObjectMeta:           cl.ObjectMeta,
 		Cluster:              clusterOwner,
 		Server:               cl.Spec.Server,
 		Thumbprint:           cl.Spec.Thumbprint,
-		Created:              formatDuration(time.Since(cl.CreationTimestamp.Time)),
+		Age:                  formatDuration(time.Since(cl.CreationTimestamp.Time)),
 		ControlPlaneEndpoint: cl.Spec.ControlPlaneEndpoint.String(),
 		Modules:              cl.Spec.ClusterModules,
-		Conditions:           cl.Status.Conditions,
-		Ready:                cl.Status.Ready,
+		Status:               cl.Status,
 	}
 }
 
