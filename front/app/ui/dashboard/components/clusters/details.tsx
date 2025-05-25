@@ -1,10 +1,7 @@
-import {ClusterInfraType, ClusterType} from "@/app/ui/dashboard/components/clusters/types";
-import {Card, Chip, Grid, GridCol, Group, Stack, Text} from "@mantine/core";
-import { Pill, Table, Indicator, Space, SimpleGrid } from '@mantine/core';
 import React from "react";
-import {roboto, sourceCodePro400} from "@/fonts";
-import Panel from "@/app/ui/dashboard/utils/panel";
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import {ClusterType} from "@/app/ui/dashboard/components/clusters/types";
+import {Group, Stack, Text} from "@mantine/core";
+import {SimpleGrid } from '@mantine/core';
 import Specification from "@/app/ui/dashboard/components/clusters/specification";
 import AITroubleshooting from "@/app/ui/dashboard/base/ai-troubleshooting";
 import ObjectDetails from "@/app/ui/dashboard/base/details";
