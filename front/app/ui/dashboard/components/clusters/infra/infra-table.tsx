@@ -2,17 +2,19 @@
 
 import React from "react";
 
-import { Table, Indicator } from '@mantine/core';
+import {Table, Indicator, Badge} from '@mantine/core';
 import { GridCol } from '@mantine/core';
 
 import {roboto} from '@/fonts';
 import {ClusterInfraType} from '@/app/ui/dashboard/components/clusters/types';
 
 export default function ClusterInfraTable({
-  clusters
+  clusters, select
 }: {
   clusters: ClusterInfraType[]
+  select: (cluster: ClusterInfraType) => void
 }) {
+  console.log(clusters)
   return (
     <GridCol span={12}>
       <Table highlightOnHover>
@@ -23,20 +25,24 @@ export default function ClusterInfraTable({
             <Table.Th>Cluster</Table.Th>
             <Table.Th>Server</Table.Th>
             <Table.Th>Age</Table.Th>
-            <Table.Th ta="center">Status</Table.Th>
+            <Table.Th>Status</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody className="text-sm">
           {
-            clusters?.map( (cluster: ClusterInfraType) => (
-              <Table.Tr className={roboto.className} key={cluster.name}>
-                <Table.Td>{cluster.name}</Table.Td>
-                <Table.Td>{cluster.namespace}</Table.Td>
+            clusters?.map( (cluster: ClusterInfraType, i) => (
+              <Table.Tr className={roboto.className} key={i}>
+                <Table.Td>
+                  <a className="cursor-pointer hover:opacity-70" onClick={() => select(cluster)}>{cluster.metadata?.name}</a>
+                </Table.Td>
+                <Table.Td>
+                  <Badge variant="light" color="gray"> {cluster.metadata?.namespace} </Badge>
+                </Table.Td>
                 <Table.Td>{cluster.cluster}</Table.Td>
                 <Table.Td>{cluster.server}</Table.Td>
-                <Table.Td>{cluster.created}</Table.Td>
+                <Table.Td>{cluster.age}</Table.Td>
                 <Table.Td ta="center">
-                  {cluster.ready
+                  {cluster.status?.ready
                     ? <Indicator inline processing color="green" size={15}/>
                     : <Indicator inline processing color="red" size={15}/>
                   }</Table.Td>

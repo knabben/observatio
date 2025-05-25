@@ -58,21 +58,25 @@ export type ClusterType = {
   topology: ClusterClass,
 }
 
+export type ClusterInfraType = {
+  metadata: Meta,
+  cluster: string,
+  age: string,
+  controlPlaneEndpoint: string,
+  server: string,
+  thumbprint: string,
+  modules: Modules[],
+  status: {
+    ready: boolean,
+    failureReason: string,
+    failureMessage: string,
+    conditions: Conditions[]
+  }
+}
+
 export type Modules = {
   controlPlane: boolean,
   targetObjectName: string,
   moduleUUID: string,
-}
-
-export type ClusterInfraType = {
-  metadata: Meta,
-  cluster: string,
-  created: string,
-  controlPlaneEndpoint: string,
-  server: string,
-  thumbprint: string,
-  ready: boolean,
-  modules: Modules[],
-  conditions: Conditions[]
 }
 
