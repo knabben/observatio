@@ -1,6 +1,6 @@
 // MachineDeployment models and details
 
-import {Conditions, MachineMeta} from "@/app/ui/dashboard/components/machines/types";
+import {Conditions, MdwbachineMeta} from "@/app/ui/dashboard/components/machines/types";
 
 /**
  * Represents the type definition for a MachineDeployment.

@@ -1,10 +1,4 @@
-// Cluster table + details types and models.
-
-type Conditions = {
-  type: string,
-  status: string,
-  lastTransitionTime: string,
-}
+import { Meta, Conditions } from "@/app/ui/dashboard/base/types"
 
 type MachineDeployments = {
   class: string,
@@ -24,17 +18,44 @@ type ClusterClass = {
 }
 
 export type ClusterType = {
-  name: string,
-  namespace: string,
+  metadata: Meta,
   paused: boolean,
-  podNetwork: string,
-  serviceNetwork: string,
-  phase: string,
-  infrastructureReady: boolean,
-  controlPlaneReady: boolean,
-  created: string,
-  clusterClass: ClusterClass,
-  conditions: Conditions[]
+  age: string,
+  status: {
+    ready: boolean,
+    phase: string,
+    infrastructureReady: boolean,
+    controlPlaneReady: boolean,
+    conditions: Conditions[]
+  }
+  clusterNetwork: {
+    aPIServerPort: number,
+    serviceDomain: string,
+    services: {
+       cidrBlocks: string[],
+       externalIPs: string[],
+       nodePortRange: string,
+     },
+     pods: {
+       cidrBlocks: string[],
+     },
+  }
+  controlPlaneEndpoint: {
+    host: string,
+    port: number,
+  }
+  controlPlaneRef: {
+    apiVersion: string,
+    kind: string,
+    name: string,
+    namespace: string,
+  }
+  infrastructureRef: {
+    apiVersion: string,
+    kind: string,
+    name: string,
+  }
+  topology: ClusterClass,
 }
 
 export type Modules = {
@@ -44,8 +65,7 @@ export type Modules = {
 }
 
 export type ClusterInfraType = {
-  name: string,
-  namespace: string,
+  metadata: Meta,
   cluster: string,
   created: string,
   controlPlaneEndpoint: string,
