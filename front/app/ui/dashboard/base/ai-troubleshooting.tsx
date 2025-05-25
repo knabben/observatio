@@ -81,7 +81,7 @@ export default function AITroubleshooting({
           </div>
         }
       <div>
-      <Panel title="Machine conditions" content={
+      <Panel title="Object conditions" content={
         <Table variant="vertical">
           <Table.Tbody className="text-sm">
             {

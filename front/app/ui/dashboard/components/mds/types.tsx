@@ -2,6 +2,16 @@
 
 import {Conditions, MachineMeta} from "@/app/ui/dashboard/components/machines/types";
 
+/**
+ * Represents the type definition for a MachineDeployment.
+ *
+ * This type contains metadata and configuration details for a machine deployment,
+ * including its replicas, cluster association, age, template versions, and the
+ * current deployment status.
+ *
+ * The properties define specifics such as metadata information, infrastructure
+ * references, bootstrap templates, and other essential machine deployment details.
+ */
 export type MachineDeploymentType = {
   metadata: MachineMeta,
   replicas: number,
@@ -31,7 +41,7 @@ export type InfrastructureRef = {
 
 export type MachineDeploymentStatus = {
   phase: string,
-  condition: Conditions[],
+  conditions: Conditions[],
   readyReplicas: number,
   updatedReplicas: number,
   unavailableReplicas: number,
