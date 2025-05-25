@@ -5,7 +5,6 @@ import {Table, Indicator, Badge} from '@mantine/core';
 import { GridCol } from '@mantine/core';
 
 import {MachineDeploymentType} from '@/app/ui/dashboard/components/mds/types';
-import {MachineType} from "@/app/ui/dashboard/components/machines/types";
 
 export default function MDTable({
   mds, select
