@@ -79,7 +79,7 @@ run-tests-frontend:  ## Run frontend tests
 build:  ## Build the full stack
 	pushd front; \
 		npm run build; \
-		find ${BUILD_PATH} ! -name 'index.html' -type f -exec rm -fr {} +; \
+		find ${BUILD_PATH}  ! -name 'index.html' ! -name 'build' -type "f,d" -exec rm -fr {} +; \
 		mv output/* ${BUILD_PATH} ; \
 	popd;
 	pushd webserver; \
