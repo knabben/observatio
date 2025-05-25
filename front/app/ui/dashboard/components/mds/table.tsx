@@ -1,15 +1,16 @@
 'use client';
 
 import React from "react";
-import { Table, Indicator } from '@mantine/core';
+import {Table, Indicator, Badge} from '@mantine/core';
 import { GridCol } from '@mantine/core';
 
 import {MachineDeploymentType} from '@/app/ui/dashboard/components/mds/types';
 
 export default function MDTable({
-  mds,
+  mds, select
 }: {
   mds: MachineDeploymentType[]
+  select: (machine: MachineDeploymentType) => void
 }) {
   return (
     <GridCol span={12}>
@@ -29,14 +30,18 @@ export default function MDTable({
           {
             mds.map((md, i) => (
               <Table.Tr key={i}>
-                <Table.Td>{md.name}</Table.Td>
-                <Table.Td>{md.namespace}</Table.Td>
+                <Table.Td>
+                  <a className="cursor-pointer hover:opacity-70" onClick={() => select(md)}>{md.metadata.name}</a>
+                </Table.Td>
+                <Table.Td>
+                  <Badge variant="light" color="gray"> {md.metadata.namespace} </Badge>
+                </Table.Td>
                 <Table.Td>{md.replicas}</Table.Td>
                 <Table.Td>{md.cluster}</Table.Td>
-                <Table.Td ta="center">{md.phase}</Table.Td>
-                <Table.Td ta="center">{md.created}</Table.Td>
+                <Table.Td ta="center">{md.status?.phase}</Table.Td>
+                <Table.Td ta="center">{md.age}</Table.Td>
                 <Table.Td ta="center">
-                  {md.unavailableReplicas == 0
+                  {md.status.unavailableReplicas == 0
                     ? <Indicator inline processing color="green" size={15}/>
                     : <Indicator inline processing color="red" size={15}/>
                   }

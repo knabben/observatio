@@ -25,7 +25,7 @@ type MachineDeployment struct {
 	Cluster string `json:"cluster"`
 
 	// Created represents the timestamp when the machine deployment was created.
-	Age string `json:"created"`
+	Age string `json:"age"`
 
 	// bootstrap is a reference to a local struct which encapsulates
 	// fields to configure the Machine’s bootstrapping mechanism.
