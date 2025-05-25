@@ -23,8 +23,8 @@ export default function ClusterInfraDetails({
     {
       label: "AI Troubleshooting",
       content: (cluster: ClusterInfraType) => <AITroubleshooting conditions={cluster.status.conditions} />
-    }];
-    const headerRender = (cluster: ClusterInfraType) => (
+  }];
+  const headerRender = (cluster: ClusterInfraType) => (
     <SimpleGrid cols={2}>
       <div className="flex items-center h-full">
         <Group justify="flex-start">
@@ -54,7 +54,6 @@ export default function ClusterInfraDetails({
       </div>
     </SimpleGrid>
   );
-
   return (
     <ObjectDetails
       object={cluster}
@@ -62,40 +61,4 @@ export default function ClusterInfraDetails({
       tabs={tabs}
     />
   )
-  // return (
-  //   <GridCol className={roboto.className} span={12}>
-  //     <Grid>
-  //       <GridCol span={6}>
-
-  //         <Space h="md" />
-  //         <Panel title="Cluster Modules" content={
-  //           <Table horizontalSpacing="sm" verticalSpacing="sm">
-  //             <Table.Thead>
-  //               <Table.Tr>
-  //                 <Table.Th>Control Plane</Table.Th>
-  //                 <Table.Th>Target Object Name</Table.Th>
-  //                 <Table.Th>Module UUID</Table.Th>
-  //               </Table.Tr>
-  //             </Table.Thead>
-  //             <Table.Tbody className="text-base">
-  //               {
-  //                 cluster.modules?.map((module) => (
-  //                   <Table.Tr className={sourceCodePro400.className} key={module.moduleUUID}>
-  //                     <Table.Td><Pill>{module.controlPlane.toString()}</Pill></Table.Td>
-  //                     <Table.Td>{module.targetObjectName}</Table.Td>
-  //                     <Table.Td>{module.moduleUUID}</Table.Td>
-  //                   </Table.Tr>
-  //                 ))
-  //               }
-  //             </Table.Tbody>
-  //           </Table>
-  //         }/>
-  //       </GridCol>
-  //       <Space h="md" />
-  //       <GridCol span={6}>
-
-  //       </GridCol>
-  //     </Grid>
-  //   </GridCol>
-  // )
 }
