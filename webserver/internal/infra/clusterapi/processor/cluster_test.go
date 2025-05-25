@@ -206,13 +206,12 @@ func TestProcessCluster(t *testing.T) {
 				},
 			},
 			expected: models.Cluster{
-				Name:                "cluster1",
-				Namespace:           "default",
-				Paused:              false,
-				ClusterClass:        models.ClusterClassType{IsClusterClass: false},
-				Phase:               "Provisioning",
-				InfrastructureReady: false,
-				ControlPlaneReady:   false,
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cluster1",
+					Namespace: "default",
+				},
+				Paused:   false,
+				Topology: models.ClusterClassType{IsClusterClass: false},
 			},
 		},
 		{
@@ -232,13 +231,12 @@ func TestProcessCluster(t *testing.T) {
 				},
 			},
 			expected: models.Cluster{
-				Name:                "cluster3",
-				Namespace:           "test",
-				Paused:              true,
-				ClusterClass:        models.ClusterClassType{IsClusterClass: false},
-				Phase:               "Paused",
-				InfrastructureReady: false,
-				ControlPlaneReady:   false,
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cluster3",
+					Namespace: "test",
+				},
+				Paused:   true,
+				Topology: models.ClusterClassType{IsClusterClass: false},
 			},
 		},
 	}
@@ -249,10 +247,7 @@ func TestProcessCluster(t *testing.T) {
 			assert.Equal(t, tt.expected.Name, result.Name)
 			assert.Equal(t, tt.expected.Namespace, result.Namespace)
 			assert.Equal(t, tt.expected.Paused, result.Paused)
-			assert.Equal(t, tt.expected.ClusterClass, result.ClusterClass)
-			assert.Equal(t, tt.expected.Phase, result.Phase)
-			assert.Equal(t, tt.expected.InfrastructureReady, result.InfrastructureReady)
-			assert.Equal(t, tt.expected.ControlPlaneReady, result.ControlPlaneReady)
+			assert.Equal(t, tt.expected.Topology, result.Topology)
 		})
 	}
 }
