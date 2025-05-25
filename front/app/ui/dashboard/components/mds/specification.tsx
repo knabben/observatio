@@ -21,6 +21,10 @@ export default function Specification({
                   <Table.Td>{md.metadata?.namespace}</Table.Td>
                 </Table.Tr>
                 <Table.Tr>
+                  <Table.Th>Template version</Table.Th>
+                  <Table.Td>{md.templateversion}</Table.Td>
+                </Table.Tr>
+                <Table.Tr>
                   <Table.Th>Cluster</Table.Th>
                   <Table.Td>{md.cluster}</Table.Td>
                 </Table.Tr>
@@ -42,6 +46,39 @@ export default function Specification({
                 </Table.Tr>
               </Table.Tbody>
             </Table>
+        } />
+      </div>
+      <div>
+        <Panel title="References" content={
+          <Table
+            variant="vertical">
+            <Table.Tbody className="text-sm">
+              <Table.Tr>
+                <Table.Th w={260}>Bootstrap name</Table.Th>
+                <Table.Td>{md.templateBootstrap?.configRef.name}</Table.Td>
+              </Table.Tr>
+              <Table.Tr>
+                <Table.Th w={260}>Bootstrap version</Table.Th>
+                <Table.Td>{md.templateBootstrap?.configRef?.apiVersion}</Table.Td>
+              </Table.Tr>
+              <Table.Tr>
+                <Table.Th w={260}>Bootstrap kind</Table.Th>
+                <Table.Td>{md.templateBootstrap?.configRef?.kind}</Table.Td>
+              </Table.Tr>
+              <Table.Tr>
+                <Table.Th>Infrastructure name</Table.Th>
+                <Table.Td>{md.templateInfrastructureRef?.name}</Table.Td>
+              </Table.Tr>
+              <Table.Tr>
+                <Table.Th>Infrastructure version</Table.Th>
+                <Table.Td>{md.templateInfrastructureRef?.apiVersion}</Table.Td>
+              </Table.Tr>
+              <Table.Tr>
+                <Table.Th>Infrastructure kind</Table.Th>
+                <Table.Td>{md.templateInfrastructureRef?.kind}</Table.Td>
+              </Table.Tr>
+            </Table.Tbody>
+          </Table>
         } />
       </div>
     </SimpleGrid>
