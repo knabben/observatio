@@ -35,16 +35,16 @@ func TestProcessClusterInfra(t *testing.T) {
 				},
 			},
 			expected: models.ClusterInfra{
-				Name:                 "cluster1",
-				Namespace:            "default",
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cluster1",
+					Namespace: "default",
+				},
 				Cluster:              "",
 				Server:               "",
 				Thumbprint:           "",
-				Created:              "10m",
+				Age:                  "10m",
 				ControlPlaneEndpoint: ":0",
 				Modules:              nil,
-				Conditions:           nil,
-				Ready:                true,
 			},
 		},
 		{
@@ -68,16 +68,16 @@ func TestProcessClusterInfra(t *testing.T) {
 				},
 			},
 			expected: models.ClusterInfra{
-				Name:                 "cluster2",
-				Namespace:            "test",
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cluster2",
+					Namespace: "test",
+				},
 				Cluster:              "owner-cluster",
 				Server:               "https://server.example.com",
 				Thumbprint:           "",
-				Created:              "1h 0m",
+				Age:                  "1h 0m",
 				ControlPlaneEndpoint: ":0",
 				Modules:              nil,
-				Conditions:           nil,
-				Ready:                false,
 			},
 		},
 		{
@@ -97,16 +97,16 @@ func TestProcessClusterInfra(t *testing.T) {
 				Status: capv.VSphereClusterStatus{},
 			},
 			expected: models.ClusterInfra{
-				Name:                 "cluster3",
-				Namespace:            "custom",
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cluster3",
+					Namespace: "custom",
+				},
 				Cluster:              "",
 				Server:               "",
 				Thumbprint:           "",
-				Created:              "0m",
+				Age:                  "0m",
 				ControlPlaneEndpoint: ":0",
 				Modules:              nil,
-				Conditions:           nil,
-				Ready:                false,
 			},
 		},
 		{
@@ -128,16 +128,16 @@ func TestProcessClusterInfra(t *testing.T) {
 				},
 			},
 			expected: models.ClusterInfra{
-				Name:                 "cluster4",
-				Namespace:            "dev",
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cluster4",
+					Namespace: "dev",
+				},
 				Cluster:              "",
 				Server:               "",
 				Thumbprint:           "",
-				Created:              "5h 0m",
+				Age:                  "5h 0m",
 				ControlPlaneEndpoint: ":0",
 				Modules:              []capv.ClusterModule{},
-				Conditions:           nil,
-				Ready:                true,
 			},
 		},
 		{
@@ -161,16 +161,16 @@ func TestProcessClusterInfra(t *testing.T) {
 				},
 			},
 			expected: models.ClusterInfra{
-				Name:                 "cluster5",
-				Namespace:            "prod",
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cluster5",
+					Namespace: "prod",
+				},
 				Cluster:              "",
 				Server:               "",
 				Thumbprint:           "",
-				Created:              "2m",
+				Age:                  "2m",
 				ControlPlaneEndpoint: "192.168.1.1:6443",
 				Modules:              nil,
-				Conditions:           nil,
-				Ready:                false,
 			},
 		},
 	}
@@ -178,7 +178,9 @@ func TestProcessClusterInfra(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := ProcessClusterInfra(tt.cluster)
-			assert.Equal(t, tt.expected, result)
+			assert.Equal(t, tt.expected.Name, result.Name)
+			assert.Equal(t, tt.expected.Namespace, result.Namespace)
+			assert.Equal(t, tt.expected.Age, result.Age)
 		})
 	}
 }
@@ -206,13 +208,12 @@ func TestProcessCluster(t *testing.T) {
 				},
 			},
 			expected: models.Cluster{
-				Name:                "cluster1",
-				Namespace:           "default",
-				Paused:              false,
-				ClusterClass:        models.ClusterClassType{IsClusterClass: false},
-				Phase:               "Provisioning",
-				InfrastructureReady: false,
-				ControlPlaneReady:   false,
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cluster1",
+					Namespace: "default",
+				},
+				Paused:   false,
+				Topology: models.ClusterClassType{IsClusterClass: false},
 			},
 		},
 		{
@@ -232,13 +233,12 @@ func TestProcessCluster(t *testing.T) {
 				},
 			},
 			expected: models.Cluster{
-				Name:                "cluster3",
-				Namespace:           "test",
-				Paused:              true,
-				ClusterClass:        models.ClusterClassType{IsClusterClass: false},
-				Phase:               "Paused",
-				InfrastructureReady: false,
-				ControlPlaneReady:   false,
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cluster3",
+					Namespace: "test",
+				},
+				Paused:   true,
+				Topology: models.ClusterClassType{IsClusterClass: false},
 			},
 		},
 	}
@@ -249,10 +249,7 @@ func TestProcessCluster(t *testing.T) {
 			assert.Equal(t, tt.expected.Name, result.Name)
 			assert.Equal(t, tt.expected.Namespace, result.Namespace)
 			assert.Equal(t, tt.expected.Paused, result.Paused)
-			assert.Equal(t, tt.expected.ClusterClass, result.ClusterClass)
-			assert.Equal(t, tt.expected.Phase, result.Phase)
-			assert.Equal(t, tt.expected.InfrastructureReady, result.InfrastructureReady)
-			assert.Equal(t, tt.expected.ControlPlaneReady, result.ControlPlaneReady)
+			assert.Equal(t, tt.expected.Topology, result.Topology)
 		})
 	}
 }

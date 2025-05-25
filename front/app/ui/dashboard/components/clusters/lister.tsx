@@ -1,17 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { sourceCodePro400 } from "@/fonts";
+import React from 'react';
 
-import Search from "@/app/ui/dashboard/search";
-import {FilterItems} from "@/app/dashboard/utils";
-import { Grid, GridCol, Title, Loader } from '@mantine/core';
-
-import {ClusterType} from "@/app/ui/dashboard/components/clusters/types";
 import ClusterTable from '@/app/ui/dashboard/components/clusters/table'
 import ClusterDetails from "@/app/ui/dashboard/components/clusters/details";
-import {receiveAndPopulate, sendInitialRequest, WebSocket} from "@/app/lib/websocket";
+
+import {ClusterType} from "@/app/ui/dashboard/components/clusters/types";
+import BaseLister from "@/app/ui/dashboard/base/lister";
 
 /**
  * A functional component that fetches, filters, and displays a list of clusters.
@@ -19,48 +14,13 @@ import {receiveAndPopulate, sendInitialRequest, WebSocket} from "@/app/lib/webso
  * cluster search functionality. Displays a loader while data is being fetched.
  */
 export default function ClusterLister() {
-  const [clusters,setClusters] = useState<ClusterType[]>([])
-  const [selected,setSelected] = useState('')
-  const [loading, setLoading] = useState(true)
-
-  const {sendJsonMessage, lastJsonMessage, readyState} = WebSocket()
-
-  useEffect(() => {
-    sendInitialRequest(readyState, "cluster", sendJsonMessage)
-  }, [readyState, sendJsonMessage])
-
-  useEffect(() => {
-    const newClusters: ClusterType[] = receiveAndPopulate(lastJsonMessage, [...clusters])
-    setClusters(newClusters.sort((a: ClusterType, b: ClusterType) => a.name.localeCompare(b.name)))
-    setLoading(false)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastJsonMessage, setClusters])
-
-  const filteredCluster: ClusterType | undefined = selected
-    ? FilterItems(selected, clusters)
-    : undefined;
-
-  if (loading) {
-    return (<div className="text-center"><Loader color="teal" size="xl"/></div>)
-  }
-
-  return (
-    <Grid justify="flex-end" align="flex-start">
-      <GridCol h={60} span={8}>
-        <Link href="/dashboard/clusters">
-          <Title className={sourceCodePro400.className} order={2}>
-            Clusters / cluster.x-k8s.io
-          </Title>
-        </Link>
-      </GridCol>
-      <Search
-        options={clusters}
-        onChange={setSelected}/>
-      {
-        filteredCluster
-          ? <ClusterDetails cluster={filteredCluster} />
-          : <ClusterTable clusters={clusters}/>
-      }
-    </Grid>
-  );
+  return <BaseLister
+    objectType="cluster"
+    items={[]}
+    renderDetails={(cluster: ClusterType) => <ClusterDetails cluster={cluster} />}
+    renderTable={(clusters: ClusterType[], handleSelect) =>  (
+      <ClusterTable select={handleSelect} clusters={clusters}/>
+    )}
+    title="Clusters / cluster.x-k8s.io"
+  />
 }

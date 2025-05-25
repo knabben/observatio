@@ -7,12 +7,7 @@ import Header from "@/app/ui/dashboard/utils/header";
 import {roboto} from "@/fonts";
 import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
 import { XMarkIcon } from '@heroicons/react/24/outline';
-
-type Conditions = {
-  type: string,
-  status: string,
-  lastTransitionTime: string,
-}
+import {Conditions} from "@/app/ui/dashboard/base/types";
 
 type ClusterClass = {
   name: string,

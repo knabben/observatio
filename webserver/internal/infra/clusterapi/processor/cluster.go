@@ -27,22 +27,21 @@ func ProcessCluster(cl clusterv1.Cluster) (cluster models.Cluster) {
 			clusterClass.WorkersMachineDeployments = cl.Spec.Topology.Workers.MachineDeployments
 		}
 	}
-	cluster = models.Cluster{
-		Name:                cl.Name,
-		Namespace:           cl.Namespace,
-		Paused:              cl.Spec.Paused,
-		ClusterClass:        clusterClass,
-		Phase:               cl.Status.Phase,
-		InfrastructureReady: cl.Status.InfrastructureReady,
-		ControlPlaneReady:   cl.Status.ControlPlaneReady,
-		Conditions:          cl.Status.Conditions,
-		Created:             formatDuration(time.Since(cl.CreationTimestamp.Time)),
-	}
+	var clusterNetwork clusterv1.ClusterNetwork
 	if cl.Spec.ClusterNetwork != nil {
-		cluster.PodNetwork = cl.Spec.ClusterNetwork.Pods.String()
-		cluster.ServiceNetwork = cl.Spec.ClusterNetwork.Services.String()
+		clusterNetwork = *cl.Spec.ClusterNetwork
 	}
-
+	cluster = models.Cluster{
+		ObjectMeta:           cl.ObjectMeta,
+		Paused:               cl.Spec.Paused,
+		Topology:             clusterClass,
+		ClusterNetwork:       clusterNetwork,
+		ControlPlaneEndpoint: cl.Spec.ControlPlaneEndpoint,
+		ControlPlaneRef:      cl.Spec.ControlPlaneRef,
+		InfrastructureRef:    cl.Spec.InfrastructureRef,
+		Age:                  formatDuration(time.Since(cl.CreationTimestamp.Time)),
+		Status:               cl.Status,
+	}
 	return cluster
 }
 
@@ -74,16 +73,14 @@ func ProcessClusterInfra(cl capv.VSphereCluster) models.ClusterInfra {
 		clusterOwner = owner.Name
 	}
 	return models.ClusterInfra{
-		Name:                 cl.Name,
-		Namespace:            cl.Namespace,
+		ObjectMeta:           cl.ObjectMeta,
 		Cluster:              clusterOwner,
 		Server:               cl.Spec.Server,
 		Thumbprint:           cl.Spec.Thumbprint,
-		Created:              formatDuration(time.Since(cl.CreationTimestamp.Time)),
+		Age:                  formatDuration(time.Since(cl.CreationTimestamp.Time)),
 		ControlPlaneEndpoint: cl.Spec.ControlPlaneEndpoint.String(),
 		Modules:              cl.Spec.ClusterModules,
-		Conditions:           cl.Status.Conditions,
-		Ready:                cl.Status.Ready,
+		Status:               cl.Status,
 	}
 }
 
