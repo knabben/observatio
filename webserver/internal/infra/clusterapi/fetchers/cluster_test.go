@@ -81,7 +81,7 @@ func Test_ClusterList(t *testing.T) {
 		assert.Len(t, response.Clusters, 1)
 		for _, cl := range response.Clusters {
 			assert.Equal(t, tt.cluster.Name, cl.Name)
-			assert.Equal(t, tt.cluster.Status.Phase, cl.Phase)
+			assert.Equal(t, tt.cluster.Status.Phase, cl.Status.Phase)
 		}
 	}
 }
