@@ -4,7 +4,7 @@ import Panel from "@/app/ui/dashboard/utils/panel";
 import {Chip, Table, Text, Notification, SimpleGrid, Button, Textarea, Space, Stack} from "@mantine/core";
 import {IconX} from "@tabler/icons-react";
 import React, {useEffect, useState} from "react";
-import {Conditions} from "@/app/ui/dashboard/components/machines/types";
+import {Conditions} from "@/app/ui/dashboard/base/types";
 import {postAIAnalysis} from "@/app/lib/data";
 import Header from "@/app/ui/dashboard/utils/header";
 
