@@ -7,30 +7,17 @@ import {
   Group,
   Button,
   Card,
-  Badge,
   Notification,
   ScrollArea,
   Textarea,
-  ActionIcon,
-  Avatar,
   Stack,
   Box,
-  Flex,
-  Progress,
-  Timeline,
-  Alert,
-  Loader,
-  Tooltip,
-  UnstyledButton,
-  Divider,
   Paper,
-  ThemeIcon,
-  Indicator,
-  Transition,
   Container,
   Grid,
-  Title,
-  Anchor, GridCol, Table, Chip
+  GridCol,
+  Table,
+  Chip
 } from '@mantine/core';
 import {IconX} from "@tabler/icons-react";
 import React, {useEffect, useState} from "react";
@@ -213,7 +200,7 @@ function ChatBot({
                   }
                 }}
               />
-              <Button onClick={(e) => requestIA()} bg="#a1f54d" c="#000" variant="filled">Send!</Button>
+              <Button onClick={requestIA} bg="#a1f54d" c="#000" variant="filled">Send!</Button>
             </Group>
             </Box>
           </Card>
