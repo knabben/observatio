@@ -1,7 +1,19 @@
 'use client';
 
 import Panel from "@/app/ui/dashboard/utils/panel";
-import {Chip, Table, Text, Notification, SimpleGrid, Button, Textarea, Space, Stack} from "@mantine/core";
+import {
+  Chip,
+  Table,
+  Text,
+  Notification,
+  SimpleGrid,
+  Button,
+  Textarea,
+  Space,
+  Stack,
+  Grid,
+  GridCol
+} from "@mantine/core";
 import {IconX} from "@tabler/icons-react";
 import React, {useEffect, useState} from "react";
 import {Conditions} from "@/app/ui/dashboard/base/types";
@@ -47,39 +59,11 @@ export default function AITroubleshooting({
   }
   
   return (
-    <Notification withCloseButton={false} title="Status & Troubleshooting assistant" color="#a1f54d">
-      <Space h="lg" />
-      <SimpleGrid cols={2}>
-        {
-          reasons &&
-          <div>
-            <Stack align="flex-end" className="text-center">
-              <Textarea
-                className="min-w-full"
-                styles={{input: {height: '150px'}}}
-                value={reasons}
-                onChange={(e) => setReason(e.target.value)} />
-              {loading
-                ? <Text className="text-center text-white">Analyzing...</Text>
-                : <Button bg="#a1f54d" c="#000" variant="filled" onClick={requestIA}>Get Help!</Button>
-              }
-            </Stack>
-            {aiResponse.description && aiResponse.solution && (
-              <>
-                <Space h="md"/>
-                <Notification color="gray" withCloseButton={false}>
-                  <Header title="Analysis and Description" />
-                  <div className="text-white" dangerouslySetInnerHTML={{__html: aiResponse.description}}/>
-                </Notification>
-                <Space h="md"/>
-                <Notification withCloseButton={false} color="#304a47">
-                  <Header title="How to fix" />
-                  <div className="text-white" dangerouslySetInnerHTML={{__html: aiResponse.solution}}/>
-                </Notification>
-              </>
-            )}
-          </div>
-        }
+    <Grid justify="flex-start" align="flex-start">
+
+      <GridCol span={6}>
+        <Notification withCloseButton={false} title="Status & Troubleshooting assistant" color="#a1f54d">
+
       <div>
       <Panel title="Object conditions" content={
         <Table variant="vertical">
@@ -112,7 +96,11 @@ export default function AITroubleshooting({
                   <Table.Td>{condition.lastTransitionTime}</Table.Td>
                   <Table.Td>{condition.severity}</Table.Td>
                   <Table.Td>
-                    <Text c="red" className="text-bold"> {condition.message}</Text>
+                    {
+                      condition.status.toLowerCase() == "true"
+                        ? <Text className="text-bold">{condition.message}</Text>
+                        : <Text c="red" className="text-bold">{condition.message}</Text>
+                    }
                   </Table.Td>
                 </Table.Tr>
               ))
@@ -121,7 +109,17 @@ export default function AITroubleshooting({
         </Table>
       } />
         </div>
-      </SimpleGrid>
-    </Notification>
+      </Notification>
+      </GridCol>
+      <GridCol span={6}>
+        {
+          <div>
+            <Stack align="flex-end" className="text-center">
+              <Button bg="#a1f54d" c="#000" variant="filled" onClick={requestIA}>Get Help with AI Agent!</Button>
+            </Stack>
+          </div>
+        }
+      </GridCol>
+    </Grid>
   )
 }
