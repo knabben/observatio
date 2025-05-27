@@ -1,12 +1,28 @@
 'use client';
 
 import Panel from "@/app/ui/dashboard/utils/panel";
-import {Chip, Table, Text, Notification, SimpleGrid, Button, Textarea, Space, Stack} from "@mantine/core";
+import {
+  AppShell,
+  Text,
+  Group,
+  Button,
+  Card,
+  Notification,
+  ScrollArea,
+  Textarea,
+  Stack,
+  Box,
+  Paper,
+  Container,
+  Grid,
+  GridCol,
+  Table,
+  Chip
+} from '@mantine/core';
 import {IconX} from "@tabler/icons-react";
 import React, {useEffect, useState} from "react";
 import {Conditions} from "@/app/ui/dashboard/base/types";
 import {postAIAnalysis} from "@/app/lib/data";
-import Header from "@/app/ui/dashboard/utils/header";
 
 type AIResponse = {
   description: string;
@@ -15,113 +31,181 @@ type AIResponse = {
 
 export default function AITroubleshooting({
   conditions,
-}: {conditions: Conditions[]}) {
-  const [reasons, setReason] = useState("")
-  const [loading, setLoading] = useState(false)
+}: {
+  conditions: Conditions[]
+}) {
+  return (
+    <Grid justify="flex-start" align="flex-start">
+      <GridCol span={6}>
+        <Panel title="Object conditions" content={
+          <Table variant="vertical">
+            <Table.Tbody className="text-sm">
+              {
+                conditions?.map((condition, ic) => (
+                  <Table.Tr key={ic}>
+                    <Table.Td>
+                      {
+                        condition.status.toLowerCase() == "true"
+                          ? <Chip key={ic} defaultChecked className="p-1" color="teal" variant="light">{condition.type}</Chip>
+                          : (
+                            <div>
+                              {[condition.type, condition.reason].map((text, index) => (
+                                <Chip
+                                  key={`${ic}-${index}`}
+                                  icon={<IconX size={16}/>}
+                                  className="p-1"
+                                  color="red"
+                                  defaultChecked={true}
+                                  variant="light"
+                                >
+                                  {text}
+                                </Chip>
+                              ))}
+                            </div>
+                          )
+                      }
+                    </Table.Td>
+                    <Table.Td>{condition.lastTransitionTime}</Table.Td>
+                    <Table.Td>{condition.severity}</Table.Td>
+                    <Table.Td>
+                      {
+                        condition.status.toLowerCase() == "true"
+                          ? <Text className="text-bold">{condition.message}</Text>
+                          : <Text c="red" className="text-bold">{condition.message}</Text>
+                      }
+                    </Table.Td>
+                  </Table.Tr>
+                ))
+              }
+            </Table.Tbody>
+          </Table>
+        } />
+      </GridCol>
+      <GridCol span={6}>
+        <ChatBot conditions={conditions}/>
+      </GridCol>
+    </Grid>
+  )
+}
+
+function ChatBot({
+  conditions,
+}: {
+  conditions: Conditions[]
+}) {
+  const [aiRequest, setAIRequest] = useState('')
   const [aiResponse, setAiResponse] = useState<AIResponse>({description: "", solution: ""})
 
   useEffect(() => {
-    const uniqueReasons = new Set(
-      conditions
-        ?.filter(condition => condition.reason)
+    const broken = new Set(
+      conditions?.filter(condition => condition.reason && condition.status != "True")
         .map( (condition) => {
-          const mapper = condition.reason+" of type "+condition.type
+          const mapper = condition.reason + " of type " + condition.type
           if (condition.message != undefined) {
             return mapper + " with message: " + condition.message
           }
           return mapper
         })
     );
-    setReason(Array.from(uniqueReasons).join(', '));
+    if (broken.size > 0) {
+      setAIRequest(Array.from(broken).join(', '));
+    }
   }, [conditions]);
 
   async function requestIA() {
     try {
-      setLoading(true);
-      const response = await postAIAnalysis(reasons)
+      const response = await postAIAnalysis(aiRequest)
       setAiResponse(response);
-      setLoading(false);
     } catch (error) {
       console.error('Error analyzing machine:', error);
     }
   }
-  
+
   return (
-    <Notification withCloseButton={false} title="Status & Troubleshooting assistant" color="#a1f54d">
-      <Space h="lg" />
-      <SimpleGrid cols={2}>
-        {
-          reasons &&
-          <div>
-            <Stack align="flex-end" className="text-center">
-              <Textarea
-                className="min-w-full"
-                styles={{input: {height: '150px'}}}
-                value={reasons}
-                onChange={(e) => setReason(e.target.value)} />
-              {loading
-                ? <Text className="text-center text-white">Analyzing...</Text>
-                : <Button bg="#a1f54d" c="#000" variant="filled" onClick={requestIA}>Get Help!</Button>
+    <AppShell
+      header={{ height: 60 }}
+      padding={0}
+      styles={{
+        main: {
+          background: 'linear-gradient(135deg, #0f0f23 0%, #1a1a3e 100%)',
+          minHeight: '100vh'
+        }
+      }}
+    >
+      <Notification withCloseButton={false} title="AI Troubleshooting" color="#a1f54d">
+        <Container fluid p="md" h="calc(100vh - 60px)">
+          <Card
+            h="100%"
+            radius="lg"
+            style={{
+              border: '1px solid #48654a',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+          <ScrollArea flex={1} p="md">
+            <Stack gap="md">
+              { aiResponse.description != "" && aiResponse.solution != "" &&
+                <>
+                  <Group align="flex-start" justify='flex-start' gap="sm">
+                    <Paper p="md" radius="lg" maw="80%" style={{
+                      background: 'rgba(0, 212, 170, 0.1)',
+                      border: '1px solid rgba(0, 212, 170, 0.3)',
+                    }}>
+                      <Text size="sm" style={{lineHeight: 1.5}}>
+                        <Text className="text-bold" fw={700}>Description</Text>
+                        <div dangerouslySetInnerHTML={{__html: aiResponse.description}}/>
+                      </Text>
+                      <Text size="xs" c="dimmed" mt="xs">
+                        {new Date().toLocaleDateString()}
+                      </Text>
+                    </Paper>
+                  </Group>
+                  <Group align="flex-start" justify='flex-start' gap="sm">
+                    <Paper p="md" radius="lg" maw="80%" style={{
+                      background: 'rgba(0, 212, 170, 0.1)',
+                      border: '1px solid rgba(0, 212, 170, 0.3)',
+                    }}>
+                      <Text size="sm" style={{lineHeight: 1.5}}>
+                        <Text className="text-bold" fw={700}>Solution</Text>
+                        <div dangerouslySetInnerHTML={{__html: aiResponse.solution}}/>
+                      </Text>
+                      <Text size="xs" c="dimmed" mt="xs">
+                        {new Date().toLocaleDateString()}
+                      </Text>
+                    </Paper>
+                  </Group>
+                </>
               }
             </Stack>
-            {aiResponse.description && aiResponse.solution && (
-              <>
-                <Space h="md"/>
-                <Notification color="gray" withCloseButton={false}>
-                  <Header title="Analysis and Description" />
-                  <div className="text-white" dangerouslySetInnerHTML={{__html: aiResponse.description}}/>
-                </Notification>
-                <Space h="md"/>
-                <Notification withCloseButton={false} color="#304a47">
-                  <Header title="How to fix" />
-                  <div className="text-white" dangerouslySetInnerHTML={{__html: aiResponse.solution}}/>
-                </Notification>
-              </>
-            )}
-          </div>
-        }
-      <div>
-      <Panel title="Object conditions" content={
-        <Table variant="vertical">
-          <Table.Tbody className="text-sm">
-            {
-              conditions?.map((condition, ic) => (
-                <Table.Tr key={ic}>
-                  <Table.Td>
-                    {
-                      condition.status.toLowerCase() == "true"
-                        ? <Chip key={ic} defaultChecked className="p-1" color="teal" variant="light">{condition.type}</Chip>
-                        : (
-                          <div>
-                            {[condition.type, condition.reason].map((text, index) => (
-                              <Chip
-                                key={`${ic}-${index}`}
-                                icon={<IconX size={16}/>}
-                                className="p-1"
-                                color="red"
-                                defaultChecked={true}
-                                variant="light"
-                              >
-                                {text}
-                              </Chip>
-                            ))}
-                          </div>
-                        )
+          </ScrollArea>
+
+          <Box p="md" style={{ borderTop: '1px solid #4a4a6a' }}>
+            <Group>
+              <Textarea
+                flex={1}
+                placeholder="Ask about this issue or request specific actions..."
+                className="min-w-full"
+                value={aiRequest}
+                onChange={(e) => setAIRequest(e.target.value)}
+                radius="xl"
+                styles={{
+                  input: {
+                    height: '130px',
+                    border: '1px solid #48654a',
+                    color: '#e0e0e0',
+                    '&:focus': {
+                      borderColor: '#00d4aa'
                     }
-                  </Table.Td>
-                  <Table.Td>{condition.lastTransitionTime}</Table.Td>
-                  <Table.Td>{condition.severity}</Table.Td>
-                  <Table.Td>
-                    <Text c="red" className="text-bold"> {condition.message}</Text>
-                  </Table.Td>
-                </Table.Tr>
-              ))
-            }
-          </Table.Tbody>
-        </Table>
-      } />
-        </div>
-      </SimpleGrid>
-    </Notification>
-  )
-}
+                  }
+                }}
+              />
+              <Button onClick={requestIA} bg="#a1f54d" c="#000" variant="filled">Send!</Button>
+            </Group>
+            </Box>
+          </Card>
+        </Container>
+      </Notification>
+    </AppShell>
+  );
+};
