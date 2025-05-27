@@ -114,6 +114,7 @@ function ChatBot({
 
   async function requestIA() {
     try {
+      setAIRequest('')
       const response = await postAIAnalysis(aiRequest)
       setAiResponse(response);
     } catch (error) {
