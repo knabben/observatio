@@ -16,9 +16,6 @@ type AnthropicClient struct {
 	Error  string
 }
 
-func NewClient(error string) Client {
-	return &AnthropicClient{
-		Client: anthropic.NewClient(),
-		Error:  error,
-	}
+func NewClient() Client {
+	return &AnthropicClient{Client: anthropic.NewClient()}
 }
