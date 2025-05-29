@@ -3,7 +3,6 @@ package llm
 import (
 	"context"
 	"fmt"
-	"os"
 	"sync"
 	"time"
 
@@ -11,7 +10,6 @@ import (
 
 	"github.com/gorilla/websocket"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 type Agent struct {
@@ -34,7 +32,7 @@ type ChatMessage struct {
 }
 
 type ObservationService struct {
-	anthropicClient anthropic.Client
+	anthropicClient Client
 	k8sClient       kubernetes.Interface
 	agents          map[string]*Agent
 	chatHistory     map[string][]ChatMessage
@@ -44,69 +42,31 @@ type ObservationService struct {
 }
 
 func NewObservationService() (*ObservationService, error) {
-	config, err := clientcmd.BuildConfigFromFlags("", os.Getenv("KUBECONFIG"))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create k8s config: %v", err)
-	}
-
-	k8sClient, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create k8s client: %v", err)
-	}
-
 	service := &ObservationService{
 		anthropicClient: NewClient(),
-		k8sClient:       k8sClient,
 		agents:          make(map[string]*Agent),
 		wsConnections:   make(map[string]*websocket.Conn),
 		tools:           initializeTools(),
 	}
-
-	// Initialize agents
 	service.initializeAgents()
 
 	return service, nil
 }
 
-func (s *ObservationService) buildSystemPrompt(agent *Agent) string {
-	return fmt.Sprintf(`You are %s, a specialized AI agent in the Observatio platform for Kubernetes cluster management and troubleshooting.
-
-Your role: %s
-Your capabilities: %v
-
-You have access to various tools for Kubernetes cluster analysis and remediation. Use these tools when appropriate to provide accurate, actionable insights.
-
-Always be specific, technical, and provide actionable recommendations. Focus on:
-1. Clear problem identification
-2. Root cause analysis
-3. Step-by-step remediation plans
-4. Preventive measures
-
-Context awareness: You can access cluster state, metrics, logs, and historical data through the available tools.`,
-		agent.Name, agent.Type, agent.Capabilities)
-}
-
-func (s *ObservationService) ChatWithAgent(ctx context.Context, agentID, message string) (*ChatMessage, error) {
-	agent, exists := s.agents[agentID]
-	if !exists {
-		return nil, fmt.Errorf("agent %s not found", agentID)
-	}
-
-	messages := []anthropic.MessageParam{
-		anthropic.NewUserMessage(anthropic.NewTextBlock(message)),
-	}
-
+func (s *ObservationService) ChatWithAgent(ctx context.Context, message string) (*ChatMessage, error) {
+	client := s.anthropicClient.GetClient()
 	request := anthropic.MessageNewParams{
 		Model:     anthropic.ModelClaude3_7SonnetLatest,
 		MaxTokens: 4000,
-		System:    []anthropic.TextBlockParam{
-			{Text: s.buildSystemPrompt(agent)},
-		}
-		Messages:  messages,
+		System: []anthropic.TextBlockParam{
+			{Text: TASK_SYSTEM},
+		},
+		Messages: []anthropic.MessageParam{
+			anthropic.NewUserMessage(anthropic.NewTextBlock(formatMessage(message))),
+		},
 	}
 
-	// Call Claude API
-	response, err := s.anthropicClient.Messages.New(ctx, request)
+	response, err := client.Messages.New(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("claude API error: %v", err)
 	}
@@ -129,12 +89,11 @@ func (s *ObservationService) ChatWithAgent(ctx context.Context, agentID, message
 
 	chatMessage := &ChatMessage{
 		ID:        generateID(),
-		AgentID:   agentID,
 		Content:   responseText,
 		Type:      "agent",
 		Timestamp: time.Now(),
 		Context: map[string]interface{}{
-			"agent_type": agent.Type,
+			"agent_type": "agent",
 		},
 	}
 

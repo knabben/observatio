@@ -24,13 +24,13 @@ var (
 		The solution of the error in <solution></solution> tags`
 )
 
-func (c *AnthropicClient) SendMessage(ctx context.Context) (response models.LLMResponse, err error) {
+func (c *AnthropicClient) SendMessageMove(ctx context.Context) (response models.LLMResponse, err error) {
 	var msg *anthropic.Message
 
 	msg, err = c.Client.Messages.New(ctx, anthropic.MessageNewParams{
 		MaxTokens: 1024,
 		Messages: []anthropic.MessageParam{
-			anthropic.NewUserMessage(anthropic.NewTextBlock(c.formatMessage(c.Error))),
+			anthropic.NewUserMessage(anthropic.NewTextBlock(formatMessage(c.Error))),
 		},
 		System: []anthropic.TextBlockParam{
 			{Text: TASK_SYSTEM},
@@ -75,10 +75,9 @@ const (
 
 // formatMessage creates a formatted message combining the task context, error details,
 // and expected output format for the LLM processing
-func (c *AnthropicClient) formatMessage(errorMessage string) string {
+func formatMessage(errorMessage string) string {
 	var messageBuilder strings.Builder
 	formattedQuestion := fmt.Sprintf(questionFormat, errorMessage)
-
 	messageBuilder.WriteString(fmt.Sprintf(messageTemplate,
 		TASK_CONTEXT,
 		formattedQuestion,
