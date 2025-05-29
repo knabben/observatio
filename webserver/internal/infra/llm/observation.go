@@ -3,13 +3,11 @@ package llm
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/anthropics/anthropic-sdk-go"
 
 	"github.com/gorilla/websocket"
-	"k8s.io/client-go/kubernetes"
 )
 
 type Agent struct {
@@ -33,11 +31,9 @@ type ChatMessage struct {
 
 type ObservationService struct {
 	anthropicClient Client
-	k8sClient       kubernetes.Interface
 	agents          map[string]*Agent
 	chatHistory     map[string][]ChatMessage
 	wsConnections   map[string]*websocket.Conn
-	mu              sync.RWMutex
 	tools           []Tool
 }
 
