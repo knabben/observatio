@@ -22,8 +22,8 @@ func HandleClaude(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := llm.NewClient(reqBody.Request)
-	response, err := client.SendMessage(r.Context())
+	client := llm.NewClient()
+	response, err := client.SendMessage(r.Context(), reqBody.Request)
 	if system.HandleError(w, http.StatusInternalServerError, err) {
 		return
 	}
