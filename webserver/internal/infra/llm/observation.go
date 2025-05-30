@@ -32,7 +32,6 @@ type ChatMessage struct {
 type ObservationService struct {
 	anthropicClient Client
 	agents          map[string]*Agent
-	chatHistory     map[string][]ChatMessage
 	wsConnections   map[string]*websocket.Conn
 	tools           []Tool
 }
