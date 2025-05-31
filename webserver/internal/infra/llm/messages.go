@@ -11,17 +11,14 @@ import (
 )
 
 var (
-	TASK_SYSTEM = `
-		You will serve as a Kubernetes administrator managing an on-premises datacenter using VMware vCenter.
-	`
+	TASK_SYSTEM  = `You will serve as a Kubernetes administrator managing a on-premises datacenter on VMware vCenter.`
 	TASK_CONTEXT = `
 		Your task is to assist operators in troubleshooting issues within the cluster.
 		You should maintain a friendly customer service tone.
 		Replace any markdown tags with the appropriate HTML tags.
+		Using tooling for troubleshooting is a must, you should be able to identify the root cause of the issue.
+		Always ask for the customer before running any tool.
 	`
-	OUTPUT_DATA = `The answer must be divided in two parts:
-		A verbose description of the error in <description></description> tags
-		The solution of the error in <solution></solution> tags`
 )
 
 func (c *AnthropicClient) SendMessageMove(ctx context.Context) (response models.LLMResponse, err error) {
@@ -78,10 +75,7 @@ const (
 func formatMessage(errorMessage string) string {
 	var messageBuilder strings.Builder
 	formattedQuestion := fmt.Sprintf(questionFormat, errorMessage)
-	messageBuilder.WriteString(fmt.Sprintf(messageTemplate,
-		TASK_CONTEXT,
-		formattedQuestion,
-		OUTPUT_DATA))
+	messageBuilder.WriteString(fmt.Sprintf(messageTemplate, TASK_CONTEXT, formattedQuestion))
 
 	return messageBuilder.String()
 }

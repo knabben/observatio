@@ -61,6 +61,8 @@ func (s *ObservationService) ChatWithAgent(ctx context.Context, message string) 
 		},
 	}
 
+	// fix message history to send in the payload
+
 	response, err := client.Messages.New(ctx, request)
 	if err != nil {
 		return nil, fmt.Errorf("claude API error: %v", err)

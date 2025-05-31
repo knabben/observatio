@@ -2,6 +2,7 @@ package llm
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/knabben/observatio/webserver/internal/infra/models"
@@ -19,12 +20,20 @@ type AnthropicClient struct {
 }
 
 func NewClient() (Client, error) {
-	client := &AnthropicClient{Client: anthropic.NewClient()}
+	// Create the base client with default settings
+	client := &AnthropicClient{
+		Client: anthropic.NewClient(),
+	}
+
+	// Create the observation service
 	service, err := NewObservationService(client)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create observation service: %w", err)
 	}
+
+	// Attach the service to the client
 	client.Service = service
+
 	return client, nil
 }
 
