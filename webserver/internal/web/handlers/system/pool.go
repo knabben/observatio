@@ -7,43 +7,48 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/knabben/observatio/webserver/internal/infra/llm"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type WSClient struct {
-	ID   string
-	conn *websocket.Conn
-	Send chan []byte
-	pool *ClientPool
-	//Messages []AnthropicMessage
+	ID        string
+	conn      *websocket.Conn
+	Send      chan []byte
+	pool      *ClientPool
+	LLMClient *llm.Client
 }
 
 func (c *WSClient) reader() {
-	var logger = log.FromContext(context.Background())
+	ctx := context.Background()
+	var logger = log.FromContext(ctx)
 	defer func() {
 		c.pool.Unregister <- c
 		c.conn.Close()
 	}()
 
 	for {
-		_, message, err := c.conn.ReadMessage()
+		message, err := parseMessage(c.conn)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				logger.Error(err, "error reading from websocket")
+				logger.Error(err, "error reading message")
 			}
 			break
 		}
 
-		var wsMsg WSMessage
-		if err := json.Unmarshal(message, &wsMsg); err != nil {
-			logger.Error(err, "error unmarshaling message")
-			continue
+		if message.Type != string(TypeChatbot) {
+			logger.Error(nil, "ERROR: wrong type of request, expected chatbot", "msg", message.Type)
+			break
 		}
 
-		// Process the message
-		//go c.handleMessage(wsMsg)
-		logger.Info("messsage ", "msg", wsMsg)
-		c.sendMessage("chatbot", "Hello, I'm a bot!")
+		logger.Info("Received message", "msg", message)
+		response, err := (*c.LLMClient).SendMessage(ctx, message.Content)
+		if err != nil {
+			logger.Error(err, "error writing close message")
+			return
+		}
+
+		c.sendMessage("chatbot", response.Description)
 	}
 }
 
@@ -68,6 +73,7 @@ func (c *WSClient) writer() {
 			}
 			w, err := c.conn.NextWriter(websocket.TextMessage)
 			if err != nil {
+				logger.Error(err, "error writing close message")
 				return
 			}
 			w.Write(message)

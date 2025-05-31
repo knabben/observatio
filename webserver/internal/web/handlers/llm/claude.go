@@ -8,10 +8,6 @@ import (
 	"github.com/knabben/observatio/webserver/internal/web/handlers/system"
 )
 
-const (
-	websocketBufferSize = 1024
-)
-
 // RequestBody represents the structure of a request payload.
 type RequestBody struct {
 	Request string `json:"request"`

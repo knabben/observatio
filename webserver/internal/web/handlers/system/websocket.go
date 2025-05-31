@@ -3,19 +3,15 @@ package system
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/knabben/observatio/webserver/internal/infra/llm"
 	"github.com/knabben/observatio/webserver/internal/web/watchers"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/gorilla/websocket"
 )
-
-type SubscribeRequest struct {
-	Type string `json:"types"`
-	Data string `json:"data"`
-}
 
 type WSMessage struct {
 	ID        string `json:"id"`
@@ -37,8 +33,7 @@ const (
 	TypeMachine           ObjectType = "machine"
 	TypeMachineInfra      ObjectType = "machine-infra"
 	TypeMachineDeployment ObjectType = "machine-deployment"
-
-	TypeChatbot ObjectType = "chatbot"
+	TypeChatbot           ObjectType = "chatbot"
 )
 
 // websocketWatcher represents a function that watches specific resource types
@@ -55,8 +50,8 @@ var (
 	}
 )
 
-// HandleWebsocket starts the object listener based on the input object request.
-func HandleWebsocket(w http.ResponseWriter, r *http.Request) {
+// HandleWatcher starts the object listener based on the input object request.
+func HandleWatcher(w http.ResponseWriter, r *http.Request) {
 	var wsUpgrader = websocket.Upgrader{
 		ReadBufferSize:  websocketBufferSize,
 		WriteBufferSize: websocketBufferSize,
@@ -68,12 +63,12 @@ func HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	subscribeRequest, err := parseMessage(conn)
+	message, err := parseMessage(conn)
 	if handleError(w, http.StatusInternalServerError, err) {
 		return
 	}
 
-	objType := subscribeRequest.Type
+	objType := message.Type
 	watchHandler, exists := watchHandlers[ObjectType(objType)]
 	if !exists {
 		return
@@ -84,9 +79,8 @@ func HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// HandleLLMWebsocket opens a connection with the client and allows
-// chat mode.
-func HandleLLMWebsocket(pool *ClientPool, w http.ResponseWriter, r *http.Request) {
+// HandleChatBot opens a connection with the client and allows chat mode.
+func HandleChatBot(pool *ClientPool, w http.ResponseWriter, r *http.Request) {
 	var wsUpgrader = websocket.Upgrader{
 		ReadBufferSize:  websocketBufferSize,
 		WriteBufferSize: websocketBufferSize,
@@ -100,72 +94,49 @@ func HandleLLMWebsocket(pool *ClientPool, w http.ResponseWriter, r *http.Request
 
 	registerClient(pool, conn)
 
-	//client, err := llm.NewClient()
-	//if handleError(w, http.StatusInternalServerError, err) {
-	//	return
-	//}
-	//
-	//for {
-	//	fmt.Println("Waiting for message...")
-	//	subscribeRequest, err := parseMessage(conn)
-	//	if err != nil {
-	//		if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-	//			handleError(w, http.StatusInternalServerError, err)
-	//		}
-	//		break
-	//	}
-	//
-	//	if subscribeRequest.Type != string(TypeChatbot) {
-	//		fmt.Println("ERROR: wrong type of request, expected chatbot, got: ", subscribeRequest.Type)
-	//		break
-	//	}
-	//
-	//	response, err := client.SendMessage(r.Context(), subscribeRequest.Data)
-	//	if handleError(w, http.StatusInternalServerError, err) {
-	//		break
-	//	}
-	//
-	//	if err := conn.WriteJSON(response); handleError(w, http.StatusInternalServerError, err) {
-	//		break
-	//	}
-	//}
-
-	//defer conn.Close()
 }
 
 func registerClient(pool *ClientPool, conn *websocket.Conn) {
-	client := &WSClient{
-		ID:   uuid.New().String(),
-		pool: pool,
-		conn: conn,
-		Send: make(chan []byte, 256),
-		//Messages: []AnthropicMessage{},
+	llmClient, err := llm.NewClient()
+	if err != nil {
+		log.FromContext(context.Background()).Error(err, "error creating llm client")
 	}
 
+	client := &WSClient{
+		ID:        uuid.New().String(),
+		pool:      pool,
+		conn:      conn,
+		Send:      make(chan []byte, 256),
+		LLMClient: &llmClient,
+	}
+
+	// register a new client in the list of WS connections
 	client.pool.Register <- client
+
 	go client.reader()
 	go client.writer()
 }
 
 // parseMessage reads the first WS message
-func parseMessage(conn *websocket.Conn) (subscribeRequest SubscribeRequest, err error) {
+func parseMessage(conn *websocket.Conn) (message WSMessage, err error) {
 	_, msg, err := conn.ReadMessage()
 	if err != nil {
-		return subscribeRequest, err
+		return message, err
 	}
 
-	if err := json.Unmarshal(msg, &subscribeRequest); err != nil {
-		return subscribeRequest, err
+	if err := json.Unmarshal(msg, &message); err != nil {
+		return message, err
 	}
 
-	return subscribeRequest, nil
+	return message, nil
 }
 
 // handleError write down an error with code to the writer response.
 func handleError(w http.ResponseWriter, code int, err error) (hasError bool) {
+	var logger = log.FromContext(context.Background())
 	hasError = err != nil
 	if hasError {
-		log.Println("ERROR: ", err)
+		logger.Error(err, "error handling websocket request")
 		http.Error(w, err.Error(), code)
 	}
 	return hasError

@@ -45,6 +45,7 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	// Anthropic LLM handlers
 	router.HandleFunc("/api/analysis", llm.HandleClaude).Methods("POST", "OPTIONS")
 
+	// Start the websocker handlers
 	startWebSocketHandlers(router)
 
 	// Static React bundle hosting handler
@@ -54,6 +55,7 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	}
 }
 
+// startWebSocketHandlers initializes WebSocket routes and manages their corresponding client pool behaviors.
 func startWebSocketHandlers(router *mux.Router) {
 	pool := &system.ClientPool{
 		Broadcast:  make(chan []byte),
@@ -64,8 +66,8 @@ func startWebSocketHandlers(router *mux.Router) {
 
 	go pool.Run(context.Background())
 
-	router.HandleFunc("/ws", system.HandleWebsocket)
+	router.HandleFunc("/ws/watcher", system.HandleWatcher).Methods("GET", "OPTIONS")
 	router.HandleFunc("/ws/analysis", func(w http.ResponseWriter, r *http.Request) {
-		system.HandleLLMWebsocket(pool, w, r)
+		system.HandleChatBot(pool, w, r)
 	}).Methods("GET", "OPTIONS")
 }
