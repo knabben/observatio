@@ -30,7 +30,7 @@ export function WebSocket() {
  */
 export function sendInitialRequest(readyState: number, type: string, sendJsonMessage: any) {
   if (readyState === ReadyState.OPEN) {
-    sendJsonMessage({types: [type]});
+    sendJsonMessage({types: type});
   }
 }
 
