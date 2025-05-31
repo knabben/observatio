@@ -44,7 +44,7 @@ export default function NavLinks() {
             className={clsx(
                 'flex h-[48px] grow items-center justify-center gap-2 rounded-md text-sm md:flex-none md:justify-start md:p-2 md:px-3',
                 {
-                  'bg-[#aaf16a] text-black font-bold': pathname.startsWith(link.href),
+                  'bg-[#aaf16a] text-black font-bold': pathname == link.href,
                 },
             )}
           >
