@@ -2,7 +2,7 @@
 
 import useWebSocket, {ReadyState} from "react-use-websocket";
 
-export const WS_URL = typeof window !== 'undefined' ? `ws://${window.location.hostname}:8080/ws` : 'ws://localhost:8080/ws';
+export const WS_URL = typeof window !== 'undefined' ? `ws://${window.location.hostname}:8080/ws/watcher` : 'ws://localhost:8080/ws/watcher';
 
 export type WSResponse = {
   type: string;
@@ -30,7 +30,7 @@ export function WebSocket() {
  */
 export function sendInitialRequest(readyState: number, type: string, sendJsonMessage: any) {
   if (readyState === ReadyState.OPEN) {
-    sendJsonMessage({types: type});
+    sendJsonMessage({type: type});
   }
 }
 
