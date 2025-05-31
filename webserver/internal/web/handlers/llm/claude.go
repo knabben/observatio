@@ -22,7 +22,11 @@ func HandleClaude(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := llm.NewClient()
+	client, err := llm.NewClient()
+	if system.HandleError(w, http.StatusInternalServerError, err) {
+		return
+	}
+
 	response, err := client.SendMessage(r.Context(), reqBody.Request)
 	if system.HandleError(w, http.StatusInternalServerError, err) {
 		return

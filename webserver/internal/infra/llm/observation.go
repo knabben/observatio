@@ -36,9 +36,9 @@ type ObservationService struct {
 	tools           []Tool
 }
 
-func NewObservationService() (*ObservationService, error) {
+func NewObservationService(client Client) (*ObservationService, error) {
 	service := &ObservationService{
-		anthropicClient: NewClient(),
+		anthropicClient: client,
 		agents:          make(map[string]*Agent),
 		wsConnections:   make(map[string]*websocket.Conn),
 		tools:           initializeTools(),
@@ -60,6 +60,8 @@ func (s *ObservationService) ChatWithAgent(ctx context.Context, message string) 
 			anthropic.NewUserMessage(anthropic.NewTextBlock(formatMessage(message))),
 		},
 	}
+
+	// fix message history to send in the payload
 
 	response, err := client.Messages.New(ctx, request)
 	if err != nil {

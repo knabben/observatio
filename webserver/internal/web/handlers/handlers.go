@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"embed"
 	"encoding/json"
 
@@ -44,12 +45,29 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	// Anthropic LLM handlers
 	router.HandleFunc("/api/analysis", llm.HandleClaude).Methods("POST", "OPTIONS")
 
-	// Websocket Handler for object watchers.
-	router.HandleFunc("/ws", system.HandleWebsocket)
+	// Start the websocker handlers
+	startWebSocketHandlers(router)
 
 	// Static React bundle hosting handler
 	if !developmentMode {
 		spa := system.SPAHandler{StaticFS: bundle, StaticPath: "build", IndexPath: "dashboard.html"}
 		router.PathPrefix("/").Handler(spa)
 	}
+}
+
+// startWebSocketHandlers initializes WebSocket routes and manages their corresponding client pool behaviors.
+func startWebSocketHandlers(router *mux.Router) {
+	pool := &system.ClientPool{
+		Broadcast:  make(chan []byte),
+		Register:   make(chan *system.WSClient),
+		Unregister: make(chan *system.WSClient),
+		Clients:    make(map[string]*system.WSClient),
+	}
+
+	go pool.Run(context.Background())
+
+	router.HandleFunc("/ws/watcher", system.HandleWatcher).Methods("GET", "OPTIONS")
+	router.HandleFunc("/ws/analysis", func(w http.ResponseWriter, r *http.Request) {
+		system.HandleChatBot(pool, w, r)
+	}).Methods("GET", "OPTIONS")
 }
