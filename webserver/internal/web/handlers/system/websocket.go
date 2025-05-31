@@ -3,24 +3,21 @@ package system
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/knabben/observatio/webserver/internal/infra/llm"
 	"github.com/knabben/observatio/webserver/internal/web/watchers"
 
 	"github.com/gorilla/websocket"
 )
 
 type SubscribeRequest struct {
-	Types []string `json:"types"`
+	Type string `json:"types"`
+	Data string `json:"data"`
 }
 
-var (
-	TYPE_CLUSTER_INFRA = "cluster-infra"
-	TYPE_CLUSTER       = "cluster"
-)
-
-// handleWebsocket starts the object listener based on the input object request.
 const (
 	websocketBufferSize = 1024
 )
@@ -34,6 +31,8 @@ const (
 	TypeMachine           ObjectType = "machine"
 	TypeMachineInfra      ObjectType = "machine-infra"
 	TypeMachineDeployment ObjectType = "machine-deployment"
+
+	TypeChatbot ObjectType = "chatbot"
 )
 
 // websocketWatcher represents a function that watches specific resource types
@@ -68,16 +67,62 @@ func HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, objType := range subscribeRequest.Types {
-		watchHandler, exists := watchHandlers[ObjectType(objType)]
-		if !exists {
-			continue
+	objType := subscribeRequest.Type
+	watchHandler, exists := watchHandlers[ObjectType(objType)]
+	if !exists {
+		return
+	}
+	err = watchHandler(r.Context(), conn, objType)
+	if handleError(w, http.StatusInternalServerError, err) {
+		return
+	}
+}
+
+// HandleLLMWebsocket opens a connection with the client and allows
+// chat mode.
+func HandleLLMWebsocket(w http.ResponseWriter, r *http.Request) {
+	var wsUpgrader = websocket.Upgrader{
+		ReadBufferSize:  websocketBufferSize,
+		WriteBufferSize: websocketBufferSize,
+		CheckOrigin:     func(r *http.Request) bool { return true },
+	}
+
+	conn, err := wsUpgrader.Upgrade(w, r, nil)
+	if HandleError(w, http.StatusInternalServerError, err) {
+		return
+	}
+
+	client, err := llm.NewClient()
+	if handleError(w, http.StatusInternalServerError, err) {
+		return
+	}
+
+	for {
+		fmt.Println("Waiting for message...")
+		subscribeRequest, err := parseMessage(conn)
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				handleError(w, http.StatusInternalServerError, err)
+			}
+			break
 		}
-		err := watchHandler(r.Context(), conn, objType)
+
+		if subscribeRequest.Type != string(TypeChatbot) {
+			fmt.Println("ERROR: wrong type of request, expected chatbot, got: ", subscribeRequest.Type)
+			break
+		}
+
+		response, err := client.SendMessage(r.Context(), subscribeRequest.Data)
 		if handleError(w, http.StatusInternalServerError, err) {
-			return
+			break
+		}
+
+		if err := conn.WriteJSON(response); handleError(w, http.StatusInternalServerError, err) {
+			break
 		}
 	}
+
+	defer conn.Close()
 }
 
 // parseMessage reads the first WS message

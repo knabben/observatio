@@ -44,13 +44,25 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	// Anthropic LLM handlers
 	router.HandleFunc("/api/analysis", llm.HandleClaude).Methods("POST", "OPTIONS")
 
-	// Websocket Handler for object watchers and LLM
-	router.HandleFunc("/ws", system.HandleWebsocket)
-	router.HandleFunc("/ws/analysis", system.HandleLLMWebsocket).Methods("GET", "OPTIONS")
+	startWebSocketHandlers(router)
 
 	// Static React bundle hosting handler
 	if !developmentMode {
 		spa := system.SPAHandler{StaticFS: bundle, StaticPath: "build", IndexPath: "dashboard.html"}
 		router.PathPrefix("/").Handler(spa)
 	}
+}
+
+func startWebSocketHandlers(router *mux.Router) {
+	pool := &llm.ClientPool{
+		Broadcast:  make(chan []byte),
+		Register:   make(chan *llm.WSClient),
+		Unregister: make(chan *llm.WSClient),
+		//clients:    []*WSClient,
+	}
+
+	go pool.Run()
+
+	router.HandleFunc("/ws", system.HandleWebsocket)
+	router.HandleFunc("/ws/analysis", system.HandleLLMWebsocket).Methods("GET", "OPTIONS")
 }
