@@ -13,28 +13,30 @@ type Client interface {
 }
 
 type AnthropicClient struct {
-	Client anthropic.Client
-	Error  string
+	Client  anthropic.Client
+	Service *ObservationService
+	Error   string
 }
 
-func NewClient() Client {
-	return &AnthropicClient{Client: anthropic.NewClient()}
+func NewClient() (Client, error) {
+	client := &AnthropicClient{Client: anthropic.NewClient()}
+	service, err := NewObservationService(client)
+	if err != nil {
+		return nil, err
+	}
+	client.Service = service
+	return client, nil
 }
 
 func (c *AnthropicClient) GetClient() anthropic.Client {
 	return c.Client
 }
 
+// SendMessage returns the rendered message to a Websocket or endpoint.
 func (c *AnthropicClient) SendMessage(ctx context.Context, request string) (response models.LLMResponse, err error) {
-	service, err := NewObservationService()
+	message, err := c.Service.ChatWithAgent(ctx, request)
 	if err != nil {
 		return response, err
 	}
-
-	message, err := service.ChatWithAgent(ctx, request)
-	if err != nil {
-		return response, err
-	}
-
 	return c.splitResponse(message.Content)
 }

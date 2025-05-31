@@ -44,8 +44,9 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	// Anthropic LLM handlers
 	router.HandleFunc("/api/analysis", llm.HandleClaude).Methods("POST", "OPTIONS")
 
-	// Websocket Handler for object watchers.
+	// Websocket Handler for object watchers and LLM
 	router.HandleFunc("/ws", system.HandleWebsocket)
+	router.HandleFunc("/ws/analysis", system.HandleLLMWebsocket).Methods("GET", "OPTIONS")
 
 	// Static React bundle hosting handler
 	if !developmentMode {
