@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"embed"
 	"encoding/json"
 
@@ -54,15 +55,17 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 }
 
 func startWebSocketHandlers(router *mux.Router) {
-	pool := &llm.ClientPool{
+	pool := &system.ClientPool{
 		Broadcast:  make(chan []byte),
-		Register:   make(chan *llm.WSClient),
-		Unregister: make(chan *llm.WSClient),
-		//clients:    []*WSClient,
+		Register:   make(chan *system.WSClient),
+		Unregister: make(chan *system.WSClient),
+		Clients:    make(map[string]*system.WSClient),
 	}
 
-	go pool.Run()
+	go pool.Run(context.Background())
 
 	router.HandleFunc("/ws", system.HandleWebsocket)
-	router.HandleFunc("/ws/analysis", system.HandleLLMWebsocket).Methods("GET", "OPTIONS")
+	router.HandleFunc("/ws/analysis", func(w http.ResponseWriter, r *http.Request) {
+		system.HandleLLMWebsocket(pool, w, r)
+	}).Methods("GET", "OPTIONS")
 }

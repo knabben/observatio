@@ -3,11 +3,10 @@ package system
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/knabben/observatio/webserver/internal/infra/llm"
+	"github.com/google/uuid"
 	"github.com/knabben/observatio/webserver/internal/web/watchers"
 
 	"github.com/gorilla/websocket"
@@ -16,6 +15,13 @@ import (
 type SubscribeRequest struct {
 	Type string `json:"types"`
 	Data string `json:"data"`
+}
+
+type WSMessage struct {
+	ID        string `json:"id"`
+	Type      string `json:"type"`
+	Content   string `json:"content"`
+	Timestamp int64  `json:"timestamp"`
 }
 
 const (
@@ -80,7 +86,7 @@ func HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 
 // HandleLLMWebsocket opens a connection with the client and allows
 // chat mode.
-func HandleLLMWebsocket(w http.ResponseWriter, r *http.Request) {
+func HandleLLMWebsocket(pool *ClientPool, w http.ResponseWriter, r *http.Request) {
 	var wsUpgrader = websocket.Upgrader{
 		ReadBufferSize:  websocketBufferSize,
 		WriteBufferSize: websocketBufferSize,
@@ -92,49 +98,62 @@ func HandleLLMWebsocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client, err := llm.NewClient()
-	if handleError(w, http.StatusInternalServerError, err) {
-		return
+	registerClient(pool, conn)
+
+	//client, err := llm.NewClient()
+	//if handleError(w, http.StatusInternalServerError, err) {
+	//	return
+	//}
+	//
+	//for {
+	//	fmt.Println("Waiting for message...")
+	//	subscribeRequest, err := parseMessage(conn)
+	//	if err != nil {
+	//		if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+	//			handleError(w, http.StatusInternalServerError, err)
+	//		}
+	//		break
+	//	}
+	//
+	//	if subscribeRequest.Type != string(TypeChatbot) {
+	//		fmt.Println("ERROR: wrong type of request, expected chatbot, got: ", subscribeRequest.Type)
+	//		break
+	//	}
+	//
+	//	response, err := client.SendMessage(r.Context(), subscribeRequest.Data)
+	//	if handleError(w, http.StatusInternalServerError, err) {
+	//		break
+	//	}
+	//
+	//	if err := conn.WriteJSON(response); handleError(w, http.StatusInternalServerError, err) {
+	//		break
+	//	}
+	//}
+
+	//defer conn.Close()
+}
+
+func registerClient(pool *ClientPool, conn *websocket.Conn) {
+	client := &WSClient{
+		ID:   uuid.New().String(),
+		pool: pool,
+		conn: conn,
+		Send: make(chan []byte, 256),
+		//Messages: []AnthropicMessage{},
 	}
 
-	for {
-		fmt.Println("Waiting for message...")
-		subscribeRequest, err := parseMessage(conn)
-		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				handleError(w, http.StatusInternalServerError, err)
-			}
-			break
-		}
-
-		if subscribeRequest.Type != string(TypeChatbot) {
-			fmt.Println("ERROR: wrong type of request, expected chatbot, got: ", subscribeRequest.Type)
-			break
-		}
-
-		response, err := client.SendMessage(r.Context(), subscribeRequest.Data)
-		if handleError(w, http.StatusInternalServerError, err) {
-			break
-		}
-
-		if err := conn.WriteJSON(response); handleError(w, http.StatusInternalServerError, err) {
-			break
-		}
-	}
-
-	defer conn.Close()
+	client.pool.Register <- client
+	go client.reader()
+	go client.writer()
 }
 
 // parseMessage reads the first WS message
 func parseMessage(conn *websocket.Conn) (subscribeRequest SubscribeRequest, err error) {
-	// read the first request from the customer to start
-	// the specialized watcher.
 	_, msg, err := conn.ReadMessage()
 	if err != nil {
 		return subscribeRequest, err
 	}
 
-	// parse the type of request to the datastruct
 	if err := json.Unmarshal(msg, &subscribeRequest); err != nil {
 		return subscribeRequest, err
 	}
