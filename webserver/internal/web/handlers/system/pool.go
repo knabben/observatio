@@ -63,7 +63,7 @@ func (c *WSClient) writer() {
 	for {
 		select {
 		case message, ok := <-c.Send:
-			c.conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+			c.conn.SetWriteDeadline(time.Now().Add(10 * time.Second)) // nolint
 			if !ok {
 				if err := c.conn.WriteMessage(websocket.CloseMessage, []byte{}); err != nil {
 					logger.Error(err, "error writing close message")
