@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"net/http"
+	"os"
 
 	gh "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -30,7 +31,11 @@ Check args to change default values.`,
 }
 
 func init() {
-	log.SetLogger(zap.New())
+	log.SetLogger(zap.New(
+		zap.UseDevMode(development),
+		zap.WriteTo(os.Stdout),
+		zap.JSONEncoder(),
+	))
 
 	serveCmd.PersistentFlags().StringVar(&address, "address", ":8080", "Webserver default listening HTTP port. Default 8080.")
 	serveCmd.PersistentFlags().BoolVar(&development, "dev", false, "Development mode, no static hosting. Default false")
@@ -46,12 +51,13 @@ func RunE(cmd *cobra.Command, args []string) error {
 
 	router := mux.NewRouter()
 	router.Use(web.WithKubernetes(client, config))
+	router.Use(web.WithLogger())
 	handlers.DefaultHandlers(router, development)
 
 	allowDomain := gh.AllowedOrigins([]string{"*"})
 	allowMethods := gh.AllowedMethods([]string{"GET", "OPTIONS", "POST"})
 	allowContentType := gh.AllowedHeaders([]string{"Content-Type", "Authorization"})
-	log.FromContext(context.Background()).Info("Listening on " + address)
 
+	log.FromContext(context.Background()).Info("Starting server, listening on " + address)
 	return http.ListenAndServe(address, gh.CORS(allowDomain, allowMethods, allowContentType)(router))
 }
