@@ -19,6 +19,9 @@ var (
 		Using tooling for troubleshooting is a must, you should be able to identify the root cause of the issue.
 		Always ask for the customer before running any tool.
 	`
+	OUTPUT_DATA = `The answer must be divided in two parts:
+		A verbose description of the error in <description></description> tags
+		The solution of the error in <solution></solution> tags`
 )
 
 func (c *AnthropicClient) SendMessageMove(ctx context.Context) (response models.LLMResponse, err error) {
@@ -75,7 +78,9 @@ const (
 func formatMessage(errorMessage string) string {
 	var messageBuilder strings.Builder
 	formattedQuestion := fmt.Sprintf(questionFormat, errorMessage)
-	messageBuilder.WriteString(fmt.Sprintf(messageTemplate, TASK_CONTEXT, formattedQuestion))
+	messageBuilder.WriteString(
+		fmt.Sprintf(messageTemplate,
+			TASK_CONTEXT, formattedQuestion, OUTPUT_DATA))
 
 	return messageBuilder.String()
 }
