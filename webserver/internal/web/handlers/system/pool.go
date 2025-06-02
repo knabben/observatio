@@ -48,7 +48,12 @@ func (c *WSClient) reader() {
 			return
 		}
 
-		c.sendMessage("chatbot", response.Description)
+		result, err := json.Marshal(response)
+		if err != nil {
+			logger.Error(err, "error writing close message")
+			return
+		}
+		c.sendMessage("chatbot", string(result))
 	}
 }
 
@@ -77,7 +82,6 @@ func (c *WSClient) writer() {
 				return
 			}
 			w.Write(message) // nolint
-
 			if err := w.Close(); err != nil {
 				return
 			}

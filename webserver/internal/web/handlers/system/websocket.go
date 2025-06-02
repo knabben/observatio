@@ -93,7 +93,6 @@ func HandleChatBot(pool *ClientPool, w http.ResponseWriter, r *http.Request) {
 	}
 
 	registerClient(pool, conn)
-
 }
 
 func registerClient(pool *ClientPool, conn *websocket.Conn) {
@@ -110,7 +109,6 @@ func registerClient(pool *ClientPool, conn *websocket.Conn) {
 		LLMClient: &llmClient,
 	}
 
-	// register a new client in the list of WS connections
 	client.pool.Register <- client
 
 	go client.reader()
