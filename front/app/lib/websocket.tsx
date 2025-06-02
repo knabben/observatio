@@ -2,7 +2,8 @@
 
 import useWebSocket, {ReadyState} from "react-use-websocket";
 
-export const WS_URL = typeof window !== 'undefined' ? `ws://${window.location.hostname}:8080/ws/watcher` : 'ws://localhost:8080/ws/watcher';
+export const WS_URL_WATCHER = typeof window !== 'undefined' ? `ws://${window.location.hostname}:8080/ws/watcher` : 'ws://localhost:8080/ws/watcher';
+export const WS_URL_CHATBOT = typeof window !== 'undefined' ? `ws://${window.location.hostname}:8080/ws/analysis` : 'ws://localhost:8080/ws/analysis';
 
 export type WSResponse = {
   type: string;
@@ -11,12 +12,12 @@ export type WSResponse = {
 
 /**
  * A function that establishes and manages a WebSocket connection using the specified `useWebSocket` integration.
- * The WebSocket URL is defined by the `WS_URL` constant. The connection is not shared among multiple instances
+ * The WebSocket URL is defined by the `URL` parameter. The connection is not shared among multiple instances
  * and is configured to always attempt reconnection if the connection is lost.
  */
-export function WebSocket() {
+export function WebSocket(URL: string = WS_URL_WATCHER) {
   return useWebSocket(
-    WS_URL, {
+    URL, {
       share: false,
       shouldReconnect: () => true
     },
