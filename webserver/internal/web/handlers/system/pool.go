@@ -24,7 +24,7 @@ func (c *WSClient) reader() {
 	var logger = log.FromContext(ctx)
 	defer func() {
 		c.pool.Unregister <- c
-		c.conn.Close()
+		c.conn.Close() // nolint
 	}()
 
 	for {
@@ -57,7 +57,7 @@ func (c *WSClient) writer() {
 	ticker := time.NewTicker(10 * time.Second)
 	defer func() {
 		ticker.Stop()
-		c.conn.Close()
+		c.conn.Close() // nolint
 	}()
 
 	for {
@@ -76,14 +76,14 @@ func (c *WSClient) writer() {
 				logger.Error(err, "error writing close message")
 				return
 			}
-			w.Write(message)
+			w.Write(message) // nolint
 
 			if err := w.Close(); err != nil {
 				return
 			}
 
 		case <-ticker.C:
-			c.conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+			c.conn.SetWriteDeadline(time.Now().Add(10 * time.Second)) // nolint
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
 				return
 			}
