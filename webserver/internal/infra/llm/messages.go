@@ -46,7 +46,7 @@ func (c *AnthropicClient) SendMessageMove(ctx context.Context) (response models.
 
 // MessageTemplate defines the structure for formatting error messages
 const (
-	messageTemplate = "%s\n%s\n%s"
+	messageTemplate = "%s\n%s"
 	questionFormat  = "Here is the customer question: <question> %s </question>"
 )
 

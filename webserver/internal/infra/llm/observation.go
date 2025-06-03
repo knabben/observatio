@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/anthropics/anthropic-sdk-go"
-
 	"github.com/gorilla/websocket"
 )
 
@@ -21,12 +19,23 @@ type Agent struct {
 }
 
 type ChatMessage struct {
-	ID        string                 `json:"id"`
-	AgentID   string                 `json:"agent_id"`
-	Content   string                 `json:"content"`
-	Type      string                 `json:"type"` // "user", "agent", "system"
-	Timestamp time.Time              `json:"timestamp"`
-	Context   map[string]interface{} `json:"context,omitempty"`
+	// ID represents the unique identifier for the chat message.
+	ID string `json:"id"`
+
+	// AgentID represents the identifier of the agent associated with the chat message.
+	AgentID string `json:"agent_id"`
+
+	// Content represents the text content of the chat message.
+	Content string `json:"content"`
+
+	// Type represents the category or role of the chat message, typically denoting its origin or purpose.
+	Type string `json:"type"`
+
+	// Actor specifies the origin of the message, such as "agent" or "user".
+	Actor string `json:"actor"`
+
+	// Timestamp represents the time when the chat message was created or sent.
+	Timestamp time.Time `json:"timestamp"`
 }
 
 type ObservationService struct {
@@ -49,50 +58,47 @@ func NewObservationService(client Client) (*ObservationService, error) {
 }
 
 func (s *ObservationService) ChatWithAgent(ctx context.Context, message string) (*ChatMessage, error) {
-	client := s.anthropicClient.GetClient()
-	request := anthropic.MessageNewParams{
-		Model:     anthropic.ModelClaude3_7SonnetLatest,
-		MaxTokens: 4000,
-		System: []anthropic.TextBlockParam{
-			{Text: TASK_SYSTEM},
-		},
-		Messages: []anthropic.MessageParam{
-			anthropic.NewUserMessage(anthropic.NewTextBlock(formatMessage(message))),
-		},
-	}
+	//client := s.anthropicClient.GetClient()
+	//request := anthropic.MessageNewParams{
+	//	Model:     anthropic.ModelClaude3_7SonnetLatest,
+	//	MaxTokens: 4000,
+	//	System: []anthropic.TextBlockParam{
+	//		{Text: TASK_SYSTEM},
+	//	},
+	//	Messages: []anthropic.MessageParam{
+	//		anthropic.NewUserMessage(anthropic.NewTextBlock(formatMessage(message))),
+	//	},
+	//}
 
-	response, err := client.Messages.New(ctx, request)
-	if err != nil {
-		return nil, fmt.Errorf("claude API error: %v", err)
-	}
-
+	//response, err := client.Messages.New(ctx, request)
+	//if err != nil {
+	//	return nil, fmt.Errorf("claude API error: %v", err)
+	//}
+	//
 	// Process response and handle tool calls
-	responseText := ""
+	responseText := "blaa"
 	var toolResults []string
 
-	for _, content := range response.Content {
-		switch content := content.AsAny().(type) {
-		case anthropic.TextBlock:
-			responseText += content.Text
-		}
-	}
+	//for _, content := range response.Content {
+	//	switch content := content.AsAny().(type) {
+	//	case anthropic.TextBlock:
+	//		responseText += content.Text
+	//	}
+	//}
 
 	// Combine response text with tool results
 	if len(toolResults) > 0 {
 		responseText += "\n\nTool Results:\n" + fmt.Sprintf("%v", toolResults)
 	}
 
-	chatMessage := &ChatMessage{
+	return &ChatMessage{
 		ID:        generateID(),
 		Content:   responseText,
-		Type:      "agent",
+		Type:      "chatbot",
+		Actor:     "agent",
+		AgentID:   "cluster-agent",
 		Timestamp: time.Now(),
-		Context: map[string]interface{}{
-			"agent_type": "agent",
-		},
-	}
-
-	return chatMessage, nil
+	}, nil
 }
 
 func generateID() string {
