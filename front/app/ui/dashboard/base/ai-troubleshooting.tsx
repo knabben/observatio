@@ -26,11 +26,15 @@ import {Conditions} from "@/app/ui/dashboard/base/types";
 import {WebSocket, WS_URL_CHATBOT} from "@/app/lib/websocket";
 
 export default function AITroubleshooting({
-  conditions,
   objectType,
+  objectName,
+  objectNamespace,
+  conditions,
 }: {
-  conditions: Conditions[]
   objectType: string,
+  objectName: string,
+  objectNamespace: string,
+  conditions: Conditions[]
 }) {
   const [request, setRequest] = useState("")
 
@@ -38,7 +42,8 @@ export default function AITroubleshooting({
     const broken = new Set(
       conditions?.filter(condition => condition.reason && condition.status != "True")
         .map( (condition) => {
-          const mapper = "On "+ objectType + " the failure of " + condition.reason + " of type " + condition.type
+          const mapper = "On " + objectName + " of type " + objectType + ", running on namespace " + objectNamespace +
+            " it is failing with condition " + condition.reason
           if (condition.message != undefined) {
             return mapper + " with message: " + condition.message
           }
@@ -107,6 +112,7 @@ export default function AITroubleshooting({
 type WSRequest = {
   id: string,
   type: string,
+  agent_id: string,
   content: string,
   timestamp: string,
   actor: string,
@@ -150,6 +156,7 @@ function ChatBot({
           type: "chatbot",
           content: aiRequest,
           actor: "user",
+          agent_id: "cluster-agent",
           timestamp: new Date().toLocaleDateString('en-US', {
             month: '2-digit',
             day: '2-digit',

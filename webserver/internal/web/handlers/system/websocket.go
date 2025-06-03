@@ -13,14 +13,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type WSMessage struct {
-	ID      string `json:"id"`
-	Type    string `json:"type"`
-	Content string `json:"content"`
-	Actor   string `json:"actor"`
-	//Timestamp int64  `json:"timestamp"`
-}
-
 const (
 	websocketBufferSize = 1024
 )
@@ -117,7 +109,7 @@ func registerClient(pool *ClientPool, conn *websocket.Conn) {
 }
 
 // parseMessage reads the first WS message
-func parseMessage(conn *websocket.Conn) (message WSMessage, err error) {
+func parseMessage(conn *websocket.Conn) (message *llm.ChatMessage, err error) {
 	_, msg, err := conn.ReadMessage()
 	if err != nil {
 		return message, err

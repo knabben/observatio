@@ -9,7 +9,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/knabben/observatio/webserver/internal/web/handlers/kubernetes"
-	"github.com/knabben/observatio/webserver/internal/web/handlers/llm"
 	"github.com/knabben/observatio/webserver/internal/web/handlers/system"
 )
 
@@ -41,9 +40,6 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	// Cluster API Machine Handlers
 	router.HandleFunc("/api/machines/list", kubernetes.HandleMachines).Methods("GET")
 	router.HandleFunc("/api/machines/infra/list", kubernetes.HandleMachineInfra).Methods("GET")
-
-	// Anthropic LLM handlers
-	router.HandleFunc("/api/analysis", llm.HandleClaude).Methods("POST", "OPTIONS")
 
 	// Start the websocker handlers
 	startWebSocketHandlers(router)

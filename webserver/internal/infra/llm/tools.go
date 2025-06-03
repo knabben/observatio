@@ -1,13 +1,21 @@
 package llm
 
-type ToolSchema struct {
-	Type       string                 `json:"type"`
-	Properties map[string]interface{} `json:"properties"`
-	Required   []string               `json:"required"`
+import "github.com/anthropics/anthropic-sdk-go"
+
+func RenderTools() []anthropic.ToolParam {
+	return []anthropic.ToolParam{KubectlTool()}
 }
 
-type Tool struct {
-	Name        string     `json:"name"`
-	Description string     `json:"description"`
-	InputSchema ToolSchema `json:"input_schema"`
+func KubectlTool() anthropic.ToolParam {
+	return anthropic.ToolParam{
+		Name:        "kubectl",
+		Description: anthropic.String("kubectl is a command-line tool for controlling Kubernetes clusters."),
+		InputSchema: anthropic.ToolInputSchemaParam{
+			Properties: map[string]interface{}{
+				"command": map[string]interface{}{
+					"type": "string",
+				},
+			},
+		},
+	}
 }

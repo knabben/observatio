@@ -21,7 +21,11 @@ export default function MachineInfraDetails({
     },
     {
       label: "AI Troubleshooting",
-      content: (machine: MachineInfraType) => <AITroubleshooting objectType="vspheremachine" conditions={machine.status.conditions} />
+      content: (machine: MachineInfraType) => <AITroubleshooting
+        objectType="vspheremachine"
+        objectName={machine.metadata.name}
+        objectNamespace={machine.metadata.namespace}
+        conditions={machine.status.conditions} />
     }];
 
   const headerRender = (machine: MachineInfraType) => (

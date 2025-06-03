@@ -8,7 +8,7 @@ import (
 )
 
 type Client interface {
-	SendMessage(ctx context.Context, request string) (*ChatMessage, error)
+	SendMessage(ctx context.Context, request *ChatMessage, agentID string) (*ChatMessage, error)
 	GetClient() anthropic.Client
 }
 
@@ -41,6 +41,6 @@ func (c *AnthropicClient) GetClient() anthropic.Client {
 }
 
 // SendMessage returns the rendered message to a Websocket or endpoint.
-func (c *AnthropicClient) SendMessage(ctx context.Context, request string) (*ChatMessage, error) {
-	return c.Service.ChatWithAgent(ctx, request)
+func (c *AnthropicClient) SendMessage(ctx context.Context, request *ChatMessage, agentID string) (*ChatMessage, error) {
+	return c.Service.ChatWithAgent(ctx, *request, agentID)
 }
