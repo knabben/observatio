@@ -193,7 +193,7 @@ function ChatBot({
                     gap="sm"
                   >
                   {message.actor === 'agent' && (
-                    <Avatar color="rgba(0, 212, 170, 0.5)" radius="xl">BOT</Avatar>
+                    <Avatar size="sm" color="rgba(0, 212, 170, 0.5)" variant="outline" radius="xl">BOT</Avatar>
                   )}
                   <Paper
                     p="md"
@@ -214,7 +214,7 @@ function ChatBot({
                     </Text>
                   </Paper>
                   {message.actor === 'user' && (
-                    <Avatar color="rgba(0, 153, 204, 0.5)" radius="xl">USR</Avatar>
+                    <Avatar size="sm" variant="outline" color="rgba(0, 153, 204, 0.5)" radius="xl">USR</Avatar>
                   )}
               </Group>
                 ))
