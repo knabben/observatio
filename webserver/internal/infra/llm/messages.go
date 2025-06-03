@@ -11,13 +11,9 @@ import (
 
 var (
 	TASK_SYSTEM  = `You will serve as a Kubernetes administrator managing a on-premises datacenter on VMware vCenter.`
-	TASK_CONTEXT = `
-		Your task is to assist operators in troubleshooting issues within the cluster.
-		You should maintain a friendly customer service tone.
-		Replace any markdown tags with the appropriate HTML tags.
-		Using tooling for troubleshooting is a must, you should be able to identify the root cause of the issue.
-		Always ask for the customer before running any tool.
-	`
+	TASK_CONTEXT = `Your task is to assist operators in troubleshooting issues within the cluster.
+You should maintain a friendly customer service tone. Replace any markdown tags with the appropriate HTML tags.
+You have access to various tools for Kubernetes cluster analysis and remediation. Use these tools when appropriate to provide more context to the user.`
 )
 
 func (c *AnthropicClient) SendMessageMove(ctx context.Context) (response models.LLMResponse, err error) {
@@ -47,7 +43,7 @@ func (c *AnthropicClient) SendMessageMove(ctx context.Context) (response models.
 // MessageTemplate defines the structure for formatting error messages
 const (
 	messageTemplate = "%s\n%s"
-	questionFormat  = "Here is the customer question: <question> %s </question>"
+	questionFormat  = "Here is the customer question: <question>%s</question>"
 )
 
 // formatMessage creates a formatted message combining the task context, error details,
