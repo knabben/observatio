@@ -29,9 +29,29 @@ import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
 
 export default function AITroubleshooting({
   conditions,
+  objectType,
 }: {
   conditions: Conditions[]
+  objectType: string,
 }) {
+  const [request, setRequest] = useState("")
+
+  useEffect(() => {
+    const broken = new Set(
+      conditions?.filter(condition => condition.reason && condition.status != "True")
+        .map( (condition) => {
+          const mapper = "On "+ objectType + " the failure of " + condition.reason + " of type " + condition.type
+          if (condition.message != undefined) {
+            return mapper + " with message: " + condition.message
+          }
+          return mapper
+        })
+    );
+    if (broken.size > 0) {
+      setRequest(Array.from(broken).join(', '));
+    }
+  }, [conditions]);
+
   return (
     <Grid justify="flex-start" align="flex-start">
       <GridCol span={6}>
@@ -80,7 +100,7 @@ export default function AITroubleshooting({
         } />
       </GridCol>
       <GridCol span={6}>
-        <ChatBot conditions={conditions}/>
+        <ChatBot request={request}/>
       </GridCol>
     </Grid>
   )
@@ -95,16 +115,19 @@ type WSRequest = {
 }
 
 function ChatBot({
-  conditions,
+  request,
 }: {
-  conditions: Conditions[]
+  request: string,
 }) {
   const [messages, setMessages] = useState<WSRequest[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [aiRequest, setAIRequest] = useState('')
+  const [aiRequest, setAIRequest] = useState(request)
   const scrollRef = React.useRef<HTMLDivElement | null>(null)
-
   const {sendJsonMessage, lastJsonMessage, readyState} = WebSocket(WS_URL_CHATBOT)
+
+  useEffect(() => {
+    setAIRequest(request)
+  }, [request]);
 
   useEffect(() => {
     if (lastJsonMessage) {
@@ -119,22 +142,6 @@ function ChatBot({
       scrollRef.current.scrollTo({top: scrollRef.current.scrollHeight, behavior: 'smooth'});
     }
   }, [messages])
-
-  // useEffect(() => {
-  //   const broken = new Set(
-  //     conditions?.filter(condition => condition.reason && condition.status != "True")
-  //       .map( (condition) => {
-  //         const mapper = condition.reason + " of type " + condition.type
-  //         if (condition.message != undefined) {
-  //           return mapper + " with message: " + condition.message
-  //         }
-  //         return mapper
-  //       })
-  //   );
-  //   if (broken.size > 0) {
-  //     setAIRequest(Array.from(broken).join(', '));
-  //   }
-  // }, [conditions]);
 
   async function requestIA() {
     try {
@@ -221,7 +228,6 @@ function ChatBot({
               }
             </Stack>
           </ScrollArea>
-
           <Box p="md" style={{ borderTop: '1px solid #4a4a6a' }}>
             <Group>
               <Textarea

@@ -18,7 +18,7 @@ export default function MachineDetails({
   },
   {
     label: "AI Troubleshooting",
-    content: (machine: MachineType) => <AITroubleshooting conditions={machine.status.conditions} />
+    content: (machine: MachineType) => <AITroubleshooting objectType="machine" conditions={machine.status.conditions} />
   }];
   const headerRender = (machine: MachineType) => (
     <SimpleGrid cols={2}>
