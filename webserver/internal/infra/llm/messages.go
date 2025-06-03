@@ -12,8 +12,8 @@ import (
 var (
 	TASK_SYSTEM  = `You will serve as a Kubernetes administrator managing a on-premises datacenter on VMware vCenter.`
 	TASK_CONTEXT = `Your task is to assist operators in troubleshooting issues within the cluster.
-You should maintain a friendly customer service tone. Replace any markdown tags with the appropriate HTML tags.
-You have access to various tools for Kubernetes cluster analysis and remediation. Use these tools when appropriate to provide more context to the user.`
+Provide a detailed explanation of the issue. New inputs are provided and you must respond accordingly the context
+Do not use any existent tool for now.`
 )
 
 func (c *AnthropicClient) SendMessageMove(ctx context.Context) (response models.LLMResponse, err error) {

@@ -2,7 +2,9 @@ package llm
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -56,16 +58,22 @@ type ObservationService struct {
 	chatHistory map[string][]ChatMessage
 
 	// tools represent a collection of tools available for the ObservationService to execute specific operations or commands.
-	tools []Tool
+	tools []anthropic.ToolUnionParam
 }
 
 func NewObservationService(client Client) (*ObservationService, error) {
+	allTools := RenderTools()
+	tools := make([]anthropic.ToolUnionParam, len(allTools))
+	for i, toolParam := range allTools {
+		tools[i] = anthropic.ToolUnionParam{OfTool: &toolParam}
+	}
+
 	service := &ObservationService{
 		anthropicClient: client,
 		agents:          make(map[string]*Agent),
 		wsConnections:   make(map[string]*websocket.Conn),
 		chatHistory:     make(map[string][]ChatMessage),
-		tools:           initializeTools(),
+		tools:           tools,
 	}
 	service.initializeAgents()
 
@@ -74,14 +82,14 @@ func NewObservationService(client Client) (*ObservationService, error) {
 
 func (s *ObservationService) ChatWithAgent(ctx context.Context, message ChatMessage, agentID string) (*ChatMessage, error) {
 	logger := log.FromContext(ctx)
-	//client := s.anthropicClient.GetClient()
+	client := s.anthropicClient.GetClient()
 
 	messages := []anthropic.MessageParam{
 		{
 			Content: []anthropic.ContentBlockParamUnion{
 				{OfRequestTextBlock: &anthropic.TextBlockParam{Text: formatMessage(message.Content)}},
 			},
-			Role: anthropic.MessageParamRoleAssistant,
+			Role: anthropic.MessageParamRoleUser,
 		},
 	}
 
@@ -89,7 +97,7 @@ func (s *ObservationService) ChatWithAgent(ctx context.Context, message ChatMess
 	if history, exists := s.chatHistory[agentID]; !exists {
 		s.chatHistory[agentID] = []ChatMessage{}
 	} else if len(history) > 0 {
-		lastElements := getLastElements(history, 5)
+		lastElements := getLastElements(history, 2)
 		logger.Info("Found history messages", "messages", len(lastElements))
 		for i := len(lastElements) - 1; i >= 0; i-- {
 			role := anthropic.MessageParamRoleUser
@@ -107,7 +115,6 @@ func (s *ObservationService) ChatWithAgent(ctx context.Context, message ChatMess
 		}
 	}
 
-	logger.Info("messages history", "history", messages)
 	request := anthropic.MessageNewParams{
 		Model:     anthropic.ModelClaude3_7SonnetLatest,
 		MaxTokens: 4000,
@@ -115,26 +122,51 @@ func (s *ObservationService) ChatWithAgent(ctx context.Context, message ChatMess
 			{Text: TASK_SYSTEM},
 		},
 		Messages: messages,
+		Tools:    s.tools,
 	}
 
-	logger.Info("Request to Claude", "request", len(request.Messages))
-	for _, res := range messages {
-		logger.Info("Request to Claude", "request", res)
+	response, err := client.Messages.New(ctx, request)
+	if err != nil {
+		return nil, fmt.Errorf("claude API error: %v", err)
 	}
-	//response, err := client.Messages.New(ctx, request)
-	//if err != nil {
-	//	return nil, fmt.Errorf("claude API error: %v", err)
-	//}
 
-	var toolResults []string
 	var responseText string
-	//logger.Info("Response from Claude", "response", response)
-	//for _, content := range response.Content {
-	//	switch content := content.AsAny().(type) {
-	//	case anthropic.TextBlock:
-	//		responseText += content.Text
-	//	}
-	//}
+	var toolResults []string
+
+	logger.Info("Response from Claude", "response", response)
+	for _, block := range response.Content {
+		switch content := block.AsAny().(type) {
+		case anthropic.TextBlock:
+			responseText += content.Text
+
+		case anthropic.ToolUseBlock:
+			logger.Info("Tools use command")
+			// save as part of message
+			inputJSON, _ := json.Marshal(block.Input)
+			logger.Info(block.Name + ": " + string(inputJSON))
+
+			var response interface{}
+			switch block.Name {
+			case "kubectl":
+				var input struct {
+					Command string `json:"command"`
+				}
+
+				err := json.Unmarshal([]byte(block.JSON.Input.Raw()), &input)
+				if err != nil {
+					panic(err)
+				}
+
+				response, err = RunKubectl(input.Command)
+				if err != nil {
+					logger.Error(err, "Error running kubectl command")
+					response = err.Error()
+				}
+				logger.Info("Kubectl response", "response", response)
+				toolResults = append(toolResults, response.(string))
+			}
+		}
+	}
 
 	// Combine response text with tool results
 	if len(toolResults) > 0 {
@@ -143,7 +175,7 @@ func (s *ObservationService) ChatWithAgent(ctx context.Context, message ChatMess
 
 	botMessage := ChatMessage{
 		ID:        generateID(),
-		Content:   strings.ReplaceAll("response random", "\n", "<br />"),
+		Content:   strings.ReplaceAll(responseText, "\n", "<br />"),
 		Type:      "chatbot",
 		Actor:     "agent",
 		AgentID:   "cluster-agent",
@@ -153,35 +185,19 @@ func (s *ObservationService) ChatWithAgent(ctx context.Context, message ChatMess
 	return &botMessage, nil
 }
 
-func generateID() string {
-	return uuid.New().String()
+func RunKubectl(command string) (string, error) {
+	// Execute kubectl command using os/exec
+	cmd := exec.Command("kubectl", strings.Fields(command)...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("error executing kubectl command: %v", err)
+	}
+
+	return string(output), nil
 }
 
-func initializeTools() []Tool {
-	return []Tool{
-		{
-			Name:        "kubectl_command",
-			Description: "Execute kubectl commands to inspect or modify Kubernetes resources",
-			InputSchema: ToolSchema{
-				Type: "object",
-				Properties: map[string]interface{}{
-					"command": map[string]interface{}{
-						"type":        "string",
-						"description": "The kubectl command to execute",
-					},
-					"namespace": map[string]interface{}{
-						"type":        "string",
-						"description": "Kubernetes namespace (optional)",
-					},
-					"dry_run": map[string]interface{}{
-						"type":        "boolean",
-						"description": "Whether to run in dry-run mode",
-					},
-				},
-				Required: []string{"command"},
-			},
-		},
-	}
+func generateID() string {
+	return uuid.New().String()
 }
 
 func getLastElements(s []ChatMessage, n int) []ChatMessage {
@@ -189,14 +205,6 @@ func getLastElements(s []ChatMessage, n int) []ChatMessage {
 		return s
 	}
 	return s[len(s)-n:]
-}
-
-func reverseElements(result []ChatMessage) []ChatMessage {
-	for i := 0; i < len(result)/2; i++ {
-		j := len(result) - 1 - i
-		result[i], result[j] = result[j], result[i]
-	}
-	return result
 }
 
 func (s *ObservationService) initializeAgents() {
