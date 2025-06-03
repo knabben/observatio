@@ -23,9 +23,7 @@ import {
 import {IconX} from "@tabler/icons-react";
 import React, {useEffect, useState} from "react";
 import {Conditions} from "@/app/ui/dashboard/base/types";
-import {postAIAnalysis} from "@/app/lib/data";
-import {receiveAndPopulate, sendInitialRequest, WebSocket, WS_URL_CHATBOT} from "@/app/lib/websocket";
-import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
+import {WebSocket, WS_URL_CHATBOT} from "@/app/lib/websocket";
 
 export default function AITroubleshooting({
   conditions,
@@ -50,7 +48,7 @@ export default function AITroubleshooting({
     if (broken.size > 0) {
       setRequest(Array.from(broken).join(', '));
     }
-  }, [conditions]);
+  }, [conditions, objectType]);
 
   return (
     <Grid justify="flex-start" align="flex-start">
@@ -123,7 +121,7 @@ function ChatBot({
   const [isLoading, setIsLoading] = useState(false)
   const [aiRequest, setAIRequest] = useState(request)
   const scrollRef = React.useRef<HTMLDivElement | null>(null)
-  const {sendJsonMessage, lastJsonMessage, readyState} = WebSocket(WS_URL_CHATBOT)
+  const {sendJsonMessage, lastJsonMessage} = WebSocket(WS_URL_CHATBOT)
 
   useEffect(() => {
     setAIRequest(request)
@@ -164,7 +162,8 @@ function ChatBot({
         }
         setIsLoading(true)
         sendJsonMessage(request)
-        // @ts-ignore
+
+        // @ts-expect-error request on messages
         setMessages([...messages, request])
       }
     } catch (error) {
@@ -200,7 +199,7 @@ function ChatBot({
             }}>
             <Stack gap="md">
               {
-                messages.map((message, index) => (
+                messages.map((message) => (
                   <Group
                     key={message.id}
                     align="flex-start"
