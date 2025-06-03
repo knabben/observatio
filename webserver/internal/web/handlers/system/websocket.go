@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/knabben/observatio/webserver/internal/infra/llm"
 	"github.com/knabben/observatio/webserver/internal/web/watchers"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -29,9 +28,6 @@ const (
 	TypeChatbot           ObjectType = "chatbot"
 )
 
-// websocketWatcher represents a function that watches specific resource types
-type websocketWatcher func(context.Context, *websocket.Conn, string) error
-
 var (
 	// watchHandlers maps object types to their respective watch functions
 	watchHandlers = map[ObjectType]websocketWatcher{
@@ -42,6 +38,9 @@ var (
 		TypeMachineDeployment: watchers.WatchMachineDeployments,
 	}
 )
+
+// websocketWatcher represents a function that watches specific resource types
+type websocketWatcher func(context.Context, *websocket.Conn, string) error
 
 // HandleWatcher starts the object listener based on the input object request.
 func HandleWatcher(w http.ResponseWriter, r *http.Request) {
@@ -66,14 +65,15 @@ func HandleWatcher(w http.ResponseWriter, r *http.Request) {
 	if !exists {
 		return
 	}
+
 	err = watchHandler(r.Context(), conn, objType)
 	if handleError(w, http.StatusInternalServerError, err) {
 		return
 	}
 }
 
-// HandleChatBot opens a connection with the client and allows chat mode.
-func HandleChatBot(pool *ClientPool, w http.ResponseWriter, r *http.Request) {
+// HandleChatbot opens a connection with the client and allows chat mode.
+func HandleChatbot(pool *ClientPool, w http.ResponseWriter, r *http.Request) {
 	var wsUpgrader = websocket.Upgrader{
 		ReadBufferSize:  websocketBufferSize,
 		WriteBufferSize: websocketBufferSize,
@@ -85,27 +85,10 @@ func HandleChatBot(pool *ClientPool, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	registerClient(pool, conn)
-}
-
-func registerClient(pool *ClientPool, conn *websocket.Conn) {
-	llmClient, err := llm.NewClient()
-	if err != nil {
-		log.FromContext(context.Background()).Error(err, "error creating llm client")
+	err = registerClient(pool, conn)
+	if HandleError(w, http.StatusInternalServerError, err) {
+		return
 	}
-
-	client := &WSClient{
-		ID:        uuid.New().String(),
-		pool:      pool,
-		conn:      conn,
-		Send:      make(chan []byte, 256),
-		LLMClient: &llmClient,
-	}
-
-	client.pool.Register <- client
-
-	go client.reader()
-	go client.writer()
 }
 
 // parseMessage reads the first WS message
