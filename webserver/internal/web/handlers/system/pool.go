@@ -39,14 +39,12 @@ func (c *WSClient) reader() {
 			break
 		}
 
-		logger.Info("Received message", "msg", message)
-		response, err := (*c.LLMClient).SendMessage(ctx, message.Content)
+		response, err := (*c.LLMClient).SendMessage(ctx, message, "cluster-agent")
 		if err != nil {
 			logger.Error(err, "error writing close message")
 			return
 		}
 
-		response.AgentID = c.ID
 		result, err := json.Marshal(response)
 		if err != nil {
 			logger.Error(err, "error writing close message")
