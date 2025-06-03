@@ -19,7 +19,7 @@ export default function MachineDeploymentDetails({
     },
     {
       label: "AI Troubleshooting",
-      content: (md: MachineDeploymentType) => <AITroubleshooting conditions={md.status.conditions} />
+      content: (md: MachineDeploymentType) => <AITroubleshooting objectType="machinedeployment" conditions={md.status.conditions} />
     }
   ];
   const headerRender = (md: MachineDeploymentType) => (

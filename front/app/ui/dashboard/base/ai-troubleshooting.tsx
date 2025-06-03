@@ -3,6 +3,7 @@
 import Panel from "@/app/ui/dashboard/utils/panel";
 import {
   AppShell,
+  Avatar,
   Text,
   Group,
   Button,
@@ -22,18 +23,33 @@ import {
 import {IconX} from "@tabler/icons-react";
 import React, {useEffect, useState} from "react";
 import {Conditions} from "@/app/ui/dashboard/base/types";
-import {postAIAnalysis} from "@/app/lib/data";
-
-type AIResponse = {
-  description: string;
-  solution: string;
-}
+import {WebSocket, WS_URL_CHATBOT} from "@/app/lib/websocket";
 
 export default function AITroubleshooting({
   conditions,
+  objectType,
 }: {
   conditions: Conditions[]
+  objectType: string,
 }) {
+  const [request, setRequest] = useState("")
+
+  useEffect(() => {
+    const broken = new Set(
+      conditions?.filter(condition => condition.reason && condition.status != "True")
+        .map( (condition) => {
+          const mapper = "On "+ objectType + " the failure of " + condition.reason + " of type " + condition.type
+          if (condition.message != undefined) {
+            return mapper + " with message: " + condition.message
+          }
+          return mapper
+        })
+    );
+    if (broken.size > 0) {
+      setRequest(Array.from(broken).join(', '));
+    }
+  }, [conditions, objectType]);
+
   return (
     <Grid justify="flex-start" align="flex-start">
       <GridCol span={6}>
@@ -82,43 +98,77 @@ export default function AITroubleshooting({
         } />
       </GridCol>
       <GridCol span={6}>
-        <ChatBot conditions={conditions}/>
+        <ChatBot request={request}/>
       </GridCol>
     </Grid>
   )
 }
 
+type WSRequest = {
+  id: string,
+  type: string,
+  content: string,
+  timestamp: string,
+  actor: string,
+}
+
 function ChatBot({
-  conditions,
+  request,
 }: {
-  conditions: Conditions[]
+  request: string,
 }) {
-  const [aiRequest, setAIRequest] = useState('')
-  const [aiResponse, setAiResponse] = useState<AIResponse>({description: "", solution: ""})
+  const [messages, setMessages] = useState<WSRequest[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [aiRequest, setAIRequest] = useState(request)
+  const scrollRef = React.useRef<HTMLDivElement | null>(null)
+  const {sendJsonMessage, lastJsonMessage} = WebSocket(WS_URL_CHATBOT)
 
   useEffect(() => {
-    const broken = new Set(
-      conditions?.filter(condition => condition.reason && condition.status != "True")
-        .map( (condition) => {
-          const mapper = condition.reason + " of type " + condition.type
-          if (condition.message != undefined) {
-            return mapper + " with message: " + condition.message
-          }
-          return mapper
-        })
-    );
-    if (broken.size > 0) {
-      setAIRequest(Array.from(broken).join(', '));
+    setAIRequest(request)
+  }, [request]);
+
+  useEffect(() => {
+    if (lastJsonMessage) {
+      const response = lastJsonMessage as WSRequest;
+      setMessages(prevMessages => [...prevMessages, response]);
+      setIsLoading(false)
     }
-  }, [conditions]);
+  }, [lastJsonMessage])
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({top: scrollRef.current.scrollHeight, behavior: 'smooth'});
+    }
+  }, [messages])
 
   async function requestIA() {
     try {
-      setAIRequest('')
-      const response = await postAIAnalysis(aiRequest)
-      setAiResponse(response);
+      if (aiRequest != "") {
+        setAIRequest('')
+        const request: WSRequest = {
+          id: crypto.randomUUID(),
+          type: "chatbot",
+          content: aiRequest,
+          actor: "user",
+          timestamp: new Date().toLocaleDateString('en-US', {
+            month: '2-digit',
+            day: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          })
+        }
+        setIsLoading(true)
+        sendJsonMessage(request)
+
+        // @ts-expect-error request on messages
+        setMessages([...messages, request])
+      }
     } catch (error) {
       console.error('Error analyzing machine:', error);
+      setIsLoading(false)
     }
   }
 
@@ -134,7 +184,7 @@ function ChatBot({
       }}
     >
       <Notification withCloseButton={false} title="AI Troubleshooting" color="#a1f54d">
-        <Container fluid p="md" h="calc(100vh - 60px)">
+        <Container fluid p="md" h="calc(90vh - 60px)">
           <Card
             h="100%"
             radius="lg"
@@ -144,43 +194,49 @@ function ChatBot({
               flexDirection: 'column'
             }}
           >
-          <ScrollArea flex={1} p="md">
+            <ScrollArea flex={1} p="md" viewportRef={(ref) => {
+              scrollRef.current = ref
+            }}>
             <Stack gap="md">
-              { aiResponse.description != "" && aiResponse.solution != "" &&
-                <>
-                  <Group align="flex-start" justify='flex-start' gap="sm">
-                    <Paper p="md" radius="lg" maw="80%" style={{
-                      background: 'rgba(0, 212, 170, 0.1)',
-                      border: '1px solid rgba(0, 212, 170, 0.3)',
-                    }}>
-                      <Text size="sm" style={{lineHeight: 1.5}}>
-                        <Text className="text-bold" fw={700}>Description</Text>
-                        <div dangerouslySetInnerHTML={{__html: aiResponse.description}}/>
-                      </Text>
-                      <Text size="xs" c="dimmed" mt="xs">
-                        {new Date().toLocaleDateString()}
-                      </Text>
-                    </Paper>
-                  </Group>
-                  <Group align="flex-start" justify='flex-start' gap="sm">
-                    <Paper p="md" radius="lg" maw="80%" style={{
-                      background: 'rgba(0, 212, 170, 0.1)',
-                      border: '1px solid rgba(0, 212, 170, 0.3)',
-                    }}>
-                      <Text size="sm" style={{lineHeight: 1.5}}>
-                        <Text className="text-bold" fw={700}>Solution</Text>
-                        <div dangerouslySetInnerHTML={{__html: aiResponse.solution}}/>
-                      </Text>
-                      <Text size="xs" c="dimmed" mt="xs">
-                        {new Date().toLocaleDateString()}
-                      </Text>
-                    </Paper>
-                  </Group>
-                </>
+              {
+                messages.map((message) => (
+                  <Group
+                    key={message.id}
+                    align="flex-start"
+                    justify={message.actor === 'user' ? 'flex-end' : 'flex-start'}
+                    gap="sm"
+                  >
+                  {message.actor === 'agent' && (
+                    <Avatar size="sm" color="rgba(0, 153, 204, 0.5)" variant="outline" radius="xl">BOT</Avatar>
+                  )}
+                  <Paper
+                    p="md"
+                    radius="lg"
+                    maw="80%"
+                    style={{
+                      background: message.actor === 'user'
+                        ? 'rgba(0, 212, 170, 0.1)'
+                        : 'rgba(0, 153, 204, 0.2)',
+                      border: message.actor === 'user'
+                        ? '1px solid rgba(0, 212, 170, 0.3)'
+                        : '1px solid rgba(0, 153, 204, 0.4)',
+                    }}
+                  >
+                    <Text size="sm" style={{ lineHeight: 1.5 }}>
+                      <div dangerouslySetInnerHTML={{__html: message.content}}/>
+                    </Text>
+                    <Text size="xs" c="dimmed" mt="xs">
+                      {message.timestamp}
+                    </Text>
+                  </Paper>
+                  {message.actor === 'user' && (
+                    <Avatar size="sm" variant="outline" color="rgba(0, 212, 170, 0.5)" radius="xl">USR</Avatar>
+                  )}
+              </Group>
+                ))
               }
             </Stack>
           </ScrollArea>
-
           <Box p="md" style={{ borderTop: '1px solid #4a4a6a' }}>
             <Group>
               <Textarea
@@ -192,7 +248,7 @@ function ChatBot({
                 radius="xl"
                 styles={{
                   input: {
-                    height: '130px',
+                    height: '100px',
                     border: '1px solid #48654a',
                     color: '#e0e0e0',
                     '&:focus': {
@@ -201,7 +257,7 @@ function ChatBot({
                   }
                 }}
               />
-              <Button onClick={requestIA} bg="#a1f54d" c="#000" variant="filled">Send!</Button>
+              <Button onClick={requestIA} disabled={isLoading} bg="#a1f54d" c="#000" variant="filled">Send!</Button>
             </Group>
             </Box>
           </Card>

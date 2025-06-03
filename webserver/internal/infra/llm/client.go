@@ -5,11 +5,10 @@ import (
 	"fmt"
 
 	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/knabben/observatio/webserver/internal/infra/models"
 )
 
 type Client interface {
-	SendMessage(ctx context.Context, request string) (models.LLMResponse, error)
+	SendMessage(ctx context.Context, request string) (*ChatMessage, error)
 	GetClient() anthropic.Client
 }
 
@@ -42,10 +41,6 @@ func (c *AnthropicClient) GetClient() anthropic.Client {
 }
 
 // SendMessage returns the rendered message to a Websocket or endpoint.
-func (c *AnthropicClient) SendMessage(ctx context.Context, request string) (response models.LLMResponse, err error) {
-	message, err := c.Service.ChatWithAgent(ctx, request)
-	if err != nil {
-		return response, err
-	}
-	return c.splitResponse(message.Content)
+func (c *AnthropicClient) SendMessage(ctx context.Context, request string) (*ChatMessage, error) {
+	return c.Service.ChatWithAgent(ctx, request)
 }

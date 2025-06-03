@@ -20,7 +20,7 @@ export default function ClusterDetails({
     },
     {
       label: "AI Troubleshooting",
-      content: (cluster: ClusterType) => <AITroubleshooting conditions={cluster.status.conditions}/>
+      content: (cluster: ClusterType) => <AITroubleshooting objectType="cluster" conditions={cluster.status.conditions}/>
     }
   ];
   const headerRender = (cluster: ClusterType) => (
