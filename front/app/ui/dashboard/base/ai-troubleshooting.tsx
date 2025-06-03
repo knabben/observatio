@@ -107,6 +107,7 @@ export default function AITroubleshooting({
 type WSRequest = {
   id: string,
   type: string,
+  agent_id: string,
   content: string,
   timestamp: string,
   actor: string,
@@ -150,6 +151,7 @@ function ChatBot({
           type: "chatbot",
           content: aiRequest,
           actor: "user",
+          agent_id: "cluster-agent",
           timestamp: new Date().toLocaleDateString('en-US', {
             month: '2-digit',
             day: '2-digit',
