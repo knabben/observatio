@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os/exec"
 	"strings"
 	"time"
 
@@ -14,39 +13,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-type Agent struct {
-	ID           string    `json:"id"`
-	Name         string    `json:"name"`
-	Type         string    `json:"type"`
-	Status       string    `json:"status"`
-	Activity     string    `json:"activity"`
-	LastUpdate   time.Time `json:"last_update"`
-	Capabilities []string  `json:"capabilities"`
-}
-
-type ChatMessage struct {
-	// ID represents the unique identifier for the chat message.
-	ID string `json:"id"`
-
-	// AgentID represents the identifier of the agent associated with the chat message.
-	AgentID string `json:"agent_id"`
-
-	// Content represents the text content of the chat message.
-	Content string `json:"content"`
-
-	// Type represents the category or role of the chat message, typically denoting its origin or purpose.
-	Type string `json:"type"`
-
-	// Actor specifies the origin of the message, such as "agent" or "user".
-	Actor string `json:"actor"`
-
-	// Timestamp represents the time when the chat message was created or sent.
-	Timestamp string `json:"timestamp"`
-}
-
 type ObservationService struct {
 	// anthropicClient is the client used for interacting with the Anthropic API.
-	anthropicClient Client
+	anthropicClient anthropic.Client
 
 	// agents is a map that stores AI agents identified by their unique string IDs.
 	agents map[string]*Agent
@@ -61,28 +30,22 @@ type ObservationService struct {
 	tools []anthropic.ToolUnionParam
 }
 
-func NewObservationService(client Client) (*ObservationService, error) {
-	allTools := RenderTools()
-	tools := make([]anthropic.ToolUnionParam, len(allTools))
-	for i, toolParam := range allTools {
-		tools[i] = anthropic.ToolUnionParam{OfTool: &toolParam}
-	}
-
+func NewObservationService() (*ObservationService, error) {
 	service := &ObservationService{
-		anthropicClient: client,
+		anthropicClient: anthropic.NewClient(),
 		agents:          make(map[string]*Agent),
 		wsConnections:   make(map[string]*websocket.Conn),
 		chatHistory:     make(map[string][]ChatMessage),
-		tools:           tools,
+		tools:           RenderTools(),
 	}
 	service.initializeAgents()
 
 	return service, nil
 }
 
-func (s *ObservationService) ChatWithAgent(ctx context.Context, message ChatMessage, agentID string) (*ChatMessage, error) {
+func (s *ObservationService) ChatWithAgent(ctx context.Context, message *ChatMessage, agentID string) (*ChatMessage, error) {
 	logger := log.FromContext(ctx)
-	client := s.anthropicClient.GetClient()
+	client := s.anthropicClient
 
 	messages := []anthropic.MessageParam{
 		{
@@ -181,19 +144,8 @@ func (s *ObservationService) ChatWithAgent(ctx context.Context, message ChatMess
 		AgentID:   "cluster-agent",
 		Timestamp: time.Now().Format("01/02/2006 15:04:05"),
 	}
-	s.chatHistory[agentID] = append(s.chatHistory[agentID], []ChatMessage{message, botMessage}...)
+	s.chatHistory[agentID] = append(s.chatHistory[agentID], []ChatMessage{*message, botMessage}...)
 	return &botMessage, nil
-}
-
-func RunKubectl(command string) (string, error) {
-	// Execute kubectl command using os/exec
-	cmd := exec.Command("kubectl", strings.Fields(command)...)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return "", fmt.Errorf("error executing kubectl command: %v", err)
-	}
-
-	return string(output), nil
 }
 
 func generateID() string {
@@ -205,22 +157,4 @@ func getLastElements(s []ChatMessage, n int) []ChatMessage {
 		return s
 	}
 	return s[len(s)-n:]
-}
-
-func (s *ObservationService) initializeAgents() {
-	agents := []*Agent{
-		{
-			ID:           "cluster-agent",
-			Name:         "Cluster Agent",
-			Type:         "analysis",
-			Status:       "active",
-			Activity:     "Monitoring cluster health and analyzing issues",
-			Capabilities: []string{"cluster-analysis", "resource-monitoring", "pattern-detection"},
-			LastUpdate:   time.Now(),
-		},
-	}
-
-	for _, agent := range agents {
-		s.agents[agent.ID] = agent
-	}
 }

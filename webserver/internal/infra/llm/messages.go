@@ -1,12 +1,8 @@
 package llm
 
 import (
-	"context"
 	"fmt"
 	"strings"
-
-	"github.com/anthropics/anthropic-sdk-go"
-	"github.com/knabben/observatio/webserver/internal/infra/models"
 )
 
 var (
@@ -16,35 +12,31 @@ Provide a detailed explanation of the issue. New inputs are provided and you mus
 Do not use any existent tool for now.`
 )
 
-func (c *AnthropicClient) SendMessageMove(ctx context.Context) (response models.LLMResponse, err error) {
-	var msg *anthropic.Message
-
-	msg, err = c.Client.Messages.New(ctx, anthropic.MessageNewParams{
-		MaxTokens: 1024,
-		Messages: []anthropic.MessageParam{
-			anthropic.NewUserMessage(anthropic.NewTextBlock(formatMessage(c.Error))),
-		},
-		System: []anthropic.TextBlockParam{
-			{Text: TASK_SYSTEM},
-		},
-		Model:         anthropic.ModelClaude3_7SonnetLatest,
-		StopSequences: []string{"---\n"},
-	})
-	if err != nil {
-		return response, err
-	}
-	var msgContent string
-	for _, m := range msg.Content {
-		msgContent += m.Text
-	}
-	return models.LLMResponse{Result: msgContent}, nil
-}
-
 // MessageTemplate defines the structure for formatting error messages
 const (
 	messageTemplate = "%s\n%s"
 	questionFormat  = "Here is the customer question: <question>%s</question>"
 )
+
+type ChatMessage struct {
+	// ID represents the unique identifier for the chat message.
+	ID string `json:"id"`
+
+	// AgentID represents the identifier of the agent associated with the chat message.
+	AgentID string `json:"agent_id"`
+
+	// Content represents the text content of the chat message.
+	Content string `json:"content"`
+
+	// Type represents the category or role of the chat message, typically denoting its origin or purpose.
+	Type string `json:"type"`
+
+	// Actor specifies the origin of the message, such as "agent" or "user".
+	Actor string `json:"actor"`
+
+	// Timestamp represents the time when the chat message was created or sent.
+	Timestamp string `json:"timestamp"`
+}
 
 // formatMessage creates a formatted message combining the task context, error details,
 // and expected output format for the LLM processing
