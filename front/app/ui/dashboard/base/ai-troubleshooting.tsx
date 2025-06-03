@@ -3,6 +3,7 @@
 import Panel from "@/app/ui/dashboard/utils/panel";
 import {
   AppShell,
+  Avatar,
   Text,
   Group,
   Button,
@@ -23,11 +24,8 @@ import {IconX} from "@tabler/icons-react";
 import React, {useEffect, useState} from "react";
 import {Conditions} from "@/app/ui/dashboard/base/types";
 import {postAIAnalysis} from "@/app/lib/data";
-
-type AIResponse = {
-  description: string;
-  solution: string;
-}
+import {receiveAndPopulate, sendInitialRequest, WebSocket, WS_URL_CHATBOT} from "@/app/lib/websocket";
+import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
 
 export default function AITroubleshooting({
   conditions,
@@ -88,37 +86,75 @@ export default function AITroubleshooting({
   )
 }
 
+type WSRequest = {
+  id: string,
+  type: string,
+  content: string,
+  timestamp: string,
+  actor: string,
+}
+
 function ChatBot({
   conditions,
 }: {
   conditions: Conditions[]
 }) {
+  const [messages, setMessages] = useState<WSRequest[]>([])
+  const [isLoading, setIsLoading] = useState(false)
   const [aiRequest, setAIRequest] = useState('')
-  const [aiResponse, setAiResponse] = useState<AIResponse>({description: "", solution: ""})
+  const scrollRef = React.useRef<HTMLDivElement | null>(null)
+
+  const {sendJsonMessage, lastJsonMessage, readyState} = WebSocket(WS_URL_CHATBOT)
 
   useEffect(() => {
-    const broken = new Set(
-      conditions?.filter(condition => condition.reason && condition.status != "True")
-        .map( (condition) => {
-          const mapper = condition.reason + " of type " + condition.type
-          if (condition.message != undefined) {
-            return mapper + " with message: " + condition.message
-          }
-          return mapper
-        })
-    );
-    if (broken.size > 0) {
-      setAIRequest(Array.from(broken).join(', '));
+    if (lastJsonMessage) {
+      const response = lastJsonMessage as WSRequest;
+      setMessages(prevMessages => [...prevMessages, response]);
+      setIsLoading(false)
     }
-  }, [conditions]);
+  }, [lastJsonMessage])
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({top: scrollRef.current.scrollHeight, behavior: 'smooth'});
+    }
+  }, [messages])
+
+  // useEffect(() => {
+  //   const broken = new Set(
+  //     conditions?.filter(condition => condition.reason && condition.status != "True")
+  //       .map( (condition) => {
+  //         const mapper = condition.reason + " of type " + condition.type
+  //         if (condition.message != undefined) {
+  //           return mapper + " with message: " + condition.message
+  //         }
+  //         return mapper
+  //       })
+  //   );
+  //   if (broken.size > 0) {
+  //     setAIRequest(Array.from(broken).join(', '));
+  //   }
+  // }, [conditions]);
 
   async function requestIA() {
     try {
-      setAIRequest('')
-      const response = await postAIAnalysis(aiRequest)
-      setAiResponse(response);
+      if (aiRequest != "") {
+        setAIRequest('')
+        const request: WSRequest = {
+          id: crypto.randomUUID(),
+          type: "chatbot",
+          content: aiRequest,
+          actor: "user",
+          timestamp: new Date().toISOString()
+        }
+        setIsLoading(true)
+        sendJsonMessage(request)
+        // @ts-ignore
+        setMessages([...messages, request])
+      }
     } catch (error) {
       console.error('Error analyzing machine:', error);
+      setIsLoading(false)
     }
   }
 
@@ -144,39 +180,44 @@ function ChatBot({
               flexDirection: 'column'
             }}
           >
-          <ScrollArea flex={1} p="md">
+            <ScrollArea flex={1} p="md" viewportRef={(ref) => {
+              scrollRef.current = ref
+            }}>
             <Stack gap="md">
-              { aiResponse.description != "" && aiResponse.solution != "" &&
-                <>
-                  <Group align="flex-start" justify='flex-start' gap="sm">
-                    <Paper p="md" radius="lg" maw="80%" style={{
-                      background: 'rgba(0, 212, 170, 0.1)',
-                      border: '1px solid rgba(0, 212, 170, 0.3)',
-                    }}>
-                      <Text size="sm" style={{lineHeight: 1.5}}>
-                        <Text className="text-bold" fw={700}>Description</Text>
-                        <div dangerouslySetInnerHTML={{__html: aiResponse.description}}/>
-                      </Text>
-                      <Text size="xs" c="dimmed" mt="xs">
-                        {new Date().toLocaleDateString()}
-                      </Text>
-                    </Paper>
-                  </Group>
-                  <Group align="flex-start" justify='flex-start' gap="sm">
-                    <Paper p="md" radius="lg" maw="80%" style={{
-                      background: 'rgba(0, 212, 170, 0.1)',
-                      border: '1px solid rgba(0, 212, 170, 0.3)',
-                    }}>
-                      <Text size="sm" style={{lineHeight: 1.5}}>
-                        <Text className="text-bold" fw={700}>Solution</Text>
-                        <div dangerouslySetInnerHTML={{__html: aiResponse.solution}}/>
-                      </Text>
-                      <Text size="xs" c="dimmed" mt="xs">
-                        {new Date().toLocaleDateString()}
-                      </Text>
-                    </Paper>
-                  </Group>
-                </>
+              {
+                messages.map((message, index) => (
+                  <Group
+                    key={message.id}
+                    align="flex-start"
+                    justify={message.actor === 'user' ? 'flex-end' : 'flex-start'}
+                    gap="sm"
+                  >
+                  {message.actor === 'agent' && (
+                    <Avatar color="rgba(0, 212, 170, 0.5)" radius="xl">BOT</Avatar>
+                  )}
+                  <Paper
+                    p="md"
+                    radius="lg"
+                    maw="80%"
+                    style={{
+                      background: message.actor === 'user'
+                        ? 'rgba(0, 153, 204, 0.2)'
+                        : 'rgba(0, 212, 170, 0.1)',
+                      border: message.actor === 'user'
+                        ? '1px solid rgba(0, 153, 204, 0.4)'
+                        : '1px solid rgba(0, 212, 170, 0.3)'
+                    }}
+                  >
+                    <Text size="sm" style={{ lineHeight: 1.5 }}>{message.content}</Text>
+                    <Text size="xs" c="dimmed" mt="xs">
+                      timestamp
+                    </Text>
+                  </Paper>
+                  {message.actor === 'user' && (
+                    <Avatar color="rgba(0, 153, 204, 0.5)" radius="xl">USR</Avatar>
+                  )}
+              </Group>
+                ))
               }
             </Stack>
           </ScrollArea>
@@ -201,7 +242,7 @@ function ChatBot({
                   }
                 }}
               />
-              <Button onClick={requestIA} bg="#a1f54d" c="#000" variant="filled">Send!</Button>
+              <Button onClick={requestIA} disabled={isLoading} bg="#a1f54d" c="#000" variant="filled">Send!</Button>
             </Group>
             </Box>
           </Card>
