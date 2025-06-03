@@ -185,7 +185,7 @@ function ChatBot({
       }}
     >
       <Notification withCloseButton={false} title="AI Troubleshooting" color="#a1f54d">
-        <Container fluid p="md" h="calc(100vh - 60px)">
+        <Container fluid p="md" h="calc(90vh - 60px)">
           <Card
             h="100%"
             radius="lg"
@@ -249,7 +249,7 @@ function ChatBot({
                 radius="xl"
                 styles={{
                   input: {
-                    height: '130px',
+                    height: '100px',
                     border: '1px solid #48654a',
                     color: '#e0e0e0',
                     '&:focus': {
