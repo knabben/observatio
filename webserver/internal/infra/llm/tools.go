@@ -1,9 +1,20 @@
 package llm
 
-import "github.com/anthropics/anthropic-sdk-go"
+import (
+	"fmt"
+	"os/exec"
+	"strings"
 
-func RenderTools() []anthropic.ToolParam {
-	return []anthropic.ToolParam{KubectlTool()}
+	"github.com/anthropics/anthropic-sdk-go"
+)
+
+func RenderTools() []anthropic.ToolUnionParam {
+	allTools := []anthropic.ToolParam{KubectlTool()}
+	tools := make([]anthropic.ToolUnionParam, len(allTools))
+	for i, toolParam := range allTools {
+		tools[i] = anthropic.ToolUnionParam{OfTool: &toolParam}
+	}
+	return tools
 }
 
 func KubectlTool() anthropic.ToolParam {
@@ -18,4 +29,15 @@ func KubectlTool() anthropic.ToolParam {
 			},
 		},
 	}
+}
+
+func RunKubectl(command string) (string, error) {
+	// Execute kubectl command using os/exec
+	cmd := exec.Command("kubectl", strings.Fields(command)...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("error executing kubectl command: %v", err)
+	}
+
+	return string(output), nil
 }
