@@ -3,8 +3,11 @@ package llm
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
+	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -35,7 +38,7 @@ type ChatMessage struct {
 	Actor string `json:"actor"`
 
 	// Timestamp represents the time when the chat message was created or sent.
-	Timestamp time.Time `json:"timestamp"`
+	Timestamp string `json:"timestamp"`
 }
 
 type ObservationService struct {
@@ -58,33 +61,32 @@ func NewObservationService(client Client) (*ObservationService, error) {
 }
 
 func (s *ObservationService) ChatWithAgent(ctx context.Context, message string) (*ChatMessage, error) {
-	//client := s.anthropicClient.GetClient()
-	//request := anthropic.MessageNewParams{
-	//	Model:     anthropic.ModelClaude3_7SonnetLatest,
-	//	MaxTokens: 4000,
-	//	System: []anthropic.TextBlockParam{
-	//		{Text: TASK_SYSTEM},
-	//	},
-	//	Messages: []anthropic.MessageParam{
-	//		anthropic.NewUserMessage(anthropic.NewTextBlock(formatMessage(message))),
-	//	},
-	//}
+	client := s.anthropicClient.GetClient()
+	request := anthropic.MessageNewParams{
+		Model:     anthropic.ModelClaude3_7SonnetLatest,
+		MaxTokens: 4000,
+		System: []anthropic.TextBlockParam{
+			{Text: TASK_SYSTEM},
+		},
+		Messages: []anthropic.MessageParam{
+			anthropic.NewUserMessage(anthropic.NewTextBlock(formatMessage(message))),
+		},
+	}
 
-	//response, err := client.Messages.New(ctx, request)
-	//if err != nil {
-	//	return nil, fmt.Errorf("claude API error: %v", err)
-	//}
-	//
-	// Process response and handle tool calls
-	responseText := "blaa"
+	response, err := client.Messages.New(ctx, request)
+	if err != nil {
+		return nil, fmt.Errorf("claude API error: %v", err)
+	}
+
+	//Process response and handle tool calls
 	var toolResults []string
-
-	//for _, content := range response.Content {
-	//	switch content := content.AsAny().(type) {
-	//	case anthropic.TextBlock:
-	//		responseText += content.Text
-	//	}
-	//}
+	var responseText string
+	for _, content := range response.Content {
+		switch content := content.AsAny().(type) {
+		case anthropic.TextBlock:
+			responseText += content.Text
+		}
+	}
 
 	// Combine response text with tool results
 	if len(toolResults) > 0 {
@@ -93,16 +95,16 @@ func (s *ObservationService) ChatWithAgent(ctx context.Context, message string) 
 
 	return &ChatMessage{
 		ID:        generateID(),
-		Content:   responseText,
+		Content:   strings.ReplaceAll(responseText, "\n", "<br />"),
 		Type:      "chatbot",
 		Actor:     "agent",
 		AgentID:   "cluster-agent",
-		Timestamp: time.Now(),
+		Timestamp: time.Now().Format("01/02/2006 15:04:05"),
 	}, nil
 }
 
 func generateID() string {
-	return fmt.Sprintf("%d", time.Now().UnixNano())
+	return uuid.New().String()
 }
 
 func initializeTools() []Tool {
@@ -142,24 +144,6 @@ func (s *ObservationService) initializeAgents() {
 			Status:       "active",
 			Activity:     "Monitoring cluster health and analyzing issues",
 			Capabilities: []string{"cluster-analysis", "resource-monitoring", "pattern-detection"},
-			LastUpdate:   time.Now(),
-		},
-		{
-			ID:           "remediation-agent",
-			Name:         "Remediation Agent",
-			Type:         "execution",
-			Status:       "standby",
-			Activity:     "Ready to execute automated fixes",
-			Capabilities: []string{"auto-remediation", "workflow-execution", "safety-checks"},
-			LastUpdate:   time.Now(),
-		},
-		{
-			ID:           "monitoring-agent",
-			Name:         "Monitoring Agent",
-			Type:         "monitoring",
-			Status:       "active",
-			Activity:     "Continuous health monitoring",
-			Capabilities: []string{"metrics-collection", "anomaly-detection", "alerting"},
 			LastUpdate:   time.Now(),
 		},
 	}

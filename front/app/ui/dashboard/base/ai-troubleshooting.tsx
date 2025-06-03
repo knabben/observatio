@@ -152,7 +152,15 @@ function ChatBot({
           type: "chatbot",
           content: aiRequest,
           actor: "user",
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toLocaleDateString('en-US', {
+            month: '2-digit',
+            day: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          })
         }
         setIsLoading(true)
         sendJsonMessage(request)
@@ -200,7 +208,7 @@ function ChatBot({
                     gap="sm"
                   >
                   {message.actor === 'agent' && (
-                    <Avatar size="sm" color="rgba(0, 212, 170, 0.5)" variant="outline" radius="xl">BOT</Avatar>
+                    <Avatar size="sm" color="rgba(0, 153, 204, 0.5)" variant="outline" radius="xl">BOT</Avatar>
                   )}
                   <Paper
                     p="md"
@@ -208,20 +216,22 @@ function ChatBot({
                     maw="80%"
                     style={{
                       background: message.actor === 'user'
-                        ? 'rgba(0, 153, 204, 0.2)'
-                        : 'rgba(0, 212, 170, 0.1)',
+                        ? 'rgba(0, 212, 170, 0.1)'
+                        : 'rgba(0, 153, 204, 0.2)',
                       border: message.actor === 'user'
-                        ? '1px solid rgba(0, 153, 204, 0.4)'
-                        : '1px solid rgba(0, 212, 170, 0.3)'
+                        ? '1px solid rgba(0, 212, 170, 0.3)'
+                        : '1px solid rgba(0, 153, 204, 0.4)',
                     }}
                   >
-                    <Text size="sm" style={{ lineHeight: 1.5 }}>{message.content}</Text>
+                    <Text size="sm" style={{ lineHeight: 1.5 }}>
+                      <div dangerouslySetInnerHTML={{__html: message.content}}/>
+                    </Text>
                     <Text size="xs" c="dimmed" mt="xs">
-                      timestamp
+                      {message.timestamp}
                     </Text>
                   </Paper>
                   {message.actor === 'user' && (
-                    <Avatar size="sm" variant="outline" color="rgba(0, 153, 204, 0.5)" radius="xl">USR</Avatar>
+                    <Avatar size="sm" variant="outline" color="rgba(0, 212, 170, 0.5)" radius="xl">USR</Avatar>
                   )}
               </Group>
                 ))
