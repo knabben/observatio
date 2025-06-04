@@ -42,3 +42,4 @@ front/next-env.d.ts
 
 # Golang
 output
+.idea
