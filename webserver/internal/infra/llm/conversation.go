@@ -6,14 +6,14 @@ import (
 
 // ConversationManager handles message history
 type ConversationManager struct {
-	client   *anthropic.Client
+	stopper  int
 	messages []anthropic.MessageParam
 }
 
 // NewConversationManager creates a new conversation manager
-func NewConversationManager(client *anthropic.Client) *ConversationManager {
+func NewConversationManager(stopper int) *ConversationManager {
 	return &ConversationManager{
-		client:   client,
+		stopper:  stopper,
 		messages: make([]anthropic.MessageParam, 0),
 	}
 }
@@ -32,7 +32,10 @@ func (cm *ConversationManager) AddAssistantMessage(content string) {
 
 // GetConversationHistory returns the current conversation history
 func (cm *ConversationManager) GetConversationHistory() []anthropic.MessageParam {
-	return cm.messages
+	if len(cm.messages) <= cm.stopper {
+		return cm.messages
+	}
+	return cm.messages[:cm.stopper]
 }
 
 // ClearHistory clears the conversation history
@@ -46,12 +49,10 @@ func (cm *ConversationManager) GetHistoryLength() int {
 }
 
 // TrimHistory removes older messages to stay within token limits
-// Keeps the last 'keepCount' messages
-func (cm *ConversationManager) TrimHistory(keepCount int) {
-	if len(cm.messages) < keepCount {
+// Keeps the last 'stopper' messages
+func (cm *ConversationManager) TrimHistory() {
+	if len(cm.messages) <= cm.stopper {
 		return
 	}
-	if len(cm.messages) > keepCount {
-		cm.messages = cm.messages[len(cm.messages)-keepCount:]
-	}
+	cm.messages = cm.messages[len(cm.messages)-cm.stopper:]
 }

@@ -17,14 +17,14 @@ type ObservationService struct {
 	// anthropicClient is the client used for interacting with the Anthropic API.
 	anthropicClient anthropic.Client
 
+	// conversationManager is a map that stores active conversations for each client.
+	conversationManager map[string]ConversationManager
+
 	// agents is a map that stores AI agents identified by their unique string IDs.
 	agents map[string]*Agent
 
 	// wsConnections maps agent IDs to active WebSocket connections for real-time communication.
 	wsConnections map[string]*websocket.Conn
-
-	// chatHistory maps agent IDs to their respective chat message history for maintaining conversational context.
-	chatHistory map[string][]ChatMessage
 
 	// tools represent a collection of tools available for the ObservationService to execute specific operations or commands.
 	tools []anthropic.ToolUnionParam
@@ -32,15 +32,19 @@ type ObservationService struct {
 
 func NewObservationService() (*ObservationService, error) {
 	service := &ObservationService{
-		anthropicClient: anthropic.NewClient(),
-		agents:          make(map[string]*Agent),
-		wsConnections:   make(map[string]*websocket.Conn),
-		chatHistory:     make(map[string][]ChatMessage),
-		tools:           RenderTools(),
+		anthropicClient:     anthropic.NewClient(),
+		agents:              make(map[string]*Agent),
+		wsConnections:       make(map[string]*websocket.Conn),
+		conversationManager: make(map[string]ConversationManager),
+		tools:               RenderTools(),
 	}
 	service.initializeAgents()
-
 	return service, nil
+}
+
+func ChatWithAgent(ctx context.Context, message *ChatMessage, agentID string) (*ChatMessage, error) {
+
+	return
 }
 
 func (s *ObservationService) ChatWithAgent(ctx context.Context, message *ChatMessage, agentID string) (*ChatMessage, error) {

@@ -55,11 +55,56 @@ func TestTrimHistory(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cm := &ConversationManager{
-				client:   &anthropic.Client{},
+				stopper:  tt.keepCount,
 				messages: make([]anthropic.MessageParam, tt.initialLength),
 			}
-			cm.TrimHistory(tt.keepCount)
+			cm.TrimHistory()
 			assert.Equal(t, tt.expectedCount, len(cm.messages))
+		})
+	}
+}
+
+func TestGetConversationHistory(t *testing.T) {
+	tests := []struct {
+		name          string
+		initialLength int
+		stopper       int
+		expectLength  int
+	}{
+		{
+			name:          "EmptyHistory",
+			initialLength: 0,
+			stopper:       5,
+			expectLength:  0,
+		},
+		{
+			name:          "UnderStopper",
+			initialLength: 3,
+			stopper:       5,
+			expectLength:  3,
+		},
+		{
+			name:          "EqualToStopper",
+			initialLength: 5,
+			stopper:       5,
+			expectLength:  5,
+		},
+		{
+			name:          "OverStopper",
+			initialLength: 10,
+			stopper:       7,
+			expectLength:  7,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cm := &ConversationManager{
+				stopper:  tt.stopper,
+				messages: make([]anthropic.MessageParam, tt.initialLength),
+			}
+			history := cm.GetConversationHistory()
+			assert.Equal(t, tt.expectLength, len(history))
 		})
 	}
 }
