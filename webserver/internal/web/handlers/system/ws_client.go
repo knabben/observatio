@@ -70,7 +70,7 @@ func (c *WSClient) reader() {
 		}
 
 		// Start to chat with the bot agent, sending the first message.
-		response, err := (*c.service).ChatWithAgent(ctx, message, c.ID)
+		response, err := (*c.service).ChatWithAgent(ctx, message)
 		if err != nil {
 			logger.Error(err, "error writing close message")
 			return

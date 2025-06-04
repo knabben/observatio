@@ -97,11 +97,9 @@ func parseMessage(conn *websocket.Conn) (message *llm.ChatMessage, err error) {
 	if err != nil {
 		return message, err
 	}
-
 	if err := json.Unmarshal(msg, &message); err != nil {
 		return message, err
 	}
-
 	return message, nil
 }
 

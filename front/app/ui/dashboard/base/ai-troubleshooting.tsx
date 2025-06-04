@@ -53,7 +53,7 @@ export default function AITroubleshooting({
     if (broken.size > 0) {
       setRequest(Array.from(broken).join(', '));
     }
-  }, [conditions, objectType]);
+  }, [conditions, objectType, objectName, objectNamespace]);
 
   return (
     <Grid justify="flex-start" align="flex-start">

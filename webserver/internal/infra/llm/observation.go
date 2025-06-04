@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
-	"time"
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/google/uuid"
@@ -18,7 +16,7 @@ type ObservationService struct {
 	anthropicClient anthropic.Client
 
 	// conversationManager is a map that stores active conversations for each client.
-	conversationManager map[string]ConversationManager
+	conversationManager *ConversationManager
 
 	// agents is a map that stores AI agents identified by their unique string IDs.
 	agents map[string]*Agent
@@ -35,53 +33,42 @@ func NewObservationService() (*ObservationService, error) {
 		anthropicClient:     anthropic.NewClient(),
 		agents:              make(map[string]*Agent),
 		wsConnections:       make(map[string]*websocket.Conn),
-		conversationManager: make(map[string]ConversationManager),
+		conversationManager: NewConversationManager(5),
 		tools:               RenderTools(),
 	}
 	service.initializeAgents()
 	return service, nil
 }
 
-func ChatWithAgent(ctx context.Context, message *ChatMessage, agentID string) (*ChatMessage, error) {
+func (s *ObservationService) ChatWithAgent(ctx context.Context, message *ChatMessage) (*ChatMessage, error) {
+	logger := log.FromContext(ctx)
 
-	return
+	s.conversationManager.AddUserMessage(formatMessage(message.Content))
+
+	var historyLength = s.conversationManager.GetHistoryLength()
+	if historyLength > 0 {
+		logger.Info("Found history messages", "messages", historyLength)
+	}
+
+	response, err := s.requestAgent(ctx, s.conversationManager.GetConversationHistory())
+	if err != nil {
+		return nil, fmt.Errorf("claude API error: %v", err)
+	}
+
+	parsedResponse, err := s.responseAgent(response)
+	if err != nil {
+		return nil, fmt.Errorf("claude API response format error: %v", err)
+	}
+
+	if len(response.Content) > 0 {
+		logger.Info("Parsed response from Claude", "response", parsedResponse)
+		s.conversationManager.AddAssistantMessage(parsedResponse)
+		s.conversationManager.TrimHistory()
+	}
+	return ToMessageParam(parsedResponse), nil
 }
 
-func (s *ObservationService) ChatWithAgent(ctx context.Context, message *ChatMessage, agentID string) (*ChatMessage, error) {
-	logger := log.FromContext(ctx)
-	client := s.anthropicClient
-
-	messages := []anthropic.MessageParam{
-		{
-			Content: []anthropic.ContentBlockParamUnion{
-				{OfRequestTextBlock: &anthropic.TextBlockParam{Text: formatMessage(message.Content)}},
-			},
-			Role: anthropic.MessageParamRoleUser,
-		},
-	}
-
-	// Add chat conversation history for the context
-	if history, exists := s.chatHistory[agentID]; !exists {
-		s.chatHistory[agentID] = []ChatMessage{}
-	} else if len(history) > 0 {
-		lastElements := getLastElements(history, 2)
-		logger.Info("Found history messages", "messages", len(lastElements))
-		for i := len(lastElements) - 1; i >= 0; i-- {
-			role := anthropic.MessageParamRoleUser
-			text := formatMessage(history[i].Content)
-			if history[i].Actor == "agent" {
-				role = anthropic.MessageParamRoleAssistant
-				text = history[i].Content
-			}
-			messages = append(messages, anthropic.MessageParam{
-				Content: []anthropic.ContentBlockParamUnion{
-					{OfRequestTextBlock: &anthropic.TextBlockParam{Text: text}},
-				},
-				Role: role,
-			})
-		}
-	}
-
+func (s *ObservationService) requestAgent(ctx context.Context, messages []anthropic.MessageParam) (*anthropic.Message, error) {
 	request := anthropic.MessageNewParams{
 		Model:     anthropic.ModelClaude3_7SonnetLatest,
 		MaxTokens: 4000,
@@ -92,73 +79,47 @@ func (s *ObservationService) ChatWithAgent(ctx context.Context, message *ChatMes
 		Tools:    s.tools,
 	}
 
-	response, err := client.Messages.New(ctx, request)
-	if err != nil {
-		return nil, fmt.Errorf("claude API error: %v", err)
-	}
+	return s.anthropicClient.Messages.New(ctx, request)
+}
 
-	var responseText string
-	var toolResults []string
+func (s *ObservationService) responseAgent(response *anthropic.Message) (string, error) {
+	var (
+		responseText string
+		toolResults  []string
+	)
 
-	logger.Info("Response from Claude", "response", response)
 	for _, block := range response.Content {
 		switch content := block.AsAny().(type) {
 		case anthropic.TextBlock:
 			responseText += content.Text
 
 		case anthropic.ToolUseBlock:
-			logger.Info("Tools use command")
-			// save as part of message
-			inputJSON, _ := json.Marshal(block.Input)
-			logger.Info(block.Name + ": " + string(inputJSON))
-
-			var response interface{}
+			var toolResponse interface{}
 			switch block.Name {
 			case "kubectl":
 				var input struct {
 					Command string `json:"command"`
 				}
-
 				err := json.Unmarshal([]byte(block.JSON.Input.Raw()), &input)
 				if err != nil {
-					panic(err)
+					return "", err
 				}
-
-				response, err = RunKubectl(input.Command)
+				toolResponse, err = RunKubectl(input.Command)
 				if err != nil {
-					logger.Error(err, "Error running kubectl command")
-					response = err.Error()
+					return "", err
 				}
-				logger.Info("Kubectl response", "response", response)
-				toolResults = append(toolResults, response.(string))
+				toolResults = append(toolResults, toolResponse.(string))
 			}
 		}
 	}
 
-	// Combine response text with tool results
 	if len(toolResults) > 0 {
 		responseText += "\n\nTool Results:\n" + fmt.Sprintf("%v", toolResults)
 	}
 
-	botMessage := ChatMessage{
-		ID:        generateID(),
-		Content:   strings.ReplaceAll(responseText, "\n", "<br />"),
-		Type:      "chatbot",
-		Actor:     "agent",
-		AgentID:   "cluster-agent",
-		Timestamp: time.Now().Format("01/02/2006 15:04:05"),
-	}
-	s.chatHistory[agentID] = append(s.chatHistory[agentID], []ChatMessage{*message, botMessage}...)
-	return &botMessage, nil
+	return responseText, nil
 }
 
 func generateID() string {
 	return uuid.New().String()
-}
-
-func getLastElements(s []ChatMessage, n int) []ChatMessage {
-	if len(s) < n {
-		return s
-	}
-	return s[len(s)-n:]
 }

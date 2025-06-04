@@ -3,13 +3,13 @@ package llm
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 var (
 	TASK_SYSTEM  = `You will serve as a Kubernetes administrator managing a on-premises datacenter on VMware vCenter.`
 	TASK_CONTEXT = `Your task is to assist operators in troubleshooting issues within the cluster.
-Provide a detailed explanation of the issue. New inputs are provided and you must respond accordingly the context
-Do not use any existent tool for now.`
+Provide a detailed explanation of the issue. New inputs are provided and you must respond accordingly the context`
 )
 
 // MessageTemplate defines the structure for formatting error messages
@@ -36,6 +36,24 @@ type ChatMessage struct {
 
 	// Timestamp represents the time when the chat message was created or sent.
 	Timestamp string `json:"timestamp"`
+}
+
+func ToMessageParam(message string) *ChatMessage {
+	var (
+		messageType      = "chatbot"
+		messageActor     = "agent"
+		agentID          = "cloud-agent"
+		messageTimestamp = time.Now().Format("01/02/2006 15:04:05")
+	)
+
+	return &ChatMessage{
+		ID:        generateID(),
+		Content:   strings.ReplaceAll(message, "\n", "<br />"),
+		Type:      messageType,
+		Actor:     messageActor,
+		AgentID:   agentID,
+		Timestamp: messageTimestamp,
+	}
 }
 
 // formatMessage creates a formatted message combining the task context, error details,
