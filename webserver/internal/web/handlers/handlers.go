@@ -64,6 +64,6 @@ func startWebSocketHandlers(router *mux.Router) {
 
 	router.HandleFunc("/ws/watcher", system.HandleWatcher).Methods("GET", "OPTIONS")
 	router.HandleFunc("/ws/analysis", func(w http.ResponseWriter, r *http.Request) {
-		system.HandleChatBot(pool, w, r)
+		system.HandleChatbot(pool, w, r)
 	}).Methods("GET", "OPTIONS")
 }
