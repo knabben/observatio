@@ -18,8 +18,6 @@ If you have suggestions for fixing the issue or improvements, you can also inclu
 
 You have native Kubernetes Tools to execute commands as part of your troubleshooting capabilities:
  - kubectl commands: Execute cluster inspection and modification commands
-
-Commands to be executed must be shown under <tool></tool> tags.
 `
 )
 
