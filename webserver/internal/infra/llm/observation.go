@@ -40,10 +40,15 @@ func NewObservationService() (*ObservationService, error) {
 	return service, nil
 }
 
+// ChatWithAgent facilitates a conversation between a user and an AI agent by managing message history and API interactions.
 func (s *ObservationService) ChatWithAgent(ctx context.Context, message *ChatMessage) (*ChatMessage, error) {
 	logger := log.FromContext(ctx)
 
-	s.conversationManager.AddUserMessage(formatMessage(message.Content))
+	userMessage := message.Content
+	if s.conversationManager.GetHistoryLength() == 0 {
+		userMessage = formatMessage(userMessage)
+	}
+	s.conversationManager.AddUserMessage(userMessage)
 
 	var historyLength = s.conversationManager.GetHistoryLength()
 	if historyLength > 0 {
@@ -60,14 +65,17 @@ func (s *ObservationService) ChatWithAgent(ctx context.Context, message *ChatMes
 		return nil, fmt.Errorf("claude API response format error: %v", err)
 	}
 
-	if len(response.Content) > 0 {
-		logger.Info("Parsed response from Claude", "response", parsedResponse)
-		s.conversationManager.AddAssistantMessage(parsedResponse)
-		s.conversationManager.TrimHistory()
+	if len(response.Content) == 0 {
+		return ToMessageParam("Bot error, try again."), nil
 	}
+
+	logger.Info("Parsed response from Claude", "response", parsedResponse)
+	s.conversationManager.AddAssistantMessage(parsedResponse)
+	s.conversationManager.TrimHistory()
 	return ToMessageParam(parsedResponse), nil
 }
 
+// requestAgent sends a request to the Anthropic API with specified messages and returns the API response or an error.
 func (s *ObservationService) requestAgent(ctx context.Context, messages []anthropic.MessageParam) (*anthropic.Message, error) {
 	request := anthropic.MessageNewParams{
 		Model:     anthropic.ModelClaude3_7SonnetLatest,
@@ -82,6 +90,8 @@ func (s *ObservationService) requestAgent(ctx context.Context, messages []anthro
 	return s.anthropicClient.Messages.New(ctx, request)
 }
 
+// responseAgent processes the response content from the Anthropic API and constructs a formatted string combining text and tool outputs.
+// It handles text blocks and tool-use blocks, extracting detailed outputs as necessary. Returns the formatted response or an error.
 func (s *ObservationService) responseAgent(response *anthropic.Message) (string, error) {
 	var (
 		responseText string
@@ -114,7 +124,11 @@ func (s *ObservationService) responseAgent(response *anthropic.Message) (string,
 	}
 
 	if len(toolResults) > 0 {
-		responseText += "\n\nTool Results:\n" + fmt.Sprintf("%v", toolResults)
+		responseText += "\n<tool_results>"
+		for _, toolResult := range toolResults {
+			responseText += fmt.Sprintf("<pre>%s</pre>", toolResult)
+		}
+		responseText += "</tool_results>"
 	}
 
 	return responseText, nil
