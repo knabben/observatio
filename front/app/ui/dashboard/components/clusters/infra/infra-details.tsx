@@ -22,7 +22,12 @@ export default function ClusterInfraDetails({
     },
     {
       label: "AI Troubleshooting",
-      content: (cluster: ClusterInfraType) => <AITroubleshooting conditions={cluster.status.conditions} />
+      content: (cluster: ClusterInfraType) => <AITroubleshooting
+        objectType="vspherecluster"
+        objectName={cluster.metadata.name}
+        objectNamespace={cluster.metadata.namespace}
+        conditions={cluster.status.conditions}
+      />
   }];
   const headerRender = (cluster: ClusterInfraType) => (
     <SimpleGrid cols={2}>
