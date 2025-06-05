@@ -118,7 +118,7 @@ func (s *ObservationService) responseAgent(response *anthropic.Message) (string,
 				if err != nil {
 					return "", err
 				}
-				responseText += fmt.Sprintf("\n<tool>kubectl %s</tool>\n", input.Command)
+				responseText += fmt.Sprintf("\n\n<tool>kubectl %s</tool>\n", input.Command)
 				toolResults = append(toolResults, toolResponse.(string))
 			}
 		}
