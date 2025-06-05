@@ -13,6 +13,8 @@ the project enables users to swiftly identify and address issues, improving oper
 This solution empowers organizations to maintain optimal cluster functionality, streamline troubleshooting efforts, 
 and ensure robust management of their cloud-native environments.
 
+<img src="front/public/screen.png" alt="logo" width="800"/>
+
 ## Development
 
 ### Prerequisites
