@@ -62,3 +62,8 @@ The backend server will start and listen for WebSocket connections. By default, 
  
 
 The frontend development server will start and be available at http://localhost:3000.
+
+
+## Architecture Diagram
+
+![Observatio Architecture](docs/observatiio_architecture.png)
