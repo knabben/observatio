@@ -13,15 +13,30 @@ the project enables users to swiftly identify and address issues, improving oper
 This solution empowers organizations to maintain optimal cluster functionality, streamline troubleshooting efforts, 
 and ensure robust management of their cloud-native environments.
 
-<img src="front/public/screen.png" alt="logo" width="800"/>
+<p align="center">
+<img src="front/public/screen.png" alt="logo" />
+</p>
 
-## Development
+## Production
 
 ### Prerequisites
 
 - Go 1.23.1
 - Node.js and pnpm
 - Linux and Make
+
+### Build and run
+
+Ensure your management cluster is accessible via `${HOME}/.kube/config` compile the bundled frontend in the go binary 
+and run the server.
+
+```bash
+make build && ./output/observatio serve
+```
+
+Both API and frontend are accessible via port TCP 8080.
+
+## Development
 
 ### Backend Setup
 
