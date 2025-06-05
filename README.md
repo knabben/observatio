@@ -1,4 +1,4 @@
-# Observātiō 
+# Observātiō - Smart ClusterAPI Troubleshoot Platform
 
 [![Build](https://github.com/knabben/observatio/actions/workflows/build.yml/badge.svg)](https://github.com/knabben/observatio/actions/workflows/build.yml)
 
