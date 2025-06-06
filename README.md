@@ -63,7 +63,7 @@ of failure states including :
 - "BootstrapReady" (failed)
 - "InfrastructureReady" (failed)
 - "WaitingForNodeRef" (failed). 
-- 
+
 All conditions show the same timestamp, indicating they occurred simultaneously during the bootstrap process.
 
 **AI Troubleshooting Integration**: The dashboard's AI troubleshooting feature analyzes these interconnected failure conditions and provides intelligent diagnosis, 
