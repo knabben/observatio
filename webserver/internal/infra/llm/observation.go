@@ -96,6 +96,7 @@ func (s *ObservationService) responseAgent(response *anthropic.Message) (string,
 	var (
 		responseText string
 		toolResults  []string
+		logger       = log.FromContext(context.Background())
 	)
 
 	for _, block := range response.Content {
@@ -114,8 +115,10 @@ func (s *ObservationService) responseAgent(response *anthropic.Message) (string,
 				if err != nil {
 					return "", err
 				}
+				logger.Info("Running kubectl command", "command", input.Command)
 				toolResponse, err = RunKubectl(input.Command)
 				if err != nil {
+					logger.Error(err, "Error running kubectl command")
 					return "", err
 				}
 				responseText += fmt.Sprintf("\n\n<tool>kubectl %s</tool>\n", input.Command)

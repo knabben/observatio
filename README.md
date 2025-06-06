@@ -13,7 +13,6 @@ the project enables users to swiftly identify and address issues, improving oper
 This solution empowers organizations to maintain optimal cluster functionality, streamline troubleshooting efforts, 
 and ensure robust management of their cloud-native environments.
 
-
 ## The Cluster Dashboard
 
 ### Health Status
@@ -48,7 +47,42 @@ This topology visualization is essential for debugging scenarios where problems 
 you can immediately see which workload clusters and applications are impacted by following the connection lines between the affected infrastructure components and
 their dependent resources.
 
+## Intelligent Troubleshooter
+
+### Scenario - Machine Bootstrap Failure Investigation
+
+**Problem**: A Kubernetes operator notices that a worker node machine *nx2-workload-md-0-dtphw-s2vbx-bl7gc* has been stuck in a failing 
+state for 25 minutes and is unable to join the cluster. The machine shows a red error indicator and multiple failed conditions, 
+but the root cause is unclear from basic cluster monitoring.
+
+**Available Information**: The operator has access to the machine's object status conditions, which reveals a cascade 
+of failure states including :
+
+- "Ready" (failed)
+- "WaitingForControlPlaneAvailable" (with message "0 of 2 completed")
+- "BootstrapReady" (failed)
+- "InfrastructureReady" (failed)
+- "WaitingForNodeRef" (failed). 
+- 
+All conditions show the same timestamp, indicating they occurred simultaneously during the bootstrap process.
+
+**AI Troubleshooting Integration**: The dashboard's AI troubleshooting feature analyzes these interconnected failure conditions and provides intelligent diagnosis, 
+identifying that the primary issue stems from the control plane not being fully available ("0 of 2 completed" message), which prevents the worker node from 
+completing its bootstrap sequence. 
+
+<p align="center">
+<img src="front/public/debug-ai.gif" alt="AI" />
+</p>
+
+The AI assistant explains that the machine deployment is waiting for at least 2 control plane nodes to be ready before proceeding, 
+suggesting this is likely a control plane scaling issue rather than a worker node-specific problem. 
+
+This automated analysis helps the operator quickly pivot from investigating worker node issues to examining control plane availability 
+and scaling configurations, significantly reducing mean time to resolution in complex vSphere Cluster API environments.
+
 ## Running the project
+
+## Building and Running
 
 ### Prerequisites
 
