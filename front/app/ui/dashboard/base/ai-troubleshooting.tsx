@@ -169,8 +169,6 @@ function ChatBot({
         }
         setIsLoading(true)
         sendJsonMessage(request)
-
-        // @ts-expect-error request on messages
         setMessages([...messages, request])
       }
     } catch (error) {
