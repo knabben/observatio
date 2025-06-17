@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
 
 	"github.com/anthropics/anthropic-sdk-go"
 	"github.com/google/uuid"
@@ -55,12 +56,12 @@ func (s *ObservationService) ChatWithAgent(ctx context.Context, message *ChatMes
 		logger.Info("Found history messages", "messages", historyLength)
 	}
 
-	response, err := s.requestAgent(ctx, s.conversationManager.GetConversationHistory())
+	response, err := s.requestToAgent(ctx, s.conversationManager.GetConversationHistory())
 	if err != nil {
 		return nil, fmt.Errorf("claude API error: %v", err)
 	}
 
-	parsedResponse, err := s.responseAgent(response)
+	parsedResponse, err := s.responseFromAgent(response)
 	if err != nil {
 		return nil, fmt.Errorf("claude API response format error: %v", err)
 	}
@@ -76,7 +77,7 @@ func (s *ObservationService) ChatWithAgent(ctx context.Context, message *ChatMes
 }
 
 // requestAgent sends a request to the Anthropic API with specified messages and returns the API response or an error.
-func (s *ObservationService) requestAgent(ctx context.Context, messages []anthropic.MessageParam) (*anthropic.Message, error) {
+func (s *ObservationService) requestToAgent(ctx context.Context, messages []anthropic.MessageParam) (*anthropic.Message, error) {
 	request := anthropic.MessageNewParams{
 		Model:     anthropic.ModelClaude3_7SonnetLatest,
 		MaxTokens: 4000,
@@ -90,19 +91,24 @@ func (s *ObservationService) requestAgent(ctx context.Context, messages []anthro
 	return s.anthropicClient.Messages.New(ctx, request)
 }
 
-// responseAgent processes the response content from the Anthropic API and constructs a formatted string combining text and tool outputs.
+// responseFromAgent processes the response content from the Anthropic API and constructs a formatted string combining text and tool outputs.
 // It handles text blocks and tool-use blocks, extracting detailed outputs as necessary. Returns the formatted response or an error.
-func (s *ObservationService) responseAgent(response *anthropic.Message) (string, error) {
+func (s *ObservationService) responseFromAgent(response *anthropic.Message) (string, error) {
 	var (
 		responseText string
 		toolResults  []string
 		logger       = log.FromContext(context.Background())
 	)
 
+	cleanup := func(s string) string {
+		s = regexp.MustCompile("`{3}([^`]+)`{3}").ReplaceAllString(s, "<pre>$1</pre>")
+		return regexp.MustCompile(`"([^"]+)"`).ReplaceAllString(s, "<b>$1</b>")
+	}
+
 	for _, block := range response.Content {
 		switch content := block.AsAny().(type) {
 		case anthropic.TextBlock:
-			responseText += content.Text
+			responseText += cleanup(content.Text)
 
 		case anthropic.ToolUseBlock:
 			var toolResponse interface{}
@@ -119,7 +125,7 @@ func (s *ObservationService) responseAgent(response *anthropic.Message) (string,
 				toolResponse, err = RunKubectl(input.Command)
 				if err != nil {
 					logger.Error(err, "Error running kubectl command")
-					return "", err
+					return "", fmt.Errorf("error running kubectl command: %v", err)
 				}
 				responseText += fmt.Sprintf("\n\n<tool>kubectl %s</tool>\n", input.Command)
 				toolResults = append(toolResults, toolResponse.(string))
