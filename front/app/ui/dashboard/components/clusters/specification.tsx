@@ -24,19 +24,19 @@ export default function Specification({
               </Table.Tr>
               <Table.Tr>
                 <Table.Th>Pod Network</Table.Th>
-                <Table.Td>{cluster.clusterNetwork?.pods.cidrBlocks}</Table.Td>
+                <Table.Td>{cluster.clusterNetwork?.pods?.cidrBlocks}</Table.Td>
               </Table.Tr>
               <Table.Tr>
                 <Table.Th>Service Network</Table.Th>
-                <Table.Td>{cluster.clusterNetwork?.services.cidrBlocks}</Table.Td>
+                <Table.Td>{cluster.clusterNetwork?.services?.cidrBlocks}</Table.Td>
               </Table.Tr>
               <Table.Tr>
                 <Table.Th>Service ExternalIPs</Table.Th>
-                <Table.Td>{cluster.clusterNetwork?.services.externalIPs}</Table.Td>
+                <Table.Td>{cluster.clusterNetwork?.services?.externalIPs}</Table.Td>
               </Table.Tr>
               <Table.Tr>
                 <Table.Th>Service NodePort Range</Table.Th>
-                <Table.Td>{cluster.clusterNetwork?.services.nodePortRange}</Table.Td>
+                <Table.Td>{cluster.clusterNetwork?.services?.nodePortRange}</Table.Td>
               </Table.Tr>
             </Table.Tbody>
           </Table>

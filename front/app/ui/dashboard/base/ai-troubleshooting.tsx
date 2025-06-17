@@ -4,6 +4,7 @@ import Panel from "@/app/ui/dashboard/utils/panel";
 import {
   AppShell,
   Avatar,
+  ActionIcon,
   Text,
   Group,
   Button,
@@ -20,7 +21,7 @@ import {
   Table,
   Chip
 } from '@mantine/core';
-import {IconX} from "@tabler/icons-react";
+import {IconX, IconArrowsDiagonal} from "@tabler/icons-react";
 import React, {useEffect, useState} from "react";
 import {Conditions} from "@/app/ui/dashboard/base/types";
 import {WebSocket, WS_URL_CHATBOT} from "@/app/lib/websocket";
@@ -37,6 +38,7 @@ export default function AITroubleshooting({
   conditions: Conditions[]
 }) {
   const [request, setRequest] = useState("")
+  const [expandChat, setExpandChat] = useState(6)
 
   useEffect(() => {
     const broken = new Set(
@@ -57,6 +59,10 @@ export default function AITroubleshooting({
 
   return (
     <Grid justify="flex-start" align="flex-start">
+      <GridCol span={expandChat}>
+
+        <ChatBot setExpand={setExpandChat} request={request}/>
+      </GridCol>
       <GridCol span={6}>
         <Panel title="Object conditions" content={
           <Table variant="vertical">
@@ -88,11 +94,11 @@ export default function AITroubleshooting({
                     </Table.Td>
                     <Table.Td>{condition.lastTransitionTime}</Table.Td>
                     <Table.Td>{condition.severity}</Table.Td>
-                    <Table.Td>
+                    <Table.Td className="break-all text-xs">
                       {
                         condition.status.toLowerCase() == "true"
-                          ? <Text className="text-bold">{condition.message}</Text>
-                          : <Text c="red" className="text-bold">{condition.message}</Text>
+                          ? <Text size="sm" className="text-xs text-bold break-all">{condition.message}</Text>
+                          : <Text size="sm" c="red">{condition.message}</Text>
                       }
                     </Table.Td>
                   </Table.Tr>
@@ -102,9 +108,7 @@ export default function AITroubleshooting({
           </Table>
         } />
       </GridCol>
-      <GridCol span={6}>
-        <ChatBot request={request}/>
-      </GridCol>
+
     </Grid>
   )
 }
@@ -120,8 +124,10 @@ type WSRequest = {
 
 function ChatBot({
   request,
+  setExpand,
 }: {
   request: string,
+  setExpand: React.Dispatch<React.SetStateAction<number>>
 }) {
   const [messages, setMessages] = useState<WSRequest[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -189,6 +195,7 @@ function ChatBot({
       }}
     >
       <Notification withCloseButton={false} title="AI Troubleshooting" color="#a1f54d">
+
         <Container fluid p="md" h="calc(90vh - 60px)">
           <Card
             h="100%"
@@ -217,7 +224,7 @@ function ChatBot({
                   <Paper
                     p="md"
                     radius="lg"
-                    maw="80%"
+                    maw="90%"
                     style={{
                       background: message.actor === 'user'
                         ? 'rgba(0, 212, 170, 0.1)'
@@ -227,8 +234,8 @@ function ChatBot({
                         : '1px solid rgba(0, 153, 204, 0.4)',
                     }}
                   >
-                    <Text size="sm" style={{ lineHeight: 1.5 }}>
-                      <div dangerouslySetInnerHTML={{__html: message.content}}/>
+                    <Text  size="sm" style={{ lineHeight: 1.5 }}>
+                      <div className="break-all wrap-break-word" dangerouslySetInnerHTML={{__html: message.content}}/>
                     </Text>
                     <Text size="xs" c="dimmed" mt="xs">
                       {message.timestamp}
@@ -242,7 +249,7 @@ function ChatBot({
               }
             </Stack>
           </ScrollArea>
-          <Box p="md" style={{ borderTop: '1px solid #4a4a6a' }}>
+          <Box className="content-right" p="md" style={{ borderTop: '1px solid #4a4a6a' }}>
             <Group>
               <Textarea
                 flex={1}
@@ -262,6 +269,9 @@ function ChatBot({
                   }
                 }}
               />
+              <ActionIcon onClick={() => setExpand(12)} color="green" aria-label="Settings">
+                <IconArrowsDiagonal style={{ width: '70%', height: '70%' }} stroke={1.5} />
+              </ActionIcon>
               <Button onClick={requestIA} disabled={isLoading} bg="#a1f54d" c="#000" variant="filled">Send!</Button>
             </Group>
             </Box>
