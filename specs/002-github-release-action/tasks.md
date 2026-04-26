@@ -25,7 +25,7 @@ verification tasks within their respective phases.
 
 **Purpose**: Confirm baseline infrastructure before any changes.
 
-- [ ] T001 Verify `.github/workflows/` directory exists in project root
+- [x] T001 Verify `.github/workflows/` directory exists in project root
 
 ---
 
@@ -37,13 +37,13 @@ correct tool setup pattern for the new workflow to follow.
 
 **⚠️ CRITICAL**: All user story phases depend on `build.yml` being correct first.
 
-- [ ] T002 Upgrade `actions/checkout@v2` → `v4` in all three jobs in `.github/workflows/build.yml`
-- [ ] T003 [P] Upgrade `actions/setup-node@v2` → `v4` in `lint-test-frontend` and `build` jobs in `.github/workflows/build.yml`
-- [ ] T004 [P] Upgrade `actions/setup-go@v2` → `v5` with `go-version: '1.24.x'` in `lint-test-backend` and `build` jobs in `.github/workflows/build.yml`
-- [ ] T005 Add `pnpm/action-setup@v4` step (before the Node.js step) in the `lint-test-frontend` job in `.github/workflows/build.yml`
-- [ ] T006 Add `pnpm/action-setup@v4` step (before the Node.js step) in the `build` job in `.github/workflows/build.yml`
-- [ ] T007 Replace `npm install --include=dev` with `pnpm install --frozen-lockfile` in the `lint-test-frontend` job in `.github/workflows/build.yml`
-- [ ] T008 Replace `npm install` with `pnpm install --frozen-lockfile` in the `build` job in `.github/workflows/build.yml`
+- [x] T002 Upgrade `actions/checkout@v2` → `v4` in all three jobs in `.github/workflows/build.yml`
+- [x] T003 [P] Upgrade `actions/setup-node@v2` → `v4` in `lint-test-frontend` and `build` jobs in `.github/workflows/build.yml`
+- [x] T004 [P] Upgrade `actions/setup-go@v2` → `v5` with `go-version: '1.24.x'` in `lint-test-backend` and `build` jobs in `.github/workflows/build.yml`
+- [x] T005 Add `pnpm/action-setup@v4` step (before the Node.js step) in the `lint-test-frontend` job in `.github/workflows/build.yml`
+- [x] T006 Add `pnpm/action-setup@v4` step (before the Node.js step) in the `build` job in `.github/workflows/build.yml`
+- [x] T007 Replace `npm install --include=dev` with `pnpm install --frozen-lockfile` in the `lint-test-frontend` job in `.github/workflows/build.yml`
+- [x] T008 Replace `npm install` with `pnpm install --frozen-lockfile` in the `build` job in `.github/workflows/build.yml`
 
 **Checkpoint**: `build.yml` uses pnpm throughout and all actions are at current major versions.
 
@@ -61,14 +61,14 @@ with asset `observatio-v0.0.1-test-linux-amd64` attached. Delete the test releas
 
 ### Implementation for User Story 1
 
-- [ ] T009 [US1] Create `.github/workflows/release.yml` with trigger `on: push: tags: ['v*']` and `permissions: contents: write`
-- [ ] T010 [P] [US1] Add `actions/checkout@v4` step (with `fetch-depth: 0`) to the release job in `.github/workflows/release.yml`
-- [ ] T011 [P] [US1] Add `actions/setup-go@v5` step with `go-version: '1.24.x'` to the release job in `.github/workflows/release.yml`
-- [ ] T012 [P] [US1] Add `actions/setup-node@v4` step with `node-version: '22'` and `pnpm/action-setup@v4` to the release job in `.github/workflows/release.yml`
-- [ ] T013 [US1] Add `pnpm install --frozen-lockfile` run step scoped to `front/` in `.github/workflows/release.yml`
-- [ ] T014 [US1] Add `make build` run step to produce `output/observatio` in `.github/workflows/release.yml`
-- [ ] T015 [US1] Add binary rename step `cp output/observatio observatio-${{ github.ref_name }}-linux-amd64` in `.github/workflows/release.yml`
-- [ ] T016 [US1] Add `softprops/action-gh-release@v2` step with `files: observatio-${{ github.ref_name }}-linux-amd64` in `.github/workflows/release.yml`
+- [x] T009 [US1] Create `.github/workflows/release.yml` with trigger `on: push: tags: ['v*']` and `permissions: contents: write`
+- [x] T010 [P] [US1] Add `actions/checkout@v4` step (with `fetch-depth: 0`) to the release job in `.github/workflows/release.yml`
+- [x] T011 [P] [US1] Add `actions/setup-go@v5` step with `go-version: '1.24.x'` to the release job in `.github/workflows/release.yml`
+- [x] T012 [P] [US1] Add `actions/setup-node@v4` step with `node-version: '22'` and `pnpm/action-setup@v4` to the release job in `.github/workflows/release.yml`
+- [x] T013 [US1] Add `pnpm install --frozen-lockfile` run step scoped to `front/` in `.github/workflows/release.yml`
+- [x] T014 [US1] Add `make build` run step to produce `output/observatio` in `.github/workflows/release.yml`
+- [x] T015 [US1] Add binary rename step `cp output/observatio observatio-${{ github.ref_name }}-linux-amd64` in `.github/workflows/release.yml`
+- [x] T016 [US1] Add `softprops/action-gh-release@v2` step with `files: observatio-${{ github.ref_name }}-linux-amd64` in `.github/workflows/release.yml`
 
 **Checkpoint**: Tag push produces GitHub Release with named binary asset. US3 validated
 (non-tag pushes do not trigger the workflow).
@@ -84,8 +84,8 @@ failure; push a tag; verify no GitHub Release is created.
 
 ### Implementation for User Story 2
 
-- [ ] T017 [US2] Review step ordering in `.github/workflows/release.yml` — verify no step has `continue-on-error: true`; the publish step (T016) MUST appear after `make build` (T014) with no error bypass
-- [ ] T018 [US2] Confirm `softprops/action-gh-release@v2` step in `.github/workflows/release.yml` has no `if: always()` condition that would run even on prior step failure
+- [x] T017 [US2] Review step ordering in `.github/workflows/release.yml` — verify no step has `continue-on-error: true`; the publish step (T016) MUST appear after `make build` (T014) with no error bypass
+- [x] T018 [US2] Confirm `softprops/action-gh-release@v2` step in `.github/workflows/release.yml` has no `if: always()` condition that would run even on prior step failure
 
 **Checkpoint**: Simulated build failure leaves the Releases page unchanged.
 
@@ -103,8 +103,8 @@ without Go or Node installed; verify it starts and serves port 8080.
 
 ### Implementation for User Story 4
 
-- [ ] T019 [US4] Verify `CGO_ENABLED=0` is set in the `build` Makefile target in `Makefile` (static linking required for portable Linux binary)
-- [ ] T020 [P] [US4] Add a `chmod +x` step after the binary rename (T015) in `.github/workflows/release.yml` to ensure the uploaded asset has the executable bit set
+- [x] T019 [US4] Verify `CGO_ENABLED=0` is set in the `build` Makefile target in `Makefile` (static linking required for portable Linux binary)
+- [x] T020 [P] [US4] Add a `chmod +x` step after the binary rename (T015) in `.github/workflows/release.yml` to ensure the uploaded asset has the executable bit set
 
 **Checkpoint**: Downloaded binary is directly executable on a clean Linux host.
 
@@ -114,9 +114,9 @@ without Go or Node installed; verify it starts and serves port 8080.
 
 **Purpose**: Documentation and verification across all user stories.
 
-- [ ] T021 [P] Update root `README.md` Releases/download section to reference the asset naming convention (`observatio-<version>-linux-amd64`)
-- [ ] T022 Run a full local `make build` to confirm `output/observatio` is produced before pushing the first real tag
-- [ ] T023 [P] Validate the final `.github/workflows/release.yml` YAML syntax with `yamllint` or the GitHub Actions schema validator
+- [x] T021 [P] Update root `README.md` Releases/download section to reference the asset naming convention (`observatio-<version>-linux-amd64`)
+- [x] T022 Run a full local `make build` to confirm `output/observatio` is produced before pushing the first real tag
+- [x] T023 [P] Validate the final `.github/workflows/release.yml` YAML syntax with `yamllint` or the GitHub Actions schema validator
 
 ---
 
