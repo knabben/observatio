@@ -86,14 +86,25 @@ and scaling configurations, significantly reducing mean time to resolution in co
 
 ### Prerequisites
 
-- Go 1.23.1
-- Node.js and pnpm
+- Go 1.24
+- Node.js 22 (LTS) and pnpm
 - Linux and Make
+
+## Releases
+
+Pre-built binaries are published automatically on each version tag push.
+Download the latest from the [Releases page](../../releases) — assets are named
+`observatio-<version>-linux-amd64` (e.g. `observatio-v1.0.0-linux-amd64`).
+
+```bash
+chmod +x observatio-v1.0.0-linux-amd64
+./observatio-v1.0.0-linux-amd64 serve
+```
 
 ## Production
 
-Ensure your management cluster is accessible via `${HOME}/.kube/config` compile the bundled frontend in the go binary 
-and run the server.
+Ensure your management cluster is accessible via `${HOME}/.kube/config`, compile the
+bundled frontend into the Go binary, and run the server.
 
 ```bash
 make build && ./output/observatio serve

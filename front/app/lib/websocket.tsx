@@ -31,7 +31,7 @@ export function WebSocket(URL: string = WS_URL_WATCHER) {
  */
 export function sendInitialRequest(readyState: number, type: string, sendJsonMessage: any) {
   if (readyState === ReadyState.OPEN) {
-    sendJsonMessage({type: type});
+    sendJsonMessage({types: [type]});
   }
 }
 
