@@ -16,6 +16,7 @@ This feature makes the dashboard detect, from the connected cluster's Cluster AP
 ### Session 2026-07-05
 
 - Q: You said the backend detects "the version and installed provider." What does "the version" refer to? → A: The version of the detected infrastructure provider itself (e.g., the CAPD/Docker provider version, the CAPV/vSphere provider version) — shown to operators alongside the provider indicator for compatibility awareness.
+- Q: Should a much deeper Clusters screen (CRD-driven auto-fetched detail, controller log fetching/filtering) be folded into this spec, or handled separately? → A: Handled separately — out of scope for this feature. Provider/version detection and adaptive listing tabs remain this spec's sole focus; deep cluster-detail enrichment and controller log viewing/filtering will be defined in a dedicated follow-on feature spec.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -112,3 +113,4 @@ An operator connects the dashboard to an environment using a Cluster API infrast
 - Docker and vSphere are the two infrastructure providers in scope for adaptive views in this feature; other Cluster API infrastructure providers (e.g., AWS, Azure) are out of scope for building a dedicated view, but must still degrade gracefully to a generic/unknown indicator rather than causing errors.
 - A given cluster resource is backed by exactly one infrastructure provider at a time (per its infrastructure reference), though the connected environment may have multiple providers' CRDs installed simultaneously (a mixed management cluster).
 - Existing vSphere-specific functionality remains fully available for vSphere-backed clusters; this feature changes how and when that view is surfaced, not its underlying content.
+- A deeper Clusters screen (richer CRD-driven auto-fetched detail, and fetching/filtering controller logs for presentation) is explicitly out of scope here; it is a distinct capability to be defined in a dedicated follow-on feature spec.
