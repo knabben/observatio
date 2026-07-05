@@ -1,0 +1,18 @@
+# clusterctl configuration — override provider versions here if needed.
+# Leave empty to use clusterctl's built-in defaults (recommended for demos).
+#
+# To pin specific versions, uncomment and adjust:
+#
+# providers:
+#   - name: cluster-api
+#     url: https://github.com/kubernetes-sigs/cluster-api/releases/v1.7.3/core-components.yaml
+#     type: CoreProvider
+#   - name: kubeadm
+#     url: https://github.com/kubernetes-sigs/cluster-api/releases/v1.7.3/bootstrap-components.yaml
+#     type: BootstrapProvider
+#   - name: kubeadm
+#     url: https://github.com/kubernetes-sigs/cluster-api/releases/v1.7.3/control-plane-components.yaml
+#     type: ControlPlaneProvider
+#   - name: docker
+#     url: https://github.com/kubernetes-sigs/cluster-api/releases/v1.7.3/infrastructure-components-development.yaml
+#     type: InfrastructureProvider
