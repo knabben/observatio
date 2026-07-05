@@ -1,0 +1,274 @@
+---
+
+description: "Task list for feature implementation"
+---
+
+# Tasks: Infrastructure Provider Detection & Adaptive Listing Screens
+
+**Input**: Design documents from `/specs/004-detect-infra-adapt-ui/`
+**Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/infra-detection-api.md, quickstart.md
+
+**Tests**: Included per Constitution Principle V ("Test-Driven Quality" — all backend/frontend
+changes MUST be accompanied by tests); not full upfront TDD, but every story ships tests alongside
+its implementation.
+
+**Organization**: Tasks are grouped by user story (from spec.md) to enable independent
+implementation and testing of each story.
+
+## Format: `[ID] [P?] [Story] Description`
+
+- **[P]**: Can run in parallel (different files, no dependencies)
+- **[Story]**: Which user story this task belongs to (US1, US2, US3)
+
+## Path Conventions
+
+Existing web app: `webserver/` (Go backend), `front/` (Next.js frontend) — see plan.md Project
+Structure for exact new/changed files.
+
+---
+
+## Phase 1: Setup
+
+**Purpose**: De-risk the one open technical question from research.md (R3) and confirm a clean
+starting baseline before touching any code.
+
+- [ ] T001 [P] Verify `sigs.k8s.io/cluster-api/test/infrastructure/docker/api/v1beta1` (Docker
+  `DockerCluster`/`DockerMachine` types) resolves and compiles under the pinned `v1.9.6` module: add
+  a throwaway import in a scratch `.go` file under `webserver/`, run `go build ./...`, confirm
+  success, then delete the scratch file. If it fails to resolve, fall back to the dynamic/unstructured
+  client approach noted in research.md R3 and adjust T015-T016 below accordingly.
+- [ ] T002 [P] Confirm `make build`, `make run-tests-backend`, and `make run-tests-frontend` all pass
+  on a clean checkout of `004-detect-infra-adapt-ui` before starting implementation.
+
+---
+
+## Phase 2: Foundational (Blocking Prerequisites)
+
+**Purpose**: Shared provider-detection primitives every user story depends on.
+
+**⚠️ CRITICAL**: No user story work can begin until this phase is complete.
+
+- [ ] T003 Create `webserver/internal/infra/providerkind/providerkind.go` with
+  `FromKind(kind string) string`, mapping `DockerCluster`/`DockerMachine` → `docker`,
+  `VSphereCluster`/`VSphereMachine` → `vsphere`, anything else (including empty) → `unknown`.
+- [ ] T004 [P] Add unit tests in `webserver/internal/infra/providerkind/providerkind_test.go`
+  covering docker/vsphere/unknown/empty-string `Kind` inputs.
+- [ ] T005 Register the Docker infra scheme (`dockerv1 "sigs.k8s.io/cluster-api/test/infrastructure/docker/api/v1beta1"`)
+  via `AddToScheme` in `webserver/internal/web/handlers/system/utils.go`, alongside the existing
+  `clusterctlv1`/`clusterv1`/`capv` registrations.
+- [ ] T006 Add `InfrastructureCapability` and `ProviderStatus` structs to
+  `webserver/internal/infra/models/capability.go` per data-model.md.
+- [ ] T007 Add `GenerateInfrastructureCapability(ctx, c) (models.InfrastructureCapability, error)` in
+  `webserver/internal/infra/clusterapi/dashboard.go`, reusing the existing
+  `clusterctlv1.ProviderList` lookup already performed by `GenerateComponentVersions`
+  (filter `Kind == "InfrastructureProvider"` and `ProviderName` in `{docker, vsphere}`; research.md R1).
+- [ ] T008 [P] Add tests for `GenerateInfrastructureCapability` in
+  `webserver/internal/infra/clusterapi/dashboard_test.go` using a CAPI fake client seeded with
+  `clusterctlv1.Provider` fixtures: docker-only, vsphere-only, both, neither installed.
+- [ ] T009 Add `HandleInfraCapabilities` in `webserver/internal/web/handlers/kubernetes/dashboard.go`
+  and register `GET /api/infra/capabilities` in `webserver/internal/web/handlers/handlers.go`
+  (depends on T007).
+- [ ] T010 Add a `Provider string` field to `models.Cluster`
+  (`webserver/internal/infra/models/cluster.go`) and populate it via
+  `providerkind.FromKind(InfrastructureRef.Kind)` wherever `models.Cluster` is built (the processor
+  that already sets `InfrastructureRef`) (depends on T003).
+- [ ] T011 Add a `Provider string` field to `models.Machine`
+  (`webserver/internal/infra/models/machine.go`) and populate it the same way from the raw
+  `clusterv1.Machine.Spec.InfrastructureRef.Kind` (depends on T003).
+- [ ] T012 [P] Add `front/app/lib/capabilities.ts`: fetch helper + TypeScript type for
+  `GET /api/infra/capabilities` (depends on T009 for the response shape, can be scaffolded in
+  parallel against contracts/infra-detection-api.md).
+
+**Checkpoint**: Foundation ready — all user stories can now proceed.
+
+---
+
+## Phase 3: User Story 1 - Listing screens reflect the actual infrastructure provider in use (Priority: P1) 🎯 MVP
+
+**Goal**: Docker-only, vSphere-only, and mixed environments each render the correct provider-specific
+infra tab/view — never the wrong one, never a static hardcoded one.
+
+**Independent Test**: Point the dashboard at a Docker-backed environment and confirm a
+Docker-appropriate infra view appears (no vSphere-labeled tab); point it at vSphere and confirm the
+existing view is unchanged; point it at a mixed environment and confirm both appear, correctly
+scoped.
+
+### Tests for User Story 1
+
+- [ ] T013 [P] [US1] Backend test for `HandleClusterInfraList` dispatch (auto-selects the installed
+  provider, honors `?provider=` override, returns 404 for an uninstalled/unknown provider) in
+  `webserver/internal/web/handlers/kubernetes/cluster_test.go`.
+- [ ] T014 [P] [US1] Frontend test: Clusters page renders the correct tab set (docker-only,
+  vsphere-only, both) from a mocked `/api/infra/capabilities` response, in
+  `front/app/dashboard/clusters/page.test.tsx`.
+
+### Implementation for User Story 1
+
+- [ ] T015 [P] [US1] Add `models.ClusterInfraDocker` struct to
+  `webserver/internal/infra/models/cluster.go` per data-model.md.
+- [ ] T016 [P] [US1] Add `fetchers.ListClusterInfraDocker` in
+  `webserver/internal/infra/clusterapi/fetchers/cluster_infra_docker.go`, listing
+  `dockerv1.DockerClusterList` (mirrors the existing `ListClusterInfra` for vSphere).
+- [ ] T017 [US1] Extend `HandleClusterInfraList` in
+  `webserver/internal/web/handlers/kubernetes/cluster.go` to accept an optional `?provider=` query
+  param, default to the first `installed` provider from `GenerateInfrastructureCapability`, dispatch
+  to the Docker or vSphere fetcher accordingly, and return `404` when the resolved/requested provider
+  isn't installed (depends on T007, T015, T016).
+- [ ] T018 [US1] Mirror the same dispatch for Machines: extend `HandleMachineInfra` in
+  `webserver/internal/web/handlers/kubernetes/machine.go`, adding
+  `fetchers.ListMachineInfraDocker` and `models.MachineInfraDocker` (FR-008) (depends on T007).
+- [ ] T019 [P] [US1] Generalize `front/app/ui/dashboard/components/clusters/infra/infra-lister.tsx`
+  and `infra-table.tsx` to accept a provider config (title + columns) instead of the hardcoded
+  vSphere title/columns.
+- [ ] T020 [P] [US1] Add a Docker infra config (columns: name, namespace, load balancer IP, age,
+  status) alongside the existing vSphere config, using the generalized components from T019.
+- [ ] T021 [US1] Replace the static 2-tab `Tabs` in `front/app/dashboard/clusters/page.tsx` with
+  tabs built dynamically from `capabilities.ts` (T012) — a provider's tab renders only when
+  `installed` is true (depends on T012, T019, T020).
+- [ ] T022 [US1] Apply the same dynamic-tab/config pattern to the Machines listing screen's infra
+  tab (depends on T018, T019).
+
+**Checkpoint**: US1 is independently testable — Docker/vSphere/mixed environments each show exactly
+the right infra view(s).
+
+---
+
+## Phase 4: User Story 2 - Operators can identify a cluster's infrastructure provider at a glance (Priority: P2)
+
+**Goal**: Every row in the main Clusters (and Machines) list shows a provider (+ version) indicator,
+or "Unknown" when undetermined.
+
+**Independent Test**: Load the main Clusters list against a mixed environment and confirm every row
+shows a correct provider(+version) badge matching that resource's actual backing infrastructure.
+
+### Tests for User Story 2
+
+- [ ] T023 [P] [US2] Frontend test for the provider badge component: correct label/version for
+  docker/vsphere, "Unknown" for an unrecognized provider, in
+  `front/app/ui/dashboard/shared/provider-badge.test.tsx`.
+
+### Implementation for User Story 2
+
+- [ ] T024 [P] [US2] Create `front/app/ui/dashboard/shared/provider-badge.tsx`: takes a `provider`
+  string and the capabilities response, renders "Docker vX.Y.Z" / "vSphere vX.Y.Z" / "Unknown".
+- [ ] T025 [US2] Add a `provider` field to `ClusterType` in
+  `front/app/ui/dashboard/components/clusters/types.tsx` (mirrors backend T010).
+- [ ] T026 [US2] Wire `provider-badge.tsx` into
+  `front/app/ui/dashboard/components/clusters/table.tsx` row rendering, resolving the version by
+  looking up `provider` in the capabilities response (depends on T012, T024, T025).
+- [ ] T027 [US2] Wire the same badge into the Machines list table (depends on T011, T024).
+
+**Checkpoint**: US2 is independently testable — every Clusters/Machines row shows a correct
+provider(+version) or Unknown badge.
+
+---
+
+## Phase 5: User Story 3 - Unsupported or undetectable providers degrade gracefully (Priority: P3)
+
+**Goal**: An unrecognized provider, or an environment with no supported provider installed, never
+crashes or blanks the screen — it degrades to a clear, generic state.
+
+**Independent Test**: Inject a cluster with an infrastructure reference outside the supported set,
+and separately simulate an environment with neither provider installed; confirm both cases render a
+clear, non-crashing result.
+
+### Tests for User Story 3
+
+- [ ] T028 [P] [US3] Backend test: cluster/machine listing does not error when `infrastructureRef.kind`
+  is an unrecognized value, and `GET /api/infra/capabilities` returns both `installed:false` when no
+  matching provider inventory entries exist.
+- [ ] T029 [P] [US3] Frontend test: Clusters screen renders the "no supported infrastructure provider
+  detected" message when both capability flags are false, and renders an unrecognized-provider
+  cluster in the main list without forcing open a provider tab for it.
+
+### Implementation for User Story 3
+
+- [ ] T030 [US3] Add a "no supported infrastructure provider detected" message in
+  `front/app/dashboard/clusters/page.tsx`, using the existing shared `empty-state.tsx` component,
+  shown when both `docker.installed` and `vsphere.installed` are false (depends on T012, T021).
+- [ ] T031 [US3] Confirm/adjust `HandleClusterInfraList` and `HandleMachineInfra` return a clear
+  `404` (never a panic or silent empty `200`) when the resolved/requested provider isn't installed
+  (depends on T017, T018).
+
+**Checkpoint**: All three user stories are independently functional.
+
+---
+
+## Phase 6: Polish & Cross-Cutting Concerns
+
+- [ ] T032 [P] Run through `quickstart.md` manually against docker-only, vsphere-only, mixed, and
+  no-provider environments.
+- [ ] T033 [P] Update route documentation/comments for the new `/api/infra/capabilities` endpoint in
+  `webserver/internal/web/handlers/handlers.go`.
+- [ ] T034 Run `make build`, `make run-tests-backend`, and `make run-tests-frontend` end-to-end
+  before opening a PR (Constitution Principle V gate).
+
+---
+
+## Dependencies & Execution Order
+
+### Phase Dependencies
+
+- **Setup (Phase 1)**: No dependencies — start immediately.
+- **Foundational (Phase 2)**: Depends on Setup — BLOCKS all user stories.
+- **User Stories (Phase 3-5)**: All depend on Foundational completion; independently testable and
+  deliverable in priority order (P1 → P2 → P3), or in parallel if staffed.
+- **Polish (Phase 6)**: Depends on all desired user stories being complete.
+
+### User Story Dependencies
+
+- **US1 (P1)**: No dependency on US2/US3. Delivers the core "right view for the right provider"
+  behavior — the MVP.
+- **US2 (P2)**: Independent of US1's infra-tab work; only needs the `Provider` field from
+  Foundational (T010/T011) and the capabilities fetch (T012). Can be built in parallel with US1.
+- **US3 (P3)**: Builds on the same Foundational primitives; its frontend empty-state task (T030)
+  slots into the same `clusters/page.tsx` touched by US1 (T021) — sequence after US1 if one
+  developer, otherwise coordinate on that file.
+
+### Parallel Opportunities
+
+- T001/T002 (Setup) run in parallel.
+- T004, T008, T012 (Foundational, marked [P]) run in parallel with their non-parallel siblings once
+  their own dependencies are met.
+- US1 and US2 can be implemented in parallel by different developers once Foundational is done.
+- Within each story, all [P]-marked tasks (typically model/fetcher/test files that don't collide)
+  run in parallel.
+
+---
+
+## Parallel Example: User Story 1
+
+```bash
+# Backend model + fetcher, frontend component generalization — different files, run together:
+Task: "Add models.ClusterInfraDocker struct to webserver/internal/infra/models/cluster.go"
+Task: "Add fetchers.ListClusterInfraDocker in webserver/internal/infra/clusterapi/fetchers/cluster_infra_docker.go"
+Task: "Generalize infra-lister.tsx and infra-table.tsx to accept a provider config"
+```
+
+---
+
+## Implementation Strategy
+
+### MVP First (User Story 1 Only)
+
+1. Complete Phase 1: Setup.
+2. Complete Phase 2: Foundational (blocks everything).
+3. Complete Phase 3: User Story 1.
+4. **STOP and VALIDATE**: run quickstart.md scenarios 1-3 (docker-only, vsphere-only, mixed).
+5. Deploy/demo if ready — this alone fixes the core "wrong/no provider view" problem.
+
+### Incremental Delivery
+
+1. Setup + Foundational → foundation ready.
+2. US1 → validate independently → deploy (MVP).
+3. US2 → validate independently → deploy (adds at-a-glance provider/version badges).
+4. US3 → validate independently → deploy (adds graceful degradation for edge environments).
+
+---
+
+## Notes
+
+- [P] tasks touch different files with no unmet dependencies.
+- [Story] labels map every user-story-phase task back to spec.md for traceability.
+- Commit after each task or logical group; stop at any checkpoint to validate a story independently.
+- No task in this list requires a new `go.mod`/`package.json` dependency (per research.md R3).
