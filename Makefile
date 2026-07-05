@@ -61,8 +61,12 @@ run-backend: ## Run backend server in development mode (no static hosting)
 	pushd webserver && go run . $(what) --dev && popd
 
 .PHONY: run-frontend
-run-frontend: ## Run frontend dev server (http://localhost:3000)
-	pushd $(FRONTEND_DIR) && pnpm run dev && popd
+run-frontend: ## Run frontend dev server (http://localhost:3000) against a backend on :8080
+	pushd $(FRONTEND_DIR) && \
+	  NEXT_PUBLIC_API_URL=http://localhost:8080 \
+	  NEXT_PUBLIC_WS_URL=ws://localhost:8080/ws/watcher \
+	  NEXT_PUBLIC_WS_URL_CHATBOT=ws://localhost:8080/ws/analysis \
+	  pnpm run dev && popd
 
 ## --------------------------------------
 ## Tests
