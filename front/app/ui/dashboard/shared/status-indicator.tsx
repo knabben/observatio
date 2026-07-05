@@ -1,6 +1,7 @@
 import React from "react";
 import {Group, Indicator, Text} from "@mantine/core";
 import {StatusState} from "@/app/ui/dashboard/shared/status";
+import {STATUS_COLORS} from "@/app/styles/theme";
 
 interface StatusIndicatorProps {
   state: StatusState;
@@ -12,9 +13,9 @@ interface StatusIndicatorProps {
 }
 
 const CONFIG: Record<StatusState, {color: string; label: string}> = {
-  healthy: {color: "green", label: "Ready"},
-  notready: {color: "red", label: "Not ready"},
-  unknown: {color: "gray", label: "Unknown"},
+  healthy: {color: STATUS_COLORS.healthy, label: "Ready"},
+  notready: {color: STATUS_COLORS.notready, label: "Not ready"},
+  unknown: {color: STATUS_COLORS.unknown, label: "Unknown"},
 };
 
 /**

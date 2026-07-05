@@ -65,26 +65,26 @@ implementable and testable. Frontend lives in `front/app/`, backend in `webserve
 
 ### Tests for User Story 1 ⚠️ (write first, ensure they fail)
 
-- [ ] T017 [P] [US1] Unit tests for `useResourceStream` states (connecting→ready/empty/error, 10s timeout, empty-frame no-op) in `front/app/ui/dashboard/shared/resource-hooks.test.tsx`
+- [X] T017 [P] [US1] Unit tests for `useResourceStream` states (connecting→ready/empty/error, 10s timeout, empty-frame no-op) in `front/app/ui/dashboard/shared/resource-hooks.test.tsx`
 - [X] T018 [P] [US1] Tests for `EmptyState`/`ErrorState`/`StatusIndicator` + `toStatusState` (healthy/notready/unknown, zero-value, absent field) in `front/app/ui/dashboard/shared/status-indicator.test.tsx`
-- [ ] T019 [P] [US1] Partial-data + empty render tests for clusters (table, details, specification, infra) in `front/app/ui/dashboard/components/clusters/table.test.tsx`
-- [ ] T020 [P] [US1] Partial-data + empty + `0`-value render tests for machines (+infra, incl. `numCoresPerSocket=0` leak) in `front/app/ui/dashboard/components/machines/table.test.tsx`
-- [ ] T021 [P] [US1] Partial-data + empty + unknown-availability tests for mds in `front/app/ui/dashboard/components/mds/table.test.tsx`
-- [ ] T022 [P] [US1] Partial-data + empty tests for dashboard widgets (hierarchy/summary/versions/clusterclass) in `front/app/ui/dashboard/components/dashboard/dashboard.test.tsx`
+- [X] T019 [P] [US1] Partial-data + empty render tests for clusters (table, details, specification, infra) in `front/app/ui/dashboard/components/clusters/table.test.tsx`
+- [X] T020 [P] [US1] Partial-data + empty + `0`-value render tests for machines (+infra, incl. `numCoresPerSocket=0` leak) in `front/app/ui/dashboard/components/machines/table.test.tsx`
+- [X] T021 [P] [US1] Partial-data + empty + unknown-availability tests for mds in `front/app/ui/dashboard/components/mds/table.test.tsx`
+- [X] T022 [P] [US1] Partial-data + empty tests for dashboard widgets (hierarchy/summary/versions/clusterclass) in `front/app/ui/dashboard/components/dashboard/dashboard.test.tsx`
 
 ### Implementation for User Story 1
 
-- [ ] T023 [P] [US1] Correct nullability (optional fields, `replicas: number`) in `front/app/ui/dashboard/components/clusters/types.tsx`
-- [ ] T024 [P] [US1] Correct nullability in `front/app/ui/dashboard/components/machines/types.tsx`
-- [ ] T025 [P] [US1] Correct nullability in `front/app/ui/dashboard/components/mds/types.tsx`
+- [X] T023 [P] [US1] Correct nullability (optional fields, `replicas: number`) in `front/app/ui/dashboard/components/clusters/types.tsx`
+- [X] T024 [P] [US1] Correct nullability in `front/app/ui/dashboard/components/machines/types.tsx`
+- [X] T025 [P] [US1] Correct nullability in `front/app/ui/dashboard/components/mds/types.tsx`
 - [X] T026 [US1] Wire `BaseLister` to `useResourceStream` → `CenteredLoader`/`EmptyState`/`ErrorState(retry)` in `front/app/ui/dashboard/base/lister.tsx` (uses T011, T008, T009)
-- [ ] T027 [P] [US1] Null-safe access + empty state + `StatusIndicator` in `front/app/ui/dashboard/components/clusters/table.tsx` and `.../clusters/infra/infra-table.tsx`
-- [ ] T028 [P] [US1] Null-safe access (`paused`, arrays, empty `—`) in `front/app/ui/dashboard/components/clusters/details.tsx`, `.../specification.tsx`, and `.../clusters/infra/{infra-details,specification}.tsx`
-- [ ] T029 [P] [US1] Null-safe access + `StatusIndicator` + fix `0 && <JSX>` leak in `front/app/ui/dashboard/components/machines/table.tsx`, `.../machines/infra/infra-table.tsx`, `.../machines/infra/specification.tsx`
-- [ ] T030 [P] [US1] Null-safe access in `front/app/ui/dashboard/components/machines/details.tsx`, `.../specification.tsx`, `.../machines/infra/infra-details.tsx`
-- [ ] T031 [P] [US1] Null-safe access + `StatusIndicator` + strict comparisons (no `== 0`) in `front/app/ui/dashboard/components/mds/{table,details,specification}.tsx`
-- [ ] T032 [P] [US1] Guard `conditions.map`/`status`, add empty states, `generation.toString()`, remove `@ts-expect-error` in `front/app/ui/dashboard/components/dashboard/{clusterhierarchy,clustersummary,clusterversions,clusterclass}.tsx`
-- [ ] T033 [US1] Guard empty `tabs` + accurate rendering in `front/app/ui/dashboard/base/details.tsx`
+- [X] T027 [P] [US1] Null-safe access + empty state + `StatusIndicator` in `front/app/ui/dashboard/components/clusters/table.tsx` and `.../clusters/infra/infra-table.tsx`
+- [X] T028 [P] [US1] Null-safe access (`paused`, arrays, empty `—`) in `front/app/ui/dashboard/components/clusters/details.tsx`, `.../specification.tsx`, and `.../clusters/infra/{infra-details,specification}.tsx`
+- [X] T029 [P] [US1] Null-safe access + `StatusIndicator` + fix `0 && <JSX>` leak in `front/app/ui/dashboard/components/machines/table.tsx`, `.../machines/infra/infra-table.tsx`, `.../machines/infra/specification.tsx`
+- [X] T030 [P] [US1] Null-safe access in `front/app/ui/dashboard/components/machines/details.tsx`, `.../specification.tsx`, `.../machines/infra/infra-details.tsx`
+- [X] T031 [P] [US1] Null-safe access + `StatusIndicator` + strict comparisons (no `== 0`) in `front/app/ui/dashboard/components/mds/{table,details,specification}.tsx`
+- [X] T032 [P] [US1] Guard `conditions.map`/`status`, add empty states, `generation.toString()`, remove `@ts-expect-error` in `front/app/ui/dashboard/components/dashboard/{clusterhierarchy,clustersummary,clusterversions,clusterclass}.tsx`
+- [X] T033 [US1] Guard empty `tabs` + accurate rendering in `front/app/ui/dashboard/base/details.tsx`
 
 **Checkpoint**: All screens survive partial/empty/zero/error data — MVP is independently shippable.
 
@@ -98,15 +98,15 @@ implementable and testable. Frontend lives in `front/app/`, backend in `webserve
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T034 [P] [US2] Tests asserting `ObjectTable` renders a scroll container and detail panels use full width / responsive cols in `front/app/ui/dashboard/shared/object-table.test.tsx`
+- [X] T034 [P] [US2] Tests asserting `ObjectTable` renders a scroll container and detail panels use full width / responsive cols in `front/app/ui/dashboard/shared/object-table.test.tsx`
 
 ### Implementation for User Story 2
 
-- [ ] T035 [P] [US2] Responsive dashboard grid (`span={{base:12,md:...}}`) + topology container `width:100%` with `fitView`/`Background`/`Controls`/empty state in `front/app/dashboard/page.tsx` and `front/app/ui/dashboard/components/dashboard/clusterhierarchy.tsx`
-- [ ] T036 [P] [US2] Responsive summary/versions grids + fluid heights + versions scroll container in `front/app/ui/dashboard/components/dashboard/{clustersummary,clusterversions}.tsx`
-- [ ] T037 [US2] Add `Table.ScrollContainer` + responsive behavior in `front/app/ui/dashboard/shared/object-table.tsx`
-- [ ] T038 [P] [US2] Full-width single-child spec panels + responsive `SimpleGrid`/detail grids in `front/app/ui/dashboard/components/{clusters,machines,mds}/specification.tsx` and infra `specification.tsx`
-- [ ] T039 [P] [US2] Scroll containment at all breakpoints (not `md:`-only) in `front/app/dashboard/layout.tsx`
+- [X] T035 [P] [US2] Responsive dashboard grid (`span={{base:12,md:...}}`) + topology container `width:100%` with `fitView`/`Background`/`Controls`/empty state in `front/app/dashboard/page.tsx` and `front/app/ui/dashboard/components/dashboard/clusterhierarchy.tsx`
+- [X] T036 [P] [US2] Responsive summary/versions grids + fluid heights + versions scroll container in `front/app/ui/dashboard/components/dashboard/{clustersummary,clusterversions}.tsx`
+- [X] T037 [US2] Add `Table.ScrollContainer` + responsive behavior in `front/app/ui/dashboard/shared/object-table.tsx`
+- [X] T038 [P] [US2] Full-width single-child spec panels + responsive `SimpleGrid`/detail grids in `front/app/ui/dashboard/components/{clusters,machines,mds}/specification.tsx` and infra `specification.tsx`
+- [X] T039 [P] [US2] Scroll containment at all breakpoints (not `md:`-only) in `front/app/dashboard/layout.tsx`
 - [X] T040 [P] [US2] Vertically center loader (`min-h`) in `front/app/ui/dashboard/utils/loader.tsx`
 
 **Checkpoint**: Screens are responsive and overflow-safe across supported widths.
@@ -121,15 +121,15 @@ implementable and testable. Frontend lives in `front/app/`, backend in `webserve
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T041 [P] [US3] Tests: active nav on nested route + `aria-current` + icon `aria-label` in `front/app/ui/dashboard/nav-links.test.tsx`
-- [ ] T042 [P] [US3] Test: `ObjectTable` selectable row is a keyboard-focusable, labeled control in `front/app/ui/dashboard/shared/object-table.a11y.test.tsx`
+- [X] T041 [P] [US3] Tests: active nav on nested route + `aria-current` + icon `aria-label` in `front/app/ui/dashboard/nav-links.test.tsx`
+- [X] T042 [P] [US3] Test: `ObjectTable` selectable row is a keyboard-focusable, labeled control in `front/app/ui/dashboard/shared/object-table.a11y.test.tsx`
 
 ### Implementation for User Story 3
 
-- [ ] T043 [US3] Nested-route active state (`startsWith` + root guard) + `aria-current="page"` + icon `aria-label`s in `front/app/ui/dashboard/nav-links.tsx`
-- [ ] T044 [P] [US3] Responsive sidenav collapse (`Burger`/`Drawer`) + responsive logo `sizes`/alt in `front/app/ui/dashboard/sidenav.tsx`
-- [ ] T045 [US3] Keyboard-focusable, `aria`-labeled selectable rows (button/`UnstyledButton`) in `front/app/ui/dashboard/shared/object-table.tsx` (after T037)
-- [ ] T046 [P] [US3] Contrast-checked header/status colors + fix low-contrast title in `front/app/ui/dashboard/utils/header.tsx`
+- [X] T043 [US3] Nested-route active state (`startsWith` + root guard) + `aria-current="page"` + icon `aria-label`s in `front/app/ui/dashboard/nav-links.tsx`
+- [X] T044 [P] [US3] Responsive sidenav collapse (`Burger`/`Drawer`) + responsive logo `sizes`/alt in `front/app/ui/dashboard/sidenav.tsx`
+- [X] T045 [US3] Keyboard-focusable, `aria`-labeled selectable rows (button/`UnstyledButton`) in `front/app/ui/dashboard/shared/object-table.tsx` (after T037)
+- [X] T046 [P] [US3] Contrast-checked header/status colors + fix low-contrast title in `front/app/ui/dashboard/utils/header.tsx`
 
 **Checkpoint**: Navigation, keyboard operability, and status legibility meet WCAG AA expectations.
 
@@ -143,19 +143,19 @@ implementable and testable. Frontend lives in `front/app/`, backend in `webserve
 
 ### Tests for User Story 4 ⚠️
 
-- [ ] T047 [P] [US4] Tests: per-resource `ColumnDef` configs render through shared `ObjectTable`; a shared-logic change reflects across resources in `front/app/ui/dashboard/shared/consolidation.test.tsx`
+- [X] T047 [P] [US4] Tests: per-resource `ColumnDef` configs render through shared `ObjectTable`; a shared-logic change reflects across resources in `front/app/ui/dashboard/shared/consolidation.test.tsx`
 
 ### Implementation for User Story 4
 
-- [ ] T048 [US4] Create Mantine theme (accent scale consolidating the scattered greens, status colors, font vars) in `front/app/styles/theme.ts`
-- [ ] T049 [US4] Apply `theme` + reconcile color scheme with system preference in `front/app/layout.tsx`; remove dead `--font-geist-*` vars and hardcoded `body` font in `front/app/globals.css` (after T048)
-- [ ] T050 [P] [US4] Fix font identifiers/weights (real fonts + bold weight) in `front/app/styles/fonts.ts`
-- [ ] T051 [P] [US4] Reduce clusters (+infra) to `ColumnDef`/`DetailFieldDef` over shared blocks in `front/app/ui/dashboard/components/clusters/{lister,table,details,specification}.tsx`
-- [ ] T052 [P] [US4] Reduce machines (+infra) to shared config in `front/app/ui/dashboard/components/machines/{lister,table,details,specification}.tsx`
-- [ ] T053 [P] [US4] Reduce mds to shared config in `front/app/ui/dashboard/components/mds/{lister,table,details,specification}.tsx`
-- [ ] T054 [US4] Dedupe fetch hooks → shared stream/fetch helper and fix copy-pasted error strings in `front/app/ui/dashboard/components/dashboard/*.tsx`
-- [ ] T055 [P] [US4] Remove dead Tailwind classes (`text-bold`, `text-medium`) + hardcoded hex; use theme tokens across `front/app/ui/dashboard/components/**`
-- [ ] T056 [P] [US4] Fix stale JSDoc and relabel `Created`→`Age` across listers/details in `front/app/ui/dashboard/components/**`
+- [X] T048 [US4] Create Mantine theme (accent scale consolidating the scattered greens, status colors, font vars) in `front/app/styles/theme.ts`
+- [X] T049 [US4] Apply `theme` + reconcile color scheme with system preference in `front/app/layout.tsx`; remove dead `--font-geist-*` vars and hardcoded `body` font in `front/app/globals.css` (after T048)
+- [X] T050 [P] [US4] Fix font identifiers/weights (real fonts + bold weight) in `front/app/styles/fonts.ts`
+- [X] T051 [P] [US4] Reduce clusters (+infra) to `ColumnDef`/`DetailFieldDef` over shared blocks in `front/app/ui/dashboard/components/clusters/{lister,table,details,specification}.tsx`
+- [X] T052 [P] [US4] Reduce machines (+infra) to shared config in `front/app/ui/dashboard/components/machines/{lister,table,details,specification}.tsx`
+- [X] T053 [P] [US4] Reduce mds to shared config in `front/app/ui/dashboard/components/mds/{lister,table,details,specification}.tsx`
+- [X] T054 [US4] Dedupe fetch hooks → shared stream/fetch helper and fix copy-pasted error strings in `front/app/ui/dashboard/components/dashboard/*.tsx`
+- [X] T055 [P] [US4] Remove dead Tailwind classes (`text-bold`, `text-medium`) + hardcoded hex; use theme tokens across `front/app/ui/dashboard/components/**`
+- [X] T056 [P] [US4] Fix stale JSDoc and relabel `Created`→`Age` across listers/details in `front/app/ui/dashboard/components/**`
 
 **Checkpoint**: Duplication collapsed to shared components; theming centralized; bugs can't drift per-copy.
 
@@ -169,13 +169,13 @@ implementable and testable. Frontend lives in `front/app/`, backend in `webserve
 
 ### Tests for User Story 5 ⚠️
 
-- [ ] T057 [P] [US5] Tests: search filters visible list; status chips are read-only; AI message renders as safe text and expand/collapse toggles in `front/app/ui/dashboard/base/ai-troubleshooting.test.tsx`
+- [X] T057 [P] [US5] Tests: search filters visible list; status chips are read-only; AI message renders as safe text and expand/collapse toggles in `front/app/ui/dashboard/base/ai-troubleshooting.test.tsx`
 
 ### Implementation for User Story 5
 
-- [ ] T058 [US5] Real client-side text filter wired to lister state in `front/app/ui/dashboard/search.tsx` (+ integrate in `front/app/ui/dashboard/base/lister.tsx`)
-- [ ] T059 [P] [US5] Replace toggle `Chip`s with read-only status display in `front/app/ui/dashboard/components/dashboard/clusterclass.tsx`
-- [ ] T060 [US5] AI panel fixes in `front/app/ui/dashboard/base/ai-troubleshooting.tsx`: safe plain-text render (remove `dangerouslySetInnerHTML`, valid nesting), remove `AppShell`-in-grid + contain to card, reversible expand, open-socket guard + reset loading, `uuid` id, functional state updates, `WS_URL_CHATBOT` from config
+- [X] T058 [US5] Real client-side text filter wired to lister state in `front/app/ui/dashboard/search.tsx` (+ integrate in `front/app/ui/dashboard/base/lister.tsx`)
+- [X] T059 [P] [US5] Replace toggle `Chip`s with read-only status display in `front/app/ui/dashboard/components/dashboard/clusterclass.tsx`
+- [X] T060 [US5] AI panel fixes in `front/app/ui/dashboard/base/ai-troubleshooting.tsx`: safe plain-text render (remove `dangerouslySetInnerHTML`, valid nesting), remove `AppShell`-in-grid + contain to card, reversible expand, open-socket guard + reset loading, `uuid` id, functional state updates, `WS_URL_CHATBOT` from config
 
 **Checkpoint**: Controls match their labels and the AI panel is safe and contained.
 
@@ -189,14 +189,14 @@ implementable and testable. Frontend lives in `front/app/`, backend in `webserve
 
 ### Tests for User Story 6 ⚠️
 
-- [ ] T061 [P] [US6] Go test: embedded FS serves `/` (200, SPA HTML) and SPA fallback → `index.html` for unknown non-API routes in `webserver/internal/web/handlers/system/spa_test.go`
+- [X] T061 [P] [US6] Go test: embedded FS serves `/` (200, SPA HTML) and SPA fallback → `index.html` for unknown non-API routes in `webserver/internal/web/handlers/system/spa_test.go`
 
 ### Implementation for User Story 6
 
-- [ ] T062 [US6] Verify same-origin wiring end-to-end (no hardcoded `localhost`): `front/app/lib/data.tsx`, `front/app/lib/websocket.tsx`, `front/app/ui/dashboard/base/ai-troubleshooting.tsx` all use `config.ts`
-- [ ] T063 [US6] Confirm/implement SPA fallback (serve `index.html` for unknown non-API routes) in `webserver/internal/web/handlers/system/spa.go`
-- [ ] T064 [US6] Add `verify-binary` target to `Makefile` (depends on `build`; launch `output/observatio` on a test port → assert UI root 200 + SPA fallback + live API/WS same-origin → teardown → non-zero on failure) per `contracts/build-verification.md`
-- [ ] T065 [P] [US6] Document dev-only `NEXT_PUBLIC_*` vars in `README.md` / `.env.example`
+- [X] T062 [US6] Verify same-origin wiring end-to-end (no hardcoded `localhost`): `front/app/lib/data.tsx`, `front/app/lib/websocket.tsx`, `front/app/ui/dashboard/base/ai-troubleshooting.tsx` all use `config.ts`
+- [X] T063 [US6] Confirm/implement SPA fallback (serve `index.html` for unknown non-API routes) in `webserver/internal/web/handlers/system/spa.go`
+- [X] T064 [US6] Add `verify-binary` target to `Makefile` (depends on `build`; launch `output/observatio` on a test port → assert UI root 200 + SPA fallback + live API/WS same-origin → teardown → non-zero on failure) per `contracts/build-verification.md`
+- [X] T065 [P] [US6] Document dev-only `NEXT_PUBLIC_*` vars in `README.md` / `.env.example`
 
 **Checkpoint**: `make verify-binary` proves the single-binary embed+serve pipeline end-to-end.
 
@@ -204,10 +204,10 @@ implementable and testable. Frontend lives in `front/app/`, backend in `webserve
 
 ## Phase 9: Polish & Cross-Cutting Concerns
 
-- [ ] T066 [P] Run `make lint-frontend` and `make lint-backend`; fix findings
-- [ ] T067 Run full gate: `make test` (backend+frontend) + `make build` + `make verify-binary`; ensure all green
-- [ ] T068 Execute `specs/003-screen-ui-refactor/quickstart.md` acceptance walkthrough (all screens, responsive check, single-binary)
-- [ ] T069 [P] Remove remaining dead code/unused fonts; final WCAG AA contrast audit across screens
+- [X] T066 [P] Run `make lint-frontend` and `make lint-backend`; fix findings
+- [X] T067 Run full gate: `make test` (backend+frontend) + `make build` + `make verify-binary`; ensure all green
+- [X] T068 Execute `specs/003-screen-ui-refactor/quickstart.md` acceptance walkthrough (all screens, responsive check, single-binary)
+- [X] T069 [P] Remove remaining dead code/unused fonts; final WCAG AA contrast audit across screens
 
 ---
 

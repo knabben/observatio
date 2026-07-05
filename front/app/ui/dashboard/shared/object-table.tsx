@@ -8,8 +8,8 @@ import {EmptyState} from "@/app/ui/dashboard/shared/empty-state";
 interface ObjectTableProps<T> {
   items: T[] | undefined;
   columns: ColumnDef<T>[];
-  /** Stable unique row identity — NEVER the array index. */
-  getRowKey: (item: T) => string;
+  /** Stable row identity. `index` is provided only as a last-resort fallback for a missing id. */
+  getRowKey: (item: T, index: number) => string;
   onSelect?: (item: T) => void;
   emptyLabel: string;
 }
@@ -44,30 +44,33 @@ export function ObjectTable<T>({
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {items.map((item) => (
-            <Table.Tr key={getRowKey(item)}>
-              {columns.map((col, ci) => {
-                const content = col.render(item);
-                return (
-                  <Table.Td key={col.header} ta={col.align}>
-                    {ci === 0 && onSelect ? (
-                      <UnstyledButton
-                        component="button"
-                        type="button"
-                        onClick={() => onSelect(item)}
-                        aria-label={`Select ${getRowKey(item)}`}
-                        className="cursor-pointer hover:opacity-70"
-                      >
-                        {content}
-                      </UnstyledButton>
-                    ) : (
-                      content
-                    )}
-                  </Table.Td>
-                );
-              })}
-            </Table.Tr>
-          ))}
+          {items.map((item, index) => {
+            const rowKey = getRowKey(item, index);
+            return (
+              <Table.Tr key={rowKey}>
+                {columns.map((col, ci) => {
+                  const content = col.render(item);
+                  return (
+                    <Table.Td key={col.header} ta={col.align}>
+                      {ci === 0 && onSelect ? (
+                        <UnstyledButton
+                          component="button"
+                          type="button"
+                          onClick={() => onSelect(item)}
+                          aria-label={`Select ${rowKey}`}
+                          className="cursor-pointer hover:opacity-70"
+                        >
+                          {content}
+                        </UnstyledButton>
+                      ) : (
+                        content
+                      )}
+                    </Table.Td>
+                  );
+                })}
+              </Table.Tr>
+            );
+          })}
         </Table.Tbody>
       </Table>
     </Table.ScrollContainer>

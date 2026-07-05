@@ -9,9 +9,8 @@ import {ClusterType} from "@/app/ui/dashboard/components/clusters/types";
 import BaseLister from "@/app/ui/dashboard/base/lister";
 
 /**
- * A functional component that fetches, filters, and displays a list of clusters.
- * The component integrates WebSocket for real-time communication and enables
- * cluster search functionality. Displays a loader while data is being fetched.
+ * Thin composition of `BaseLister` with the cluster-specific table/details renderers.
+ * `BaseLister` owns the live WebSocket stream, loading/empty/error states, and selection.
  */
 export default function ClusterLister() {
   return <BaseLister

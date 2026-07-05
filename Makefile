@@ -106,3 +106,7 @@ build: check-prereqs build-frontend ## Build full stack — validates prereqs, b
 	mkdir -p output
 	pushd webserver && CGO_ENABLED=0 go build -o $(BINARY_PATH) . && popd
 	@echo "[build] Done — binary at $(BINARY_PATH)"
+
+.PHONY: verify-binary
+verify-binary: build ## Build then launch the binary, smoke-test UI+API/WS same-origin, and tear down
+	@bash scripts/verify-binary.sh

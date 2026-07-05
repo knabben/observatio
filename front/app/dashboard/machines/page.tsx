@@ -5,7 +5,7 @@ import { Text, Space, Tabs, TabsList, TabsTab, TabsPanel } from '@mantine/core'
 
 export default async function Machines() {
   return (
-    <Tabs color="#aaf16a" defaultValue="machine-vsphere">
+    <Tabs color="var(--mantine-color-brand-4)" defaultValue="machine-vsphere">
       <TabsList>
         <TabsTab value="machine-vsphere">
           <Text size="md" fw={700}>vSphere Machines</Text>

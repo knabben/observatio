@@ -23,21 +23,21 @@ export default function MachineInfraDetails({
       label: "AI Troubleshooting",
       content: (machine: MachineInfraType) => <AITroubleshooting
         objectType="vspheremachine"
-        objectName={machine.metadata.name}
-        objectNamespace={machine.metadata.namespace}
-        conditions={machine.status.conditions} />
+        objectName={machine.metadata?.name ?? ''}
+        objectNamespace={machine.metadata?.namespace ?? ''}
+        conditions={machine.status?.conditions ?? []} />
     }];
 
   const headerRender = (machine: MachineInfraType) => (
-    <SimpleGrid cols={2}>
+    <SimpleGrid cols={{base: 1, sm: 2}}>
       <div className="flex items-center h-full">
         <Group justify="flex-start">
           {
-            machine.status.ready
+            machine.status?.ready
               ? <IconCheck size={40} color="teal"/>
               : <IconX color="red" size={40}/>
           }
-          <Text className="text-bold" fw={700}>{machine.metadata?.name}</Text>
+          <Text className="font-bold" fw={700}>{machine.metadata?.name}</Text>
         </Group>
       </div>
       <div>
@@ -49,9 +49,9 @@ export default function MachineInfraDetails({
             </Text>
           </Stack>
           <Stack gap="sm" justify="center">
-            <Text size="sm">Created</Text>
+            <Text size="sm">Age</Text>
             <Text size="xl">
-              {machine.age}
+              {machine.age ?? '—'}
             </Text>
           </Stack>
         </Group>

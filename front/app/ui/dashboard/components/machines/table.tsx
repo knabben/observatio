@@ -1,10 +1,28 @@
 'use client';
 
 import React from "react";
-import {Badge, Indicator, Table} from '@mantine/core';
+import {Badge} from '@mantine/core';
 import { GridCol } from '@mantine/core';
 import {MachineType} from "@/app/ui/dashboard/components/machines/types";
-import {roboto} from "@/fonts";
+import {StatusIndicator} from "@/app/ui/dashboard/shared/status-indicator";
+import {allReady} from "@/app/ui/dashboard/shared/status";
+import {ObjectTable} from '@/app/ui/dashboard/shared/object-table';
+import {ColumnDef} from '@/app/ui/dashboard/base/types';
+
+const columns: ColumnDef<MachineType>[] = [
+  {header: 'Name', render: (m) => m.metadata?.name ?? '—'},
+  {header: 'Namespace', render: (m) => <Badge variant="light" color="gray">{m.metadata?.namespace ?? '—'}</Badge>},
+  {header: 'Version', render: (m) => m.version ?? '—'},
+  {header: 'Cluster', render: (m) => m.cluster ?? '—'},
+  {header: 'Age', render: (m) => m.age ?? '—', align: 'center'},
+  {
+    header: 'Status',
+    align: 'center',
+    render: (m) => (
+      <StatusIndicator state={allReady(m.status?.bootstrapReady, m.status?.infrastructureReady)} dotOnly/>
+    ),
+  },
+];
 
 export default function MachinesTable({
   machines, select
@@ -14,40 +32,13 @@ export default function MachinesTable({
 }) {
   return (
     <GridCol span={12}>
-      <Table highlightOnHover>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Namespace</Table.Th>
-            <Table.Th>Version</Table.Th>
-            <Table.Th>Cluster</Table.Th>
-            <Table.Th>Age</Table.Th>
-            <Table.Th>Status</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody className="text-sm">
-          {
-            machines.map( (machine: MachineType, i) => (
-              <Table.Tr className={roboto.className} key={i}>
-                <Table.Td>
-                  <a className="cursor-pointer hover:opacity-70" onClick={() => select(machine)}>{machine.metadata.name}</a>
-                </Table.Td>
-                <Table.Td>
-                  <Badge variant="light" color="gray"> {machine.metadata.namespace} </Badge>
-                </Table.Td>
-                <Table.Td>{machine.version}</Table.Td>
-                <Table.Td>{machine.cluster}</Table.Td>
-                <Table.Td ta="center">{machine.age}</Table.Td>
-                <Table.Td ta="center">
-                  {machine.status?.bootstrapReady && machine.status?.infrastructureReady
-                    ? <Indicator inline processing color="green" size={15}/>
-                    : <Indicator inline processing color="red" size={15}/>
-                  }</Table.Td>
-              </Table.Tr>
-            ))
-          }
-        </Table.Tbody>
-      </Table>
+      <ObjectTable
+        items={machines}
+        columns={columns}
+        getRowKey={(m, i) => m.metadata?.name ?? `row-${i}`}
+        onSelect={select}
+        emptyLabel="No machines found"
+      />
     </GridCol>
   )
 }

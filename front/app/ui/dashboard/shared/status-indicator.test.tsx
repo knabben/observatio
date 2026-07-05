@@ -1,4 +1,4 @@
-import {describe, it, expect} from "@jest/globals";
+import "@testing-library/jest-dom";
 import {screen} from "@testing-library/react";
 import {render} from "@/app/ui/dashboard/utils/test-render";
 import {toStatusState, allReady} from "./status";

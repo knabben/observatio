@@ -1,15 +1,16 @@
 'use client';
 
 import React, {useState} from 'react';
-import {sourceCodePro400} from "@/fonts";
+import {sourceSans400} from "@/fonts";
 
 import {Grid, GridCol, Title} from '@mantine/core';
 import {CenteredLoader} from "@/app/ui/dashboard/utils/loader";
 import {IconArrowBigLeft} from "@tabler/icons-react";
-import {FilterItems} from "@/app/dashboard/utils";
+import {FilterItems, FilterItemsByName} from "@/app/dashboard/utils";
 import {useResourceStream} from "@/app/ui/dashboard/shared/resource-hooks";
 import {EmptyState} from "@/app/ui/dashboard/shared/empty-state";
 import {ErrorState} from "@/app/ui/dashboard/shared/error-state";
+import Search from "@/app/ui/dashboard/search";
 
 interface BaseListerProps<T extends object> {
   objectType: string;
@@ -35,6 +36,7 @@ export default function BaseLister<T extends object>({
   title,
 }: BaseListerProps<T>) {
   const [selected, setSelected] = useState('');
+  const [query, setQuery] = useState('');
   const {state, items, retry} = useResourceStream<T & WithMeta>(objectType);
 
   const handleSelect = (item: T | null) => {
@@ -49,7 +51,10 @@ export default function BaseLister<T extends object>({
     ? (FilterItems(selected, items) as T | undefined)
     : undefined;
 
+  const searchedItems = FilterItemsByName(query, items as (T & WithMeta)[]) as T[];
+
   const lower = title.toLowerCase();
+  const showSearch = !filteredItem && state === 'ready';
 
   const body = () => {
     if (state === 'connecting') {
@@ -68,17 +73,17 @@ export default function BaseLister<T extends object>({
     if (state === 'empty') {
       return <GridCol span={12}><EmptyState label={`No ${lower} found`}/></GridCol>;
     }
-    return renderTable(items as T[], handleSelect);
+    return renderTable(searchedItems, handleSelect);
   };
 
   return (
     <Grid justify="flex-end" align="flex-start">
-      <GridCol span={{base: 12, sm: 9}}>
-        <Title className={sourceCodePro400.className} order={2}>
+      <GridCol span={{base: 12, sm: 6}}>
+        <Title className={sourceSans400.className} order={2}>
           {title}
         </Title>
       </GridCol>
-      <GridCol span={{base: 12, sm: 3}} className="flex justify-end items-center">
+      <GridCol span={{base: 12, sm: 6}} className="flex justify-end items-center">
         {selected &&
           <IconArrowBigLeft
             onClick={() => handleSelect(null)}
@@ -88,6 +93,9 @@ export default function BaseLister<T extends object>({
             tabIndex={0}
             aria-label="Back to list"
           />
+        }
+        {showSearch &&
+          <Search value={query} onChange={setQuery} placeholder={`Search ${lower} by name…`}/>
         }
       </GridCol>
       {body()}

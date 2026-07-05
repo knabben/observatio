@@ -15,23 +15,23 @@ import type React from "react";
  * - `ownerReferences`: An array of references to owner resources, describing the relationship between resources.
  */
 export type Meta = {
-  name: string,
-  namespace: string,
-  resourceVersion: string,
-  creationTimestamp: string,
-  labels: {
+  name?: string,
+  namespace?: string,
+  resourceVersion?: string,
+  creationTimestamp?: string,
+  labels?: {
     [key: string]: string
   },
-  annotations: {
+  annotations?: {
     [key: string]: string
   },
-  ownerReferences: {
-    kind: string,
-    name: string,
-    uid: string,
-    apiVersion: string,
-    controller: boolean,
-    blockOwnerDeletion: boolean,
+  ownerReferences?: {
+    kind?: string,
+    name?: string,
+    uid?: string,
+    apiVersion?: string,
+    controller?: boolean,
+    blockOwnerDeletion?: boolean,
   }[]
 }
 

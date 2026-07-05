@@ -24,13 +24,13 @@ export default function ClusterInfraDetails({
       label: "AI Troubleshooting",
       content: (cluster: ClusterInfraType) => <AITroubleshooting
         objectType="vspherecluster"
-        objectName={cluster.metadata.name}
-        objectNamespace={cluster.metadata.namespace}
-        conditions={cluster.status.conditions}
+        objectName={cluster.metadata?.name ?? ''}
+        objectNamespace={cluster.metadata?.namespace ?? ''}
+        conditions={cluster.status?.conditions ?? []}
       />
   }];
   const headerRender = (cluster: ClusterInfraType) => (
-    <SimpleGrid cols={2}>
+    <SimpleGrid cols={{base: 1, sm: 2}}>
       <div className="flex items-center h-full">
         <Group justify="flex-start">
           {
@@ -38,7 +38,7 @@ export default function ClusterInfraDetails({
               ? <IconCheck size={40} color="teal"/>
               : <IconX color="red" size={40}/>
           }
-          <Text className="text-bold" fw={700}>{cluster.metadata?.name}</Text>
+          <Text className="font-bold" fw={700}>{cluster.metadata?.name}</Text>
         </Group>
       </div>
       <div>
@@ -50,9 +50,9 @@ export default function ClusterInfraDetails({
             </Text>
           </Stack>
           <Stack gap="sm" justify="center">
-            <Text size="sm">Created</Text>
+            <Text size="sm">Age</Text>
             <Text size="xl">
-              {cluster.age}
+              {cluster.age ?? '—'}
             </Text>
           </Stack>
         </Group>

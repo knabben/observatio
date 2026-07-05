@@ -69,6 +69,6 @@ func ToMessageParam(message string) *ChatMessage {
 func formatMessage(errorMessage string) string {
 	var messageBuilder strings.Builder
 	formattedQuestion := fmt.Sprintf(questionFormat, errorMessage)
-	messageBuilder.WriteString(fmt.Sprintf(messageTemplate, TASK_CONTEXT, formattedQuestion))
+	fmt.Fprintf(&messageBuilder, messageTemplate, TASK_CONTEXT, formattedQuestion)
 	return messageBuilder.String()
 }
