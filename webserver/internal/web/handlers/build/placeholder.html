@@ -1,0 +1,6 @@
+<!--
+This file exists only so `//go:embed build/*` in handlers.go has at least one match
+on a fresh checkout (the `build/` directory is gitignored and normally populated by
+`make build`). It is never served: `make build` wipes this directory and repopulates
+it from the real frontend export before compiling the binary.
+-->
