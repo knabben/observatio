@@ -64,8 +64,8 @@ const ClusterClassRow: React.FC<{ clusterClass: ClusterClass }> = ({clusterClass
     <Table.Td>{clusterClass.generation}</Table.Td>
     <Table.Td rowSpan={1}>
       {
-        clusterClass.conditions.map((condition, index) => (
-          condition.status.toLowerCase() === 'true'
+        (clusterClass.conditions ?? []).map((condition, index) => (
+          condition.status?.toLowerCase() === 'true'
           ? <Chip key={index} className="p-1" defaultChecked color="teal" variant="light">{condition.type}</Chip>
           : <Chip key={index} defaultChecked icon={<XMarkIcon />} color="red" variant="light">{condition.type}</Chip>
         ))

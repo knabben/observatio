@@ -1,56 +1,61 @@
-export const URL = 'http://localhost:8080';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {API_URL} from "@/app/lib/config";
+
+/**
+ * Fetches JSON from the backend, checking the HTTP status first so a 4xx/5xx body is
+ * never silently treated as valid data. Network and parse failures propagate to the
+ * caller, which surfaces them as an error state.
+ */
+async function getJSON<T = any>(path: string): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`);
+  if (!res.ok) {
+    throw new Error(`Request to ${path} failed: ${res.status} ${res.statusText}`);
+  }
+  return res.json() as Promise<T>;
+}
 
 // ----- Dashboard -----
 
 export async function getComponentsVersion() {
-  const res = await fetch(`${URL}/api/clusters/components`)
-  return res.json()
+  return getJSON(`/api/clusters/components`)
 }
 
 export async function getClusterInformation() {
-  const res = await fetch(`${URL}/api/clusters/info`)
-  return res.json()
+  return getJSON(`/api/clusters/info`)
 }
 
 export async function getClusterSummary() {
-  const res = await fetch(`${URL}/api/clusters/summary`)
-  return res.json()
+  return getJSON(`/api/clusters/summary`)
 }
 
 export async function getClusterClasses() {
-  const res = await fetch(`${URL}/api/clusters/classes`)
-  return res.json()
+  return getJSON(`/api/clusters/classes`)
 }
 
 export async function getClusterHierarchy() {
-  const res = await fetch(`${URL}/api/clusters/topology`)
-  return res.json()
+  return getJSON(`/api/clusters/topology`)
 }
 
 // ----- Clusters -----
 
 export async function getClusterList() {
-  const res = await fetch(`${URL}/api/clusters/list`)
-  return res.json()
+  return getJSON(`/api/clusters/list`)
 }
 
 export async function getClusterInfraList() {
-  const res = await fetch(`${URL}/api/clusters/infra/list`)
-  return res.json()
+  return getJSON(`/api/clusters/infra/list`)
 }
 
 // ----- MachinesDeployment -----
 
 export async function getMachinesDeployments() {
-  const res = await fetch(`${URL}/api/machinesdeployment/list`)
-  return res.json()
+  return getJSON(`/api/machinesdeployment/list`)
 }
 
 // ----- Machines -----
 
 export async function getMachines() {
-  const res = await fetch(`${URL}/api/machines/list`)
-  return res.json()
+  return getJSON(`/api/machines/list`)
 }
 
 // ----- AI Interactions -----
@@ -62,10 +67,13 @@ const defaultRequestConfig = {
 };
 
 export async function postAIAnalysis(request: string) {
-  const res = await fetch(`${URL}/api/analysis`, {
+  const res = await fetch(`${API_URL}/api/analysis`, {
     ...defaultRequestConfig,
     method: 'POST',
     body: JSON.stringify({request}),
   });
+  if (!res.ok) {
+    throw new Error(`AI analysis request failed: ${res.status} ${res.statusText}`);
+  }
   return res.json();
 }

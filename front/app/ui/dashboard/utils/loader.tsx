@@ -11,7 +11,7 @@ export const CenteredLoader: React.FC<CenteredLoaderProps> = ({
   size = "xl"
 }) => {
   return (
-    <div className="flex justify-center items-center w-full">
+    <div className="flex justify-center items-center w-full" style={{minHeight: 200}}>
       <Loader color={color} size={size}/>
     </div>
   );

@@ -72,7 +72,7 @@ export default function AITroubleshooting({
                   <Table.Tr key={ic}>
                     <Table.Td>
                       {
-                        condition.status.toLowerCase() == "true"
+                        condition.status?.toLowerCase() === "true"
                           ? <Chip key={ic} defaultChecked className="p-1" color="teal" variant="light">{condition.type}</Chip>
                           : (
                             <div>
@@ -96,7 +96,7 @@ export default function AITroubleshooting({
                     <Table.Td>{condition.severity}</Table.Td>
                     <Table.Td className="break-all text-xs">
                       {
-                        condition.status.toLowerCase() == "true"
+                        condition.status?.toLowerCase() === "true"
                           ? <Text size="sm" className="text-xs text-bold break-all">{condition.message}</Text>
                           : <Text size="sm" c="red">{condition.message}</Text>
                       }

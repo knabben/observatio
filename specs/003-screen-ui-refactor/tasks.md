@@ -25,9 +25,9 @@ implementable and testable. Frontend lives in `front/app/`, backend in `webserve
 
 **Purpose**: Refresh dependencies within-major and establish a green baseline before any refactor (R11).
 
-- [ ] T001 [P] Refresh frontend deps within-major in `front/package.json`: `cd front && pnpm update && pnpm add next@"^15" eslint-config-next@"^15"`; keep lockfile (defer Mantine 9 / Jest 30)
-- [ ] T002 [P] Refresh backend deps within-major in `webserver/go.mod`: `cd webserver && go get github.com/gin-gonic/gin@latest github.com/gorilla/websocket@latest github.com/spf13/cobra@latest github.com/stretchr/testify@latest && go mod tidy` (defer k8s 0.36 / CAPI 1.13 / controller-runtime 0.24 / anthropic v1)
-- [ ] T003 Establish green baseline after updates: run `make run-tests-frontend`, `make run-tests-backend`, `make build`; fix only breakage introduced by the updates (no feature changes)
+- [X] T001 [P] Refresh frontend deps within-major in `front/package.json`: `cd front && pnpm update && pnpm add next@"^15" eslint-config-next@"^15"`; keep lockfile (defer Mantine 9 / Jest 30)
+- [X] T002 [P] Refresh backend deps within-major in `webserver/go.mod`: `cd webserver && go get github.com/gin-gonic/gin@latest github.com/gorilla/websocket@latest github.com/spf13/cobra@latest github.com/stretchr/testify@latest && go mod tidy` (defer k8s 0.36 / CAPI 1.13 / controller-runtime 0.24 / anthropic v1)
+- [X] T003 Establish green baseline after updates: run `make run-tests-frontend`, `make run-tests-backend`, `make build`; fix only breakage introduced by the updates (no feature changes)
 
 **Checkpoint**: Dependencies current within-major; build + tests green.
 
@@ -39,19 +39,19 @@ implementable and testable. Frontend lives in `front/app/`, backend in `webserve
 
 **⚠️ CRITICAL**: No user-story work can begin until this phase is complete.
 
-- [ ] T004 [P] Create same-origin endpoint config in `front/app/lib/config.ts` (`API_URL` relative default, `WS_URL`/`WS_URL_CHATBOT` derived from `window.location`; `NEXT_PUBLIC_*` dev-only override) per `contracts/environment-config.md`
-- [ ] T005 Harden WebSocket client in `front/app/lib/websocket.tsx` (bounded reconnect: 8 attempts + exponential backoff to 30s, `onReconnectStop`→error; ignore empty/malformed frames — never clear list; import URLs from `config.ts`)
-- [ ] T006 Harden REST layer in `front/app/lib/data.tsx` (check `res.ok` before `json()`, wrap in try/catch, propagate errors; import `API_URL` from `config.ts`; remove hardcoded `URL` const)
-- [ ] T007 [P] Add `StatusState` type + `toStatusState()` tri-state helper (strict comparisons, absent→unknown) in `front/app/ui/dashboard/shared/status.ts`
-- [ ] T008 [P] Create `EmptyState` component in `front/app/ui/dashboard/shared/empty-state.tsx`
-- [ ] T009 [P] Create `ErrorState` component (message + optional keyboard-accessible retry) in `front/app/ui/dashboard/shared/error-state.tsx`
-- [ ] T010 [P] Create `StatusIndicator` (tri-state, no `processing` pulse on failed, accessible label) in `front/app/ui/dashboard/shared/status-indicator.tsx` (uses T007)
-- [ ] T011 Create `ChannelState` machine + `useResourceStream<T>` hook (connecting/ready/empty/error, 10s data-arrival timeout, `retry`) in `front/app/ui/dashboard/shared/resource-hooks.ts` (uses T005)
-- [ ] T012 [P] Create generic `ObjectTable<T>` (config-driven `ColumnDef`, stable `getRowKey`, `Table.ScrollContainer`, empty via `EmptyState`) in `front/app/ui/dashboard/shared/object-table.tsx` (uses T008)
-- [ ] T013 [P] Add shared `ColumnDef<T>` / `DetailFieldDef<T>` config types in `front/app/ui/dashboard/base/types.tsx`
-- [ ] T014 [P] Null-safe `FilterItems` (guard `metadata?.name`) in `front/app/dashboard/utils.tsx`
-- [ ] T015 Add sort-comparator guard for missing `metadata.name` in `front/app/ui/dashboard/base/lister.tsx`
-- [ ] T016 [P] Add root error boundary (`'use client'`) in `front/app/error.tsx`
+- [X] T004 [P] Create same-origin endpoint config in `front/app/lib/config.ts` (`API_URL` relative default, `WS_URL`/`WS_URL_CHATBOT` derived from `window.location`; `NEXT_PUBLIC_*` dev-only override) per `contracts/environment-config.md`
+- [X] T005 Harden WebSocket client in `front/app/lib/websocket.tsx` (bounded reconnect: 8 attempts + exponential backoff to 30s, `onReconnectStop`→error; ignore empty/malformed frames — never clear list; import URLs from `config.ts`)
+- [X] T006 Harden REST layer in `front/app/lib/data.tsx` (check `res.ok` before `json()`, wrap in try/catch, propagate errors; import `API_URL` from `config.ts`; remove hardcoded `URL` const)
+- [X] T007 [P] Add `StatusState` type + `toStatusState()` tri-state helper (strict comparisons, absent→unknown) in `front/app/ui/dashboard/shared/status.ts`
+- [X] T008 [P] Create `EmptyState` component in `front/app/ui/dashboard/shared/empty-state.tsx`
+- [X] T009 [P] Create `ErrorState` component (message + optional keyboard-accessible retry) in `front/app/ui/dashboard/shared/error-state.tsx`
+- [X] T010 [P] Create `StatusIndicator` (tri-state, no `processing` pulse on failed, accessible label) in `front/app/ui/dashboard/shared/status-indicator.tsx` (uses T007)
+- [X] T011 Create `ChannelState` machine + `useResourceStream<T>` hook (connecting/ready/empty/error, 10s data-arrival timeout, `retry`) in `front/app/ui/dashboard/shared/resource-hooks.ts` (uses T005)
+- [X] T012 [P] Create generic `ObjectTable<T>` (config-driven `ColumnDef`, stable `getRowKey`, `Table.ScrollContainer`, empty via `EmptyState`) in `front/app/ui/dashboard/shared/object-table.tsx` (uses T008)
+- [X] T013 [P] Add shared `ColumnDef<T>` / `DetailFieldDef<T>` config types in `front/app/ui/dashboard/base/types.tsx`
+- [X] T014 [P] Null-safe `FilterItems` (guard `metadata?.name`) in `front/app/dashboard/utils.tsx`
+- [X] T015 Add sort-comparator guard for missing `metadata.name` in `front/app/ui/dashboard/base/lister.tsx`
+- [X] T016 [P] Add root error boundary (`'use client'`) in `front/app/error.tsx`
 
 **Checkpoint**: Shared primitives, hardened channels, and same-origin config ready — user stories can begin.
 
@@ -66,7 +66,7 @@ implementable and testable. Frontend lives in `front/app/`, backend in `webserve
 ### Tests for User Story 1 ⚠️ (write first, ensure they fail)
 
 - [ ] T017 [P] [US1] Unit tests for `useResourceStream` states (connecting→ready/empty/error, 10s timeout, empty-frame no-op) in `front/app/ui/dashboard/shared/resource-hooks.test.tsx`
-- [ ] T018 [P] [US1] Tests for `EmptyState`/`ErrorState`/`StatusIndicator` + `toStatusState` (healthy/notready/unknown, zero-value, absent field) in `front/app/ui/dashboard/shared/status-indicator.test.tsx`
+- [X] T018 [P] [US1] Tests for `EmptyState`/`ErrorState`/`StatusIndicator` + `toStatusState` (healthy/notready/unknown, zero-value, absent field) in `front/app/ui/dashboard/shared/status-indicator.test.tsx`
 - [ ] T019 [P] [US1] Partial-data + empty render tests for clusters (table, details, specification, infra) in `front/app/ui/dashboard/components/clusters/table.test.tsx`
 - [ ] T020 [P] [US1] Partial-data + empty + `0`-value render tests for machines (+infra, incl. `numCoresPerSocket=0` leak) in `front/app/ui/dashboard/components/machines/table.test.tsx`
 - [ ] T021 [P] [US1] Partial-data + empty + unknown-availability tests for mds in `front/app/ui/dashboard/components/mds/table.test.tsx`
@@ -77,7 +77,7 @@ implementable and testable. Frontend lives in `front/app/`, backend in `webserve
 - [ ] T023 [P] [US1] Correct nullability (optional fields, `replicas: number`) in `front/app/ui/dashboard/components/clusters/types.tsx`
 - [ ] T024 [P] [US1] Correct nullability in `front/app/ui/dashboard/components/machines/types.tsx`
 - [ ] T025 [P] [US1] Correct nullability in `front/app/ui/dashboard/components/mds/types.tsx`
-- [ ] T026 [US1] Wire `BaseLister` to `useResourceStream` → `CenteredLoader`/`EmptyState`/`ErrorState(retry)` in `front/app/ui/dashboard/base/lister.tsx` (uses T011, T008, T009)
+- [X] T026 [US1] Wire `BaseLister` to `useResourceStream` → `CenteredLoader`/`EmptyState`/`ErrorState(retry)` in `front/app/ui/dashboard/base/lister.tsx` (uses T011, T008, T009)
 - [ ] T027 [P] [US1] Null-safe access + empty state + `StatusIndicator` in `front/app/ui/dashboard/components/clusters/table.tsx` and `.../clusters/infra/infra-table.tsx`
 - [ ] T028 [P] [US1] Null-safe access (`paused`, arrays, empty `—`) in `front/app/ui/dashboard/components/clusters/details.tsx`, `.../specification.tsx`, and `.../clusters/infra/{infra-details,specification}.tsx`
 - [ ] T029 [P] [US1] Null-safe access + `StatusIndicator` + fix `0 && <JSX>` leak in `front/app/ui/dashboard/components/machines/table.tsx`, `.../machines/infra/infra-table.tsx`, `.../machines/infra/specification.tsx`
@@ -107,7 +107,7 @@ implementable and testable. Frontend lives in `front/app/`, backend in `webserve
 - [ ] T037 [US2] Add `Table.ScrollContainer` + responsive behavior in `front/app/ui/dashboard/shared/object-table.tsx`
 - [ ] T038 [P] [US2] Full-width single-child spec panels + responsive `SimpleGrid`/detail grids in `front/app/ui/dashboard/components/{clusters,machines,mds}/specification.tsx` and infra `specification.tsx`
 - [ ] T039 [P] [US2] Scroll containment at all breakpoints (not `md:`-only) in `front/app/dashboard/layout.tsx`
-- [ ] T040 [P] [US2] Vertically center loader (`min-h`) in `front/app/ui/dashboard/utils/loader.tsx`
+- [X] T040 [P] [US2] Vertically center loader (`min-h`) in `front/app/ui/dashboard/utils/loader.tsx`
 
 **Checkpoint**: Screens are responsive and overflow-safe across supported widths.
 
