@@ -1,15 +1,13 @@
-import { Inter, Roboto, Lora, Source_Sans_3, Open_Sans } from 'next/font/google'
+import { Roboto, Source_Sans_3, Open_Sans } from 'next/font/google'
 
-// define your variable fonts
-const inter = Inter({ weight: "300", subsets: ['latin'] })
-const roboto = Roboto({ weight: "300", subsets: ['latin'] })
-const lora = Lora({subsets: ['latin']})
+const roboto = Roboto({ weight: ["300", "700"], subsets: ['latin'] })
 const openSans = Open_Sans({
-  weight: '300',
+  weight: ["300", "700"],
   subsets: ['latin']
 })
-const sourceCodePro400 = Source_Sans_3({
+/** Source Sans 3 — previously misnamed `sourceCodePro400` despite not being a monospace font. */
+const sourceSans400 = Source_Sans_3({
   weight: '300', subsets: ['latin']
 })
 
-export { inter, lora, roboto, sourceCodePro400, openSans }
+export { roboto, sourceSans400, openSans }

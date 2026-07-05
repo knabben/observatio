@@ -1,12 +1,13 @@
 'use client';
 
-import React, {useState, useEffect} from 'react';
+import React from 'react';
 import {Card, Grid, SimpleGrid, Text, Title} from '@mantine/core';
 import {getClusterSummary} from "@/app/lib/data";
 import Header from "@/app/ui/dashboard/utils/header";
 import {RadialBarChart} from "@mantine/charts";
-import {sourceCodePro400} from "@/fonts";
+import {sourceSans400} from "@/fonts";
 import { CenteredLoader } from '@/app/ui/dashboard/utils/loader';
+import {useFetchState} from "@/app/ui/dashboard/shared/use-fetch-state";
 
 type ClusterSummary = {
   name: string;
@@ -15,53 +16,35 @@ type ClusterSummary = {
 };
 
 type ClusterSummaryResponse = {
-  clusterProvisioned: number;
-  clusterFailed: number;
-  machineProvisioned: number;
-  machineFailed: number;
-  machineDeploymentProvisioned: number;
-  machineDeploymentFailed: number;
+  clusterProvisioned?: number;
+  clusterFailed?: number;
+  machineProvisioned?: number;
+  machineFailed?: number;
+  machineDeploymentProvisioned?: number;
+  machineDeploymentFailed?: number;
 };
 
 const CLUSTER_STATUS_COLORS = {
-  RUNNING: '#39b69d',
-  FAILED: '#f53f5e',
+  RUNNING: 'var(--mantine-color-teal-6)',
+  FAILED: 'var(--mantine-color-red-6)',
 } as const;
 
 const transformSummaryData = (response: ClusterSummaryResponse): ClusterSummary[] => [
-  {name: 'Cluster running', value: response.clusterProvisioned, color: CLUSTER_STATUS_COLORS.RUNNING},
-  {name: 'Cluster failed', value: response.clusterFailed, color: CLUSTER_STATUS_COLORS.FAILED},
-  {name: 'Machine D. running', value: response.machineDeploymentProvisioned, color: CLUSTER_STATUS_COLORS.RUNNING},
-  {name: 'Machine D. failed', value: response.machineDeploymentFailed, color: CLUSTER_STATUS_COLORS.FAILED},
-  {name: 'Machine provisioned', value: response.machineProvisioned, color: CLUSTER_STATUS_COLORS.RUNNING},
-  {name: 'Machine failed', value: response.machineFailed, color: CLUSTER_STATUS_COLORS.FAILED},
+  {name: 'Cluster running', value: response.clusterProvisioned ?? 0, color: CLUSTER_STATUS_COLORS.RUNNING},
+  {name: 'Cluster failed', value: response.clusterFailed ?? 0, color: CLUSTER_STATUS_COLORS.FAILED},
+  {name: 'Machine D. running', value: response.machineDeploymentProvisioned ?? 0, color: CLUSTER_STATUS_COLORS.RUNNING},
+  {name: 'Machine D. failed', value: response.machineDeploymentFailed ?? 0, color: CLUSTER_STATUS_COLORS.FAILED},
+  {name: 'Machine provisioned', value: response.machineProvisioned ?? 0, color: CLUSTER_STATUS_COLORS.RUNNING},
+  {name: 'Machine failed', value: response.machineFailed ?? 0, color: CLUSTER_STATUS_COLORS.FAILED},
 ];
 
 export const useClusterSummary = () => {
-  const [summary, setSummary] = useState<ClusterSummary[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleFetchError = (error: Error) => {
-    console.error('Failed to fetch cluster summary:', error);
-    setError('Failed to load cluster summary');
-    setIsLoading(false);
-  };
-
-  useEffect(() => {
-    const fetchSummary = async () => {
-      try {
-        const response = await getClusterSummary();
-        setSummary(transformSummaryData(response));
-      } catch (error) {
-        handleFetchError(error as Error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchSummary();
-  }, []);
-
+  const {data: response, isLoading, error} = useFetchState<ClusterSummaryResponse | undefined>(
+    getClusterSummary,
+    undefined,
+    'Failed to load cluster summary',
+  );
+  const summary = response ? transformSummaryData(response) : [];
   return {summary, isLoading, error};
 }
 
@@ -74,13 +57,13 @@ export default function ClusterSummary() {
   const {summary, isLoading, error} = useClusterSummary();
 
   return (
-    <Card shadow="md" className={sourceCodePro400.className} padding="lg" radius="md" withBorder>
+    <Card shadow="md" className={sourceSans400.className} padding="lg" radius="md" withBorder>
       <Header title="Clusters Health"/>
       {isLoading && <CenteredLoader />}
       {error && <Text c="red">{error}</Text>}
       {!error && !isLoading && (
       <Grid align="center" ta="center">
-          <Grid.Col span={6}>
+          <Grid.Col span={{base: 12, sm: 6}}>
             <SimpleGrid cols={2} verticalSpacing="sm">
               {summary.map((item: ClusterSummary, index: number) => (
                 <div key={index}>
@@ -89,7 +72,7 @@ export default function ClusterSummary() {
               ))}
             </SimpleGrid>
           </Grid.Col>
-          <Grid.Col span={6}>
+          <Grid.Col span={{base: 12, sm: 6}}>
             <RadialBarChart data={summary} dataKey="value" h={250}/>
           </Grid.Col>
         </Grid>

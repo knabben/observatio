@@ -1,33 +1,49 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: N/A (initial creation) → 1.0.0
-Modified principles: N/A — first version
+Version change: 1.0.0 → 1.1.0
+Modified principles:
+  - I. Observability-First → I. Observability & Data Consolidation (expanded:
+    added multi-source data collection and consolidation requirements)
 Added sections:
-  - Core Principles (I–V)
-  - Technology Stack
-  - Development Workflow
-  - Governance
+  - Purpose & Scope (new preamble capturing project mission)
 Removed sections: N/A
 Templates reviewed:
-  - .specify/templates/plan-template.md ✅ Constitution Check section compatible
-  - .specify/templates/spec-template.md ✅ User story / requirements structure aligns
-  - .specify/templates/tasks-template.md ✅ Phase structure aligns with principle V (test-driven)
+  - .specify/templates/plan-template.md ✅ Constitution Check gate references
+    constitution dynamically; no change required
+  - .specify/templates/spec-template.md ✅ Structure unaffected by amendment
+  - .specify/templates/tasks-template.md ✅ Phase structure still aligns with Principle V
 Follow-up TODOs: None — all placeholders resolved
 -->
 
 # Observātiō Constitution
 
+## Purpose & Scope
+
+Observātiō monitors Kubernetes clusters managed by ClusterAPI, providing tools and solutions
+that enhance visibility and operational efficiency. By collecting and consolidating data from
+diverse sources, it delivers comprehensive insights into cluster performance and health.
+Through advanced dashboards and real-time visualization, it enables operators to swiftly
+identify and resolve issues — improving operational reliability, reducing downtime, and
+ensuring robust management of cloud-native environments.
+
+The principles below are non-negotiable constraints that every feature MUST satisfy to serve
+this mission. They govern how data is observed, how it reaches operators, how the domain model
+is structured, how troubleshooting is augmented, and how quality is maintained.
+
 ## Core Principles
 
-### I. Observability-First
+### I. Observability & Data Consolidation
 
-Every cluster component MUST expose structured health and status data. Metrics, conditions,
-events, and logs MUST be collected across all infrastructure layers — from the management
-cluster down to individual Machines. Data that cannot be observed cannot be managed.
+Every cluster component MUST expose structured health and status data, and that data MUST be
+collected and consolidated from diverse sources into a single, coherent view. Metrics,
+conditions, events, and logs MUST be gathered across all infrastructure layers — from the
+management cluster down to individual Machines. Data that cannot be observed cannot be managed.
 
 - All new API handlers MUST include structured logging with request context.
 - Cluster, MachineDeployment, and Machine resources MUST expose condition-level health status.
+- Data collected from distinct sources (CAPI resources, node metrics, events, logs) MUST be
+  correlated to the owning cluster resource so operators see a consolidated, not fragmented, view.
 - Error states MUST propagate to the dashboard with actionable, human-readable descriptions.
 
 ### II. Real-Time Visibility
@@ -117,4 +133,4 @@ All feature plans MUST include a **Constitution Check** section that explicitly 
 compliance with each of the five principles. Any violation MUST be justified in the
 Complexity Tracking table before the plan is approved.
 
-**Version**: 1.0.0 | **Ratified**: 2026-04-25 | **Last Amended**: 2026-04-25
+**Version**: 1.1.0 | **Ratified**: 2026-04-25 | **Last Amended**: 2026-07-05

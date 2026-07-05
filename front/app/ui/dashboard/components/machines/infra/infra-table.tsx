@@ -1,8 +1,21 @@
-import {MachineInfraType} from "@/app/ui/dashboard/components/machines/types";
-import {roboto} from "@/fonts";
-import React from "react";
-import {GridCol, Indicator, Table, Badge} from "@mantine/core";
+'use client';
 
+import {MachineInfraType} from "@/app/ui/dashboard/components/machines/types";
+import React from "react";
+import {GridCol, Badge} from "@mantine/core";
+import {StatusIndicator} from "@/app/ui/dashboard/shared/status-indicator";
+import {toStatusState} from "@/app/ui/dashboard/shared/status";
+import {ObjectTable} from "@/app/ui/dashboard/shared/object-table";
+import {ColumnDef} from "@/app/ui/dashboard/base/types";
+
+const columns: ColumnDef<MachineInfraType>[] = [
+  {header: 'Name', render: (m) => m.metadata?.name ?? '—'},
+  {header: 'Namespace', render: (m) => <Badge variant="light" color="gray">{m.metadata?.namespace ?? '—'}</Badge>},
+  {header: 'ProviderID', render: (m) => m.providerID ?? '—'},
+  {header: 'Template', render: (m) => m.template ?? '—'},
+  {header: 'Age', render: (m) => m.age ?? '—'},
+  {header: 'Status', align: 'center', render: (m) => <StatusIndicator state={toStatusState(m.status?.ready)} dotOnly/>},
+];
 
 export default function MachineInfraTable({
   machines, select
@@ -12,42 +25,13 @@ export default function MachineInfraTable({
 }) {
   return (
     <GridCol span={12}>
-      <Table highlightOnHover>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Namespace</Table.Th>
-            <Table.Th>ProviderID</Table.Th>
-            <Table.Th>Template</Table.Th>
-            <Table.Th>Age</Table.Th>
-            <Table.Th>Status</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody className="text-sm">
-          {
-            machines?.map( (machine: MachineInfraType) => (
-              <Table.Tr className={roboto.className} key={machine.metadata.name}>
-                <Table.Td>
-                  <a className="cursor-pointer hover:opacity-70" onClick={() => select(machine)}>{machine.metadata.name}</a>
-                </Table.Td>
-                <Table.Td>
-                  <Badge variant="light" color="gray"> {machine.metadata.namespace} </Badge>
-                </Table.Td>
-                <Table.Td>{machine.providerID}</Table.Td>
-                <Table.Td>{machine.template}</Table.Td>
-                <Table.Td>{machine.age}</Table.Td>
-                <Table.Td className="text-center align-middle">
-                {
-                  machine.status.ready
-                  ? <Indicator inline processing color="green" size={22}/>
-                  : <Indicator inline processing color="red" size={22}/>
-                }
-                </Table.Td>
-              </Table.Tr>
-            ))
-          }
-        </Table.Tbody>
-      </Table>
+      <ObjectTable
+        items={machines}
+        columns={columns}
+        getRowKey={(m, i) => m.metadata?.name ?? `row-${i}`}
+        onSelect={select}
+        emptyLabel="No vSphere machines found"
+      />
     </GridCol>
   )
 }

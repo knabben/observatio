@@ -43,3 +43,9 @@ front/next-env.d.ts
 # Golang
 output
 .idea
+
+# generated cluster credentials/manifests (capi bootstrap scripts) — never commit kubeconfigs
+scripts/generated/
+
+# public assets churn (spurious binary diffs from checkout line-ending handling)
+front/public/

@@ -3,7 +3,7 @@ import ClusterSummary from '@/app/ui/dashboard/components/dashboard/clustersumma
 import ClusterClassLister from '@/app/ui/dashboard/components/dashboard/clusterclass'
 import ClusterHierarchy from '@/app/ui/dashboard/components/dashboard/clusterhierarchy'
 
-import { sourceCodePro400 } from "@/fonts";
+import { sourceSans400 } from "@/fonts";
 import Link from 'next/link';
 import { Grid, GridCol, Title, Space } from '@mantine/core';
 
@@ -12,17 +12,17 @@ export default async function Dashboard() {
     <Grid grow justify="center" align="top">
       <GridCol span={12}>
         <Link href="/dashboard">
-          <Title className={sourceCodePro400.className} order={2}>
+          <Title className={sourceSans400.className} order={2}>
             Clusters Dashboard
           </Title>
         </Link>
       </GridCol>
-      <GridCol span={5}>
+      <GridCol span={{base: 12, md: 5}}>
         <ClusterSummary />
         <Space h="md"/>
         <ClusterClassLister />
       </GridCol>
-      <GridCol span={7}>
+      <GridCol span={{base: 12, md: 7}}>
         <ClusterHierarchy />
         <Space h="md"/>
         <ClusterVersions />

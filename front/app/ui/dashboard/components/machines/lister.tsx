@@ -8,10 +8,8 @@ import {MachineType} from "@/app/ui/dashboard/components/machines/types";
 import BaseLister from "@/app/ui/dashboard/base/lister";
 
 /**
- * MachineLister component handles listing and displaying details of machines.
- * It manages state for machines, selected machine, and loading status.
- * Uses WebSocket to fetch and populate machine data and renders a loader while data is being loaded.
- * Once the data is available, it renders a search interface and displays filtered results or a table of machines.
+ * Thin composition of `BaseLister` with the machine-specific table/details renderers.
+ * `BaseLister` owns the live WebSocket stream, loading/empty/error states, and selection.
  */
 export default function MachineLister() {
   return <BaseLister

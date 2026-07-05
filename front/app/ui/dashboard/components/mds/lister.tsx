@@ -8,9 +8,8 @@ import MachineDeploymentDetails from "@/app/ui/dashboard/components/mds/details"
 import {MachineDeploymentType} from "@/app/ui/dashboard/components/mds/types";
 import BaseLister from "@/app/ui/dashboard/base/lister";
 /**
- * MachineDeploymentLister is a functional component responsible for listing machine deployments
- * and optionally showing details for a selected deployment. It manages state for the deployments,
- * filters based on user selection, and handles WebSocket communication for data fetching.
+ * Thin composition of `BaseLister` with the machine-deployment-specific table/details renderers.
+ * `BaseLister` owns the live WebSocket stream, loading/empty/error states, and selection.
  */
 export default function MachineDeploymentLister() {
   return <BaseLister

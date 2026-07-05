@@ -1,33 +1,39 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import useWebSocket, {ReadyState} from "react-use-websocket";
+import {WS_URL_WATCHER, WS_URL_CHATBOT} from "@/app/lib/config";
 
-export const WS_URL_WATCHER = typeof window !== 'undefined' ? `ws://${window.location.hostname}:8080/ws/watcher` : 'ws://localhost:8080/ws/watcher';
-export const WS_URL_CHATBOT = typeof window !== 'undefined' ? `ws://${window.location.hostname}:8080/ws/analysis` : 'ws://localhost:8080/ws/analysis';
+export {WS_URL_WATCHER, WS_URL_CHATBOT};
 
 export type WSResponse = {
   type: string;
   data: any;
 }
 
+type WebSocketExtraOptions = {
+  onReconnectStop?: (attempts: number) => void;
+};
+
 /**
- * A function that establishes and manages a WebSocket connection using the specified `useWebSocket` integration.
- * The WebSocket URL is defined by the `URL` parameter. The connection is not shared among multiple instances
- * and is configured to always attempt reconnection if the connection is lost.
+ * Establishes and manages a WebSocket connection via `react-use-websocket`.
+ * Reconnection is bounded: at most 8 attempts with exponential backoff (capped at 30s),
+ * after which `onReconnectStop` fires so consumers can surface a terminal error state
+ * instead of looping forever.
  */
-export function WebSocket(URL: string = WS_URL_WATCHER) {
+export function WebSocket(URL: string = WS_URL_WATCHER, options: WebSocketExtraOptions = {}) {
   return useWebSocket(
     URL, {
       share: false,
-      shouldReconnect: () => true
+      shouldReconnect: () => true,
+      reconnectAttempts: 8,
+      reconnectInterval: (attempt: number) => Math.min(1000 * 2 ** attempt, 30000),
+      onReconnectStop: options.onReconnectStop,
     },
   )
 }
 
 /**
  * Sends an initial WebSocket request when the connection is open.
- * This function is typically used to establish initial subscription or request specific data types
- * from the WebSocket server.
  */
 export function sendInitialRequest(readyState: number, type: string, sendJsonMessage: any) {
   if (readyState === ReadyState.OPEN) {
@@ -35,42 +41,40 @@ export function sendInitialRequest(readyState: number, type: string, sendJsonMes
   }
 }
 
-
-/**
- * Processes a WebSocket response and updates the provided items list based on the response type.
- */
 export enum WSOperationType {
   ADDED = "ADDED",
   MODIFIED = "MODIFIED",
   DELETED = "DELETED"
 }
 
+/**
+ * Processes a WebSocket response and returns the updated items list.
+ *
+ * IMPORTANT: an empty/malformed frame (no `.data`) is treated as a no-op and the
+ * current list is returned UNCHANGED — a keepalive or partial frame must never wipe
+ * an already-populated list.
+ */
 export function receiveAndPopulate(
   response: any,
   items: any[],
-): any {
+): any[] {
   if (!response?.data) {
-    return [];
+    return items;
   }
-  const isUpdateOperation = isItemUpdateOperation(response.type);
-  if (isUpdateOperation) {
+  if (isItemUpdateOperation(response.type)) {
     return updateItemsList(items, response.data)
-  } else {
-    return items.filter(item => item.metadata?.name !== response.data.metadata?.name);
   }
+  return items.filter(item => item.metadata?.name !== response.data.metadata?.name);
 }
 
-// Extract operation type checking to a separate function
-function isItemUpdateOperation(type: WSOperationType): boolean {
+function isItemUpdateOperation(type: string): boolean {
   return type === WSOperationType.ADDED || type === WSOperationType.MODIFIED;
 }
 
 /**
- * Updates a list of items by adding or replacing an item with a matching name.
- * If an item with the same name already exists in the list, it will be replaced
- * with the new item. Otherwise, the new item will be added to the list.
+ * Adds or replaces an item with a matching `metadata.name`.
  */
-function updateItemsList<T extends { metadata: {name: string} }>(items: T[], newItem: T): T[] {
+function updateItemsList<T extends { metadata?: {name?: string} }>(items: T[], newItem: T): T[] {
   const existingItemIndex = items.findIndex(item => item.metadata?.name === newItem.metadata?.name);
 
   if (existingItemIndex !== -1) {
@@ -82,4 +86,9 @@ function updateItemsList<T extends { metadata: {name: string} }>(items: T[], new
   }
 
   return [...items, newItem];
+}
+
+/** Stable name-based comparator that tolerates missing `metadata.name`. */
+export function byMetadataName<T extends { metadata?: {name?: string} }>(a: T, b: T): number {
+  return (a?.metadata?.name ?? '').localeCompare(b?.metadata?.name ?? '');
 }

@@ -2,7 +2,12 @@ name: Build
 
 on:
   push:
+    branches: [main]
   pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint-test-frontend:
@@ -19,7 +24,7 @@ jobs:
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: latest
+          version: 10.33.2
 
       - name: Install dependencies
         run: cd front && pnpm install --frozen-lockfile
@@ -39,7 +44,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24.x'
+          go-version: '1.25.x'
 
       - name: Run Linter
         run: make lint-backend
@@ -57,7 +62,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24.x'
+          go-version: '1.25.x'
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -67,7 +72,7 @@ jobs:
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: latest
+          version: 10.33.2
 
       - name: Install dependencies
         run: cd front && pnpm install --frozen-lockfile

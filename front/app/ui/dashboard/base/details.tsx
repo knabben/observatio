@@ -1,6 +1,7 @@
 import {Card, GridCol, Space, Tabs, TabsPanel} from "@mantine/core";
 import React from "react";
 import {roboto} from "@/fonts";
+import {EmptyState} from "@/app/ui/dashboard/shared/empty-state";
 
 /**
  * Example usage:
@@ -44,19 +45,23 @@ export default function ObjectDetails<T>({
         {headerRenderer(object)}
       </Card>
       <Space h="md" />
-      <Tabs mb="md" color="#48654a" defaultValue={tabs[0]?.label}>
-        <Tabs.List>
+      {tabs.length === 0 ? (
+        <EmptyState label="No details available"/>
+      ) : (
+        <Tabs mb="md" color="var(--mantine-color-brand-8)" defaultValue={tabs[0].label}>
+          <Tabs.List>
+            {tabs.map((tab) => (
+              <Tabs.Tab key={tab.label} value={tab.label}>{tab.label}</Tabs.Tab>
+            ))}
+          </Tabs.List>
           {tabs.map((tab) => (
-            <Tabs.Tab key={tab.label} value={tab.label}>{tab.label}</Tabs.Tab>
+            <TabsPanel key={tab.label} value={tab.label}>
+              <Space h="lg"/>
+              {tab.content(object)}
+            </TabsPanel>
           ))}
-        </Tabs.List>
-        {tabs.map((tab) => (
-          <TabsPanel key={tab.label} value={tab.label}>
-            <Space h="lg"/>
-            {tab.content(object)}
-          </TabsPanel>
-        ))}
-      </Tabs>
+        </Tabs>
+      )}
     </GridCol>
   )
 }

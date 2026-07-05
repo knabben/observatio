@@ -7,7 +7,7 @@ import Specification from "@/app/ui/dashboard/components/mds/specification";
 import AITroubleshooting from "@/app/ui/dashboard/base/ai-troubleshooting";
 
 import ObjectDetails from "@/app/ui/dashboard/base/details";
-import {IconCheck, IconX} from "@tabler/icons-react";
+import {IconCheck, IconMinus, IconX} from "@tabler/icons-react";
 
 export default function MachineDeploymentDetails({
   md,
@@ -21,21 +21,23 @@ export default function MachineDeploymentDetails({
       label: "AI Troubleshooting",
       content: (md: MachineDeploymentType) => <AITroubleshooting
         objectType="machinedeployment"
-        objectName={md.metadata.name}
-        objectNamespace={md.metadata.namespace}
-        conditions={md.status.conditions} />
+        objectName={md.metadata?.name ?? ''}
+        objectNamespace={md.metadata?.namespace ?? ''}
+        conditions={md.status?.conditions ?? []} />
     }
   ];
   const headerRender = (md: MachineDeploymentType) => (
-    <SimpleGrid cols={2}>
+    <SimpleGrid cols={{base: 1, sm: 2}}>
       <div className="flex items-center h-full">
         <Group justify="flex-start">
           {
-            md.status.unavailableReplicas == 0
-              ? <IconCheck size={40} color="teal"/>
-              : <IconX color="red" size={40}/>
+            md.status?.unavailableReplicas == null
+              ? <IconMinus color="gray" size={40}/>
+              : md.status.unavailableReplicas === 0
+                ? <IconCheck size={40} color="teal"/>
+                : <IconX color="red" size={40}/>
           }
-          <Text className="text-bold" fw={700}>{md.metadata?.name}</Text>
+          <Text className="font-bold" fw={700}>{md.metadata?.name}</Text>
         </Group>
       </div>
       <div>
@@ -47,9 +49,9 @@ export default function MachineDeploymentDetails({
             </Text>
           </Stack>
           <Stack gap="sm" justify="center">
-            <Text size="sm">Created</Text>
+            <Text size="sm">Age</Text>
             <Text size="xl">
-              {md.age}
+              {md.age ?? '—'}
             </Text>
           </Stack>
         </Group>

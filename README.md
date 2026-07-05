@@ -156,6 +156,30 @@ The backend server will start and listen for WebSocket connections. By default, 
 
 The frontend development server will start and be available at http://localhost:3000.
 
+### Environment variables (development only)
+
+In production, the frontend is embedded in and served by the same Go binary as the API/WebSocket,
+so it addresses them **same-origin** (derived from `window.location`) with no configuration needed.
+The `NEXT_PUBLIC_*` variables below exist only to support running `pnpm run dev` (frontend on
+`:3000`) against a separately-running backend (`:8080`); leave them unset for `make build` /
+`make verify-binary` and the embedded production binary. See `front/.env.example`.
+
+| Variable | Purpose | Default when unset |
+|----------|---------|---------------------|
+| `NEXT_PUBLIC_API_URL` | REST API base URL | same-origin (`''`) |
+| `NEXT_PUBLIC_WS_URL` | Live resource watcher WebSocket URL | `ws(s)://<origin>/ws/watcher` |
+| `NEXT_PUBLIC_WS_URL_CHATBOT` | AI troubleshooting WebSocket URL | `ws(s)://<origin>/ws/analysis` |
+
+### Verifying the single-binary build
+
+`make verify-binary` builds the full stack, launches `output/observatio` on a throwaway port, and
+asserts the UI root and an unknown client route both serve the embedded SPA shell (200) and a live
+API route responds — all on one origin — then tears the process down. A non-zero exit means the
+embed or SPA fallback is broken.
+
+```bash
+make verify-binary
+```
 
 ## Architecture Diagram
 

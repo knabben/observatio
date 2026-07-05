@@ -1,0 +1,10 @@
+# Force these as binary regardless of core.autocrlf — without this, some Windows Git
+# configs mis-detect them as text-eligible and mangle line endings on checkout, making
+# them show as perpetually "modified" with an identical byte count.
+*.png binary
+*.gif binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.woff binary
+*.woff2 binary
