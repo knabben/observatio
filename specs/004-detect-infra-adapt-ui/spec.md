@@ -9,7 +9,13 @@
 
 Observātiō currently assumes every connected Cluster API environment is backed by vSphere: the Clusters screen always shows a static "vSphere Clusters" tab and vSphere-specific fields (server, thumbprint, modules), regardless of what infrastructure actually backs the clusters in view. Environments backed by Docker (common for local/dev/test Cluster API setups) have no equivalent view today, and would otherwise show a vSphere tab with no data or a misleading empty state.
 
-This feature makes the dashboard detect, from the connected cluster's Cluster API resources, which infrastructure provider(s) — Docker, vSphere, or both — actually back the clusters it is displaying, and adapts the listing screens accordingly: showing the right provider-specific view (and hiding/relabeling the wrong one), and giving operators a clear, per-cluster indicator of which provider is in play. The connected cluster context is assumed to already carry the Cluster API CRDs needed to identify and inspect each cluster's infrastructure, so detection is derived from data already available rather than requiring new configuration.
+This feature makes the dashboard detect, from the connected cluster's Cluster API resources, which infrastructure provider(s) — Docker, vSphere, or both — actually back the clusters it is displaying, and adapts the listing screens accordingly: showing the right provider-specific view (and hiding/relabeling the wrong one), and giving operators a clear, per-cluster indicator of which provider is in play, alongside that provider's installed version. The connected cluster context is assumed to already carry the Cluster API CRDs needed to identify and inspect each cluster's infrastructure, so detection is derived from data already available rather than requiring new configuration. Detection and screen selection are performed server-side (backend); the frontend simply renders whatever the backend reports as installed.
+
+## Clarifications
+
+### Session 2026-07-05
+
+- Q: You said the backend detects "the version and installed provider." What does "the version" refer to? → A: The version of the detected infrastructure provider itself (e.g., the CAPD/Docker provider version, the CAPV/vSphere provider version) — shown to operators alongside the provider indicator for compatibility awareness.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -41,6 +47,7 @@ While scanning the main Clusters list, an operator wants to know immediately whe
 
 1. **Given** the main Clusters list with both Docker- and vSphere-backed clusters, **When** it renders, **Then** each row displays an indicator identifying its infrastructure provider.
 2. **Given** a cluster whose infrastructure provider cannot be determined, **When** it appears in the list, **Then** it shows an "unknown/unsupported provider" indicator rather than a blank or incorrect one.
+3. **Given** a cluster backed by a detected infrastructure provider, **When** the operator views that cluster's provider indicator, **Then** the installed version of that provider is also shown alongside it.
 
 ---
 
@@ -79,11 +86,13 @@ An operator connects the dashboard to an environment using a Cluster API infrast
 - **FR-008**: The Machines and Machine Deployments listing screens MUST reflect the same detected-provider adaptation as the Clusters screen wherever they currently expose provider-specific fields.
 - **FR-009**: If no supported infrastructure provider is detected in the connected environment, the system MUST present a clear message stating that, instead of leaving a screen empty with no explanation.
 - **FR-010**: Existing vSphere-specific listing behavior and fields MUST continue to work unchanged for vSphere-backed clusters; this feature changes when/how that view is surfaced, not what it shows.
+- **FR-011**: System MUST detect the installed version of each detected infrastructure provider (Docker, vSphere) and display it to the operator alongside that provider's indicator.
+- **FR-012**: Detection of infrastructure provider, provider version, and screen selection MUST be performed server-side; the listing screens MUST render based on what the backend reports as installed, without independent client-side detection logic.
 
 ### Key Entities
 
 - **Cluster**: Existing entity representing a Cluster API cluster; gains a derived "Infrastructure Provider" attribute (Docker, vSphere, or Unknown/Unsupported) resolved from its infrastructure reference.
-- **Infrastructure Provider Capability**: A per-environment detection result indicating whether Docker support, vSphere support, both, or neither are present among the connected cluster's Cluster API resources.
+- **Infrastructure Provider Capability**: A per-environment detection result indicating whether Docker support, vSphere support, both, or neither are present among the connected cluster's Cluster API resources, plus the installed version of each detected provider.
 - **Cluster Infrastructure Details**: Provider-specific detail data associated with a cluster (e.g., vSphere: server, thumbprint, modules; Docker: the equivalent set of Docker-relevant infrastructure attributes).
 
 ## Success Criteria *(mandatory)*
@@ -95,6 +104,7 @@ An operator connects the dashboard to an environment using a Cluster API infrast
 - **SC-003**: Operators can identify which infrastructure provider backs any given cluster within one glance at the listing screen, without needing to open a detail view.
 - **SC-004**: The dashboard renders a fully working, non-crashing Clusters screen when evaluated against a Docker-only environment, a vSphere-only environment, and a mixed environment.
 - **SC-005**: Detecting the infrastructure provider requires zero manual configuration or selection steps from the operator.
+- **SC-006**: Operators can see the installed version of a cluster's infrastructure provider without leaving the listing screen.
 
 ## Assumptions
 
