@@ -1,7 +1,8 @@
 'use client';
 
-import {Table, Text} from "@mantine/core";
+import {Space, Table, Text} from "@mantine/core";
 import Panel from "@/app/ui/dashboard/utils/panel";
+import ConditionsTable from "@/app/ui/dashboard/shared/conditions-table";
 import React from "react";
 import {MachineType} from "@/app/ui/dashboard/components/machines/types";
 
@@ -9,6 +10,7 @@ export default function Specification({
   machine,
  }: {machine: MachineType}) {
   return (
+    <>
     <Panel title="Specification" content={
       <Table variant="vertical">
         <Table.Tbody className="text-sm">
@@ -50,5 +52,8 @@ export default function Specification({
         </Table.Tbody>
       </Table>
     } />
+    <Space h="md" />
+    <ConditionsTable conditions={machine.status?.conditions ?? []}/>
+    </>
   )
 }

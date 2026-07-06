@@ -4,7 +4,6 @@ import {Group, Stack, Text} from "@mantine/core";
 import {SimpleGrid} from '@mantine/core';
 import {MachineDeploymentType} from "@/app/ui/dashboard/components/mds/types";
 import Specification from "@/app/ui/dashboard/components/mds/specification";
-import AITroubleshooting from "@/app/ui/dashboard/base/ai-troubleshooting";
 
 import ObjectDetails from "@/app/ui/dashboard/base/details";
 import {IconCheck, IconMinus, IconX} from "@tabler/icons-react";
@@ -17,14 +16,6 @@ export default function MachineDeploymentDetails({
       label: "Specification",
       content: (md: MachineDeploymentType) => <Specification md={md} />
     },
-    {
-      label: "AI Troubleshooting",
-      content: (md: MachineDeploymentType) => <AITroubleshooting
-        objectType="machinedeployment"
-        objectName={md.metadata?.name ?? ''}
-        objectNamespace={md.metadata?.namespace ?? ''}
-        conditions={md.status?.conditions ?? []} />
-    }
   ];
   const headerRender = (md: MachineDeploymentType) => (
     <SimpleGrid cols={{base: 1, sm: 2}}>

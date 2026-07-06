@@ -106,4 +106,14 @@ describe("ClusterClassLister", () => {
     expect(await screen.findByText("default")).toBeInTheDocument();
     expect(screen.getByText("2")).toBeInTheDocument();
   });
+
+  it("renders status as a read-only badge, not an interactive toggle", async () => {
+    mockedGetClusterClasses.mockResolvedValue([
+      {name: "cc1", namespace: "default", generation: BigInt(1), conditions: [{type: "Ready", status: "True"}]},
+    ]);
+    const {container} = render(<ClusterClassLister/>);
+    expect(await screen.findByText("Ready")).toBeInTheDocument();
+    // A Chip renders a hidden checkbox input; a read-only Badge renders none.
+    expect(container.querySelector("input")).toBeNull();
+  });
 });

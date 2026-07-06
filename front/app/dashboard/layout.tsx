@@ -1,6 +1,9 @@
 import React from "react";
 import SideNav from '@/app/ui/dashboard/sidenav';
 import {openSans} from '@/fonts';
+import {AIPanelProvider} from '@/app/ui/dashboard/ai-panel/ai-panel-context';
+import AIPanel from '@/app/ui/dashboard/ai-panel/ai-panel';
+import AIPanelTrigger from '@/app/ui/dashboard/ai-panel/ai-panel-trigger';
 
 export default function Layout({
   children,
@@ -9,12 +12,16 @@ export default function Layout({
 }) {
   return (
     <div className={openSans.className}>
-      <div className="flex h-screen flex-col overflow-hidden md:flex-row">
-        <div className="w-full flex-none md:w-64">
-          <SideNav/>
+      <AIPanelProvider>
+        <div className="flex h-screen flex-col overflow-hidden md:flex-row">
+          <div className="w-full flex-none md:w-64">
+            <SideNav/>
+          </div>
+          <div className="flex-grow overflow-y-auto p-6 md:p-12">{children}</div>
         </div>
-        <div className="flex-grow overflow-y-auto p-6 md:p-12">{children}</div>
-      </div>
+        <AIPanel/>
+        <AIPanelTrigger/>
+      </AIPanelProvider>
     </div>
   )
 }

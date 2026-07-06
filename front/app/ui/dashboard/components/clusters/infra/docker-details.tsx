@@ -2,27 +2,23 @@ import React from "react";
 import {ClusterInfraDockerType} from "@/app/ui/dashboard/components/clusters/types";
 import {Group, Stack, Text} from "@mantine/core";
 import {SimpleGrid} from '@mantine/core';
-import AITroubleshooting from "@/app/ui/dashboard/base/ai-troubleshooting";
+import DockerSpecification from "@/app/ui/dashboard/components/clusters/infra/docker-specification";
 import {IconCheck, IconX} from "@tabler/icons-react";
 import ObjectDetails from "@/app/ui/dashboard/base/details";
 
 /**
  * Displays infrastructure details of a Docker (CAPD) cluster: readiness, namespace, age,
- * and load balancer IP, plus AI troubleshooting grounded in this resource.
+ * and load balancer IP.
  */
 export default function ClusterInfraDockerDetails({
   cluster,
 }: { cluster: ClusterInfraDockerType }) {
   const tabs = [
     {
-      label: "AI Troubleshooting",
-      content: (cluster: ClusterInfraDockerType) => <AITroubleshooting
-        objectType="dockercluster"
-        objectName={cluster.metadata?.name ?? ''}
-        objectNamespace={cluster.metadata?.namespace ?? ''}
-        conditions={[]}
-      />
-    }];
+      label: "Specification",
+      content: (cluster: ClusterInfraDockerType) => <DockerSpecification cluster={cluster} />
+    },
+  ];
   const headerRender = (cluster: ClusterInfraDockerType) => (
     <SimpleGrid cols={{base: 1, sm: 2}}>
       <div className="flex items-center h-full">

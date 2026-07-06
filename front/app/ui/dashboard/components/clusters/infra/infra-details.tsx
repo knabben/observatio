@@ -3,7 +3,6 @@ import {ClusterInfraType} from "@/app/ui/dashboard/components/clusters/types";
 import {Group, Stack, Text} from "@mantine/core";
 import {SimpleGrid } from '@mantine/core';
 import Specification from "@/app/ui/dashboard/components/clusters/infra/specification";
-import AITroubleshooting from "@/app/ui/dashboard/base/ai-troubleshooting";
 import {IconCheck, IconX} from "@tabler/icons-react";
 import ObjectDetails from "@/app/ui/dashboard/base/details";
 
@@ -20,15 +19,7 @@ export default function ClusterInfraDetails({
       label: "Specification",
       content: (cluster: ClusterInfraType) => <Specification cluster={cluster} />
     },
-    {
-      label: "AI Troubleshooting",
-      content: (cluster: ClusterInfraType) => <AITroubleshooting
-        objectType="vspherecluster"
-        objectName={cluster.metadata?.name ?? ''}
-        objectNamespace={cluster.metadata?.namespace ?? ''}
-        conditions={cluster.status?.conditions ?? []}
-      />
-  }];
+  ];
   const headerRender = (cluster: ClusterInfraType) => (
     <SimpleGrid cols={{base: 1, sm: 2}}>
       <div className="flex items-center h-full">

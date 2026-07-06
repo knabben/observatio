@@ -3,7 +3,6 @@ import {ClusterType} from "@/app/ui/dashboard/components/clusters/types";
 import {Group, Stack, Text} from "@mantine/core";
 import {SimpleGrid } from '@mantine/core';
 import Specification from "@/app/ui/dashboard/components/clusters/specification";
-import AITroubleshooting from "@/app/ui/dashboard/base/ai-troubleshooting";
 import ObjectDetails from "@/app/ui/dashboard/base/details";
 import {IconCheck, IconX} from "@tabler/icons-react";
 
@@ -18,14 +17,6 @@ export default function ClusterDetails({
       label: "Specification",
       content: (cluster: ClusterType) => <Specification cluster={cluster}/>
     },
-    {
-      label: "AI Troubleshooting",
-      content: (cluster: ClusterType) => <AITroubleshooting
-        objectType="cluster"
-        objectName={cluster.metadata?.name ?? ''}
-        objectNamespace={cluster.metadata?.namespace ?? ''}
-        conditions={cluster.status?.conditions ?? []}/>
-    }
   ];
   const headerRender = (cluster: ClusterType) => (
     <SimpleGrid cols={{base: 1, sm: 2}}>

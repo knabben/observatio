@@ -7,7 +7,7 @@ import {
   Stack,
 } from "@mantine/core";
 import {IconCheck, IconX} from "@tabler/icons-react";
-import AITroubleshooting from "@/app/ui/dashboard/base/ai-troubleshooting";
+import DockerSpecification from "@/app/ui/dashboard/components/machines/infra/docker-specification";
 import ObjectDetails from "@/app/ui/dashboard/base/details";
 
 export default function MachineInfraDockerDetails({
@@ -15,12 +15,8 @@ export default function MachineInfraDockerDetails({
 }: {machine: MachineInfraDockerType}) {
   const tabs = [
     {
-      label: "AI Troubleshooting",
-      content: (machine: MachineInfraDockerType) => <AITroubleshooting
-        objectType="dockermachine"
-        objectName={machine.metadata?.name ?? ''}
-        objectNamespace={machine.metadata?.namespace ?? ''}
-        conditions={[]} />
+      label: "Specification",
+      content: (machine: MachineInfraDockerType) => <DockerSpecification machine={machine} />
     }];
 
   const headerRender = (machine: MachineInfraDockerType) => (

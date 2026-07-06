@@ -2,8 +2,9 @@
 
 import React from "react";
 
-import {Pill, SimpleGrid, Table} from "@mantine/core";
+import {Pill, SimpleGrid, Space, Table} from "@mantine/core";
 import Panel from "@/app/ui/dashboard/utils/panel";
+import ConditionsTable from "@/app/ui/dashboard/shared/conditions-table";
 import {MachineDeploymentType} from "@/app/ui/dashboard/components/mds/types";
 
 export default function Specification({
@@ -80,6 +81,10 @@ export default function Specification({
             </Table.Tbody>
           </Table>
         } />
+      </div>
+      <div style={{gridColumn: '1 / -1'}}>
+        <Space h="md" />
+        <ConditionsTable conditions={md.status?.conditions ?? []}/>
       </div>
     </SimpleGrid>
   )

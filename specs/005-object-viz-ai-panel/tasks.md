@@ -32,7 +32,7 @@ feature: `clusters/details.tsx`, `clusters/infra/infra-details.tsx`, `clusters/i
 
 ## Phase 1: Setup
 
-- [ ] T001 Confirm `make build`, `make run-tests-backend`, and `make run-tests-frontend` all pass
+- [X] T001 Confirm `make build`, `make run-tests-backend`, and `make run-tests-frontend` all pass
   on a clean checkout of `005-object-viz-ai-panel` before starting implementation.
 
 ---
@@ -44,21 +44,21 @@ extend, and that removes the old per-object embed's home.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T002 Create `front/app/ui/dashboard/ai-panel/ai-panel-context.tsx`: `AIPanelProvider` holding
+- [X] T002 Create `front/app/ui/dashboard/ai-panel/ai-panel-context.tsx`: `AIPanelProvider` holding
   `isOpen`, `open()`/`close()`, `messages`, `currentObjectContext` (initially always `null`),
   `queryField`, `queryFieldTouched`, and a `useAIPanel()` hook — mirrors the
   `InfraCapabilityContext` pattern from feature 004 (data-model.md `AIPanelState`).
-- [ ] T003 [P] Create `front/app/ui/dashboard/ai-panel/ai-panel.tsx`: the `Drawer`-based panel UI
+- [X] T003 [P] Create `front/app/ui/dashboard/ai-panel/ai-panel.tsx`: the `Drawer`-based panel UI
   (reusing the `Drawer` pattern already used by `front/app/ui/dashboard/sidenav.tsx`), built from
   the existing `ChatBot` markup in `front/app/ui/dashboard/base/ai-troubleshooting.tsx` but with
   every hardcoded color (`#0f0f23`, `#1a1a3e`, `#00d4aa`, `#4a4a6a`, the `rgba(...)` message
   bubbles) replaced with the dashboard's existing theme tokens (`var(--mantine-color-brand-*)`)
   per FR-010.
-- [ ] T004 [P] Create `front/app/ui/dashboard/ai-panel/ai-panel-trigger.tsx`: the persistent global
+- [X] T004 [P] Create `front/app/ui/dashboard/ai-panel/ai-panel-trigger.tsx`: the persistent global
   open control (FR-001).
-- [ ] T005 Mount `<AIPanelProvider>` around `{children}` and render `<AIPanelTrigger>` in
+- [X] T005 Mount `<AIPanelProvider>` around `{children}` and render `<AIPanelTrigger>` in
   `front/app/dashboard/layout.tsx` (depends on T002-T004).
-- [ ] T006 [P] Add `front/app/ui/dashboard/ai-panel/ai-panel-context.test.tsx`: open/close toggling,
+- [X] T006 [P] Add `front/app/ui/dashboard/ai-panel/ai-panel-context.test.tsx`: open/close toggling,
   and a message sent before closing is still present after reopening (FR-003).
 
 **Checkpoint**: The global, collapsible, theme-consistent AI panel exists and is reachable — ready
@@ -78,31 +78,46 @@ table under "Specification".
 
 ### Tests for User Story 1
 
-- [ ] T007 [P] [US1] Jest test: `AIPanelTrigger`/`AIPanelProvider` open the same panel instance
+- [X] T007 [P] [US1] Jest test: `AIPanelTrigger`/`AIPanelProvider` open the same panel instance
   regardless of which screen renders them, in `front/app/ui/dashboard/ai-panel/ai-panel-trigger.test.tsx`.
-- [ ] T008 [P] [US1] Jest test: extend each of the seven detail components' existing test files (or
+- [X] T008 [P] [US1] Jest test: extend each of the seven detail components' existing test files (or
   add one) asserting the tabs list no longer contains "AI Troubleshooting" and does contain
   "Specification" with the conditions table still rendered.
 
 ### Implementation for User Story 1
 
-- [ ] T009 [US1] Delete `front/app/ui/dashboard/base/ai-troubleshooting.tsx` now that its markup has
+- [X] T009 [US1] Delete `front/app/ui/dashboard/base/ai-troubleshooting.tsx` now that its markup has
   been migrated into `ai-panel.tsx` (T003) (depends on T003).
-- [ ] T010 [P] [US1] Update `front/app/ui/dashboard/components/clusters/details.tsx`
+- [X] T010 [P] [US1] Update `front/app/ui/dashboard/components/clusters/details.tsx`
   (`ClusterDetails`): remove the "AI Troubleshooting" tab; ensure the conditions table remains
   visible within "Specification".
-- [ ] T011 [P] [US1] Same edit for `front/app/ui/dashboard/components/clusters/infra/infra-details.tsx`
+- [X] T011 [P] [US1] Same edit for `front/app/ui/dashboard/components/clusters/infra/infra-details.tsx`
   (`ClusterInfraDetails`, vSphere).
-- [ ] T012 [P] [US1] Same edit for `front/app/ui/dashboard/components/clusters/infra/docker-details.tsx`
-  (`ClusterInfraDockerDetails`).
-- [ ] T013 [P] [US1] Same edit for `front/app/ui/dashboard/components/machines/details.tsx`
+- [X] T012 [P] [US1] Same edit for `front/app/ui/dashboard/components/clusters/infra/docker-details.tsx`
+  (`ClusterInfraDockerDetails`). **Discovered mid-implementation**: this component (and T015's
+  Docker machine equivalent) had *only* an "AI Troubleshooting" tab — no "Specification" tab
+  existed at all. Removing the tab without adding one would have left zero tabs. Added a new
+  minimal `docker-specification.tsx` (Cluster/LoadBalancerIP/Ready) alongside it, matching the
+  vSphere Specification pattern, so the screen isn't regressed to empty.
+- [X] T013 [P] [US1] Same edit for `front/app/ui/dashboard/components/machines/details.tsx`
   (`MachineDetails`).
-- [ ] T014 [P] [US1] Same edit for `front/app/ui/dashboard/components/machines/infra/infra-details.tsx`
+- [X] T014 [P] [US1] Same edit for `front/app/ui/dashboard/components/machines/infra/infra-details.tsx`
   (`MachineInfraDetails`, vSphere).
-- [ ] T015 [P] [US1] Same edit for `front/app/ui/dashboard/components/machines/infra/docker-details.tsx`
-  (`MachineInfraDockerDetails`).
-- [ ] T016 [P] [US1] Same edit for `front/app/ui/dashboard/components/mds/details.tsx`
+- [X] T015 [P] [US1] Same edit for `front/app/ui/dashboard/components/machines/infra/docker-details.tsx`
+  (`MachineInfraDockerDetails`) — same missing-Specification-tab gap as T012, same fix
+  (`docker-specification.tsx` for machines).
+- [X] T016 [P] [US1] Same edit for `front/app/ui/dashboard/components/mds/details.tsx`
   (`MachineDeploymentDetails`).
+
+**Also discovered**: none of the 7 `Specification` components rendered a conditions table before
+this feature (conditions were ONLY ever shown inside the now-removed AI Troubleshooting tab).
+Extracted the Chip-based table markup from the old `ai-troubleshooting.tsx` into a new shared
+`front/app/ui/dashboard/shared/conditions-table.tsx`, and added it to each of the 5
+condition-bearing Specification components (the two Docker variants have no conditions data to
+show). The old `ai-troubleshooting.test.tsx` also bundled unrelated `Search` and `ClusterClassLister`
+tests (pre-existing organizational debt) — relocated to `search.test.tsx` and
+`dashboard.test.tsx` respectively rather than deleted, and its XSS-safety test was migrated to
+`ai-panel.test.tsx`.
 
 **Checkpoint**: US1 is independently testable — the panel is global, the old embed is gone
 everywhere, and nothing that was visible before (status/conditions) has disappeared.

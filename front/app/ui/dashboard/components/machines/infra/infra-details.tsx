@@ -7,7 +7,6 @@ import {
   Stack,
 } from "@mantine/core";
 import {IconCheck, IconX} from "@tabler/icons-react";
-import AITroubleshooting from "@/app/ui/dashboard/base/ai-troubleshooting";
 import Specification from "@/app/ui/dashboard/components/machines/infra/specification";
 import ObjectDetails from "@/app/ui/dashboard/base/details";
 
@@ -18,14 +17,6 @@ export default function MachineInfraDetails({
     {
       label: "Specification",
       content: (machine: MachineInfraType) => <Specification machine={machine} />
-    },
-    {
-      label: "AI Troubleshooting",
-      content: (machine: MachineInfraType) => <AITroubleshooting
-        objectType="vspheremachine"
-        objectName={machine.metadata?.name ?? ''}
-        objectNamespace={machine.metadata?.namespace ?? ''}
-        conditions={machine.status?.conditions ?? []} />
     }];
 
   const headerRender = (machine: MachineInfraType) => (

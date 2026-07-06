@@ -1,7 +1,8 @@
 'use client';
 
-import {Group, SimpleGrid, Table, Text} from "@mantine/core";
+import {Group, SimpleGrid, Space, Table, Text} from "@mantine/core";
 import Panel from "@/app/ui/dashboard/utils/panel";
+import ConditionsTable from "@/app/ui/dashboard/shared/conditions-table";
 import {IconCpu, IconDatabase, IconDeviceFloppy} from "@tabler/icons-react";
 import React from "react";
 import {MachineInfraType} from "@/app/ui/dashboard/components/machines/types";
@@ -83,6 +84,10 @@ export default function Specification({
             </Table.Tbody>
           </Table>
         } />
+      </div>
+      <div style={{gridColumn: '1 / -1'}}>
+        <Space h="md" />
+        <ConditionsTable conditions={machine.status?.conditions ?? []}/>
       </div>
     </SimpleGrid>
   )
