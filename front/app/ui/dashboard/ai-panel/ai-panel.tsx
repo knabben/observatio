@@ -17,8 +17,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {v4 as uuidv4} from 'uuid';
 import {ReadyState} from 'react-use-websocket';
 import {IconAlertTriangle} from '@tabler/icons-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import Markdown from 'markdown-to-jsx';
 import {WebSocket, WS_URL_CHATBOT} from '@/app/lib/websocket';
 import {useAIPanel, WSRequest} from '@/app/ui/dashboard/ai-panel/ai-panel-context';
 
@@ -146,11 +145,11 @@ export default function AIPanel() {
                 }}
               >
                 {message.actor === 'agent' ? (
-                  // react-markdown parses to React elements, not raw HTML - any literal
-                  // "<tag>" in the (untrusted, model-generated) content renders as escaped
-                  // text rather than becoming a real DOM element (no dangerouslySetInnerHTML).
+                  // markdown-to-jsx parses to React elements, not dangerouslySetInnerHTML; with
+                  // disableParsingRawHTML any literal "<tag>" in the untrusted, model-generated
+                  // content is escaped to visible text instead of becoming a real DOM element.
                   <TypographyStylesProvider p={0} m={0} fz="sm" style={{lineHeight: 1.5, overflowWrap: 'break-word'}}>
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+                    <Markdown options={{disableParsingRawHTML: true}}>{message.content}</Markdown>
                   </TypographyStylesProvider>
                 ) : (
                   <Text size="sm" style={{lineHeight: 1.5, whiteSpace: 'pre-wrap', overflowWrap: 'break-word'}}>
