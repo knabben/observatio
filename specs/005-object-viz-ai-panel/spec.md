@@ -27,6 +27,21 @@ turns AI troubleshooting into a persistent, collapsible panel reachable from any
 dashboard, pre-loaded with rich context about whatever the operator is currently looking at, and
 styled consistently with the rest of the app.
 
+## Clarifications
+
+### Session 2026-07-06
+
+- Q: With the new full-object tree tab added, should the tab layout stay at 2 tabs (Specification +
+  Tree), or should curated tables be reduced/removed since the tree already shows everything? → A:
+  Keep 2 tabs — Specification (curated summary + conditions table, unchanged) and the new Tree tab.
+  No separate "Status" tab is introduced, since that would duplicate what's already in
+  Specification's header/conditions table. Object status MUST remain prominent within Specification
+  (header status indicator + conditions table) — consolidating tabs must not bury or diminish it.
+- Q: Should each object's detail screen get a one-click "Ask AI about this" action that jumps
+  straight into the global panel pre-loaded with that object, in addition to the passive global
+  side-trigger? → A: Yes — add a per-object quick-action so opening AI help on the object currently
+  in view is a single click, not "open the global panel and notice it auto-filled."
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - AI troubleshooting is available from anywhere, not just one tab (Priority: P1)
@@ -86,6 +101,9 @@ it does.
 4. **Given** the operator navigates to a different object's detail screen while the AI panel is
    already open, **When** the panel's query field is still empty (not yet edited or sent), **Then**
    it updates to reflect the newly-viewed object's context.
+5. **Given** an object's detail screen, **When** the operator activates that screen's "Ask AI about
+   this" quick-action, **Then** the global AI panel opens (if not already open) pre-filled with that
+   object's context in one click, without first requiring the operator to open the panel separately.
 
 ---
 
@@ -147,7 +165,9 @@ a curated subset) is visible in a readable, expandable/collapsible tree structur
   screen MUST be removed; the global panel becomes the sole entry point to AI troubleshooting.
 - **FR-005**: The "Object conditions" table currently shown alongside the embedded AI panel MUST
   remain available on the object's detail screen (folded into the "Specification" tab) after the
-  AI Troubleshooting tab is removed.
+  AI Troubleshooting tab is removed. No separate "Status" tab is introduced — object status
+  (header indicator + conditions table) MUST stay prominent within the Specification tab rather
+  than being diminished or buried by consolidation.
 - **FR-006**: When the AI panel is opened while a specific object's detail screen is in view, the
   system MUST automatically populate the query field with a description covering that object's
   identity (name/namespace/type), current status/conditions, and key specification fields.
@@ -172,6 +192,9 @@ a curated subset) is visible in a readable, expandable/collapsible tree structur
   MUST reflect the update rather than remaining stale indefinitely.
 - **FR-015**: The AI panel MUST remain usable (not permanently obscuring the screen with no way to
   close it) at narrow/mobile viewport widths.
+- **FR-016**: Each object's detail screen MUST offer a one-click "Ask AI about this" quick-action
+  that opens the global AI panel already pre-filled with that object's context, in addition to the
+  passive global side-trigger (FR-001) that pre-fills based on whatever is currently in view.
 
 ### Key Entities
 
@@ -199,6 +222,8 @@ a curated subset) is visible in a readable, expandable/collapsible tree structur
   within a session.
 - **SC-006**: The object tree view renders without freezing or breaking layout for the largest
   objects currently seen in production (deeply nested status/condition history).
+- **SC-007**: From any object's detail screen, operators can reach a pre-filled AI panel in exactly
+  one click via that screen's quick-action, without a separate step to open the panel first.
 
 ## Assumptions
 
@@ -211,8 +236,9 @@ a curated subset) is visible in a readable, expandable/collapsible tree structur
   cluster-detail/log-viewing capability was already scoped out as a separate, dedicated follow-on
   feature in a prior session and remains out of scope here.
 - "Called anytime from the side" is interpreted as a persistent trigger available in the dashboard's
-  global UI shell (e.g., navigation/side area), not per-screen buttons that would need to be added
-  to every screen individually.
+  global UI shell (e.g., navigation/side area), reachable regardless of which screen is active; each
+  object detail screen additionally gets its own one-click "Ask AI about this" quick-action
+  (FR-016) for tighter, more direct integration than the passive global trigger alone.
 - The AI panel's conversation is a single, app-wide thread (not one conversation per object); moving
   between objects changes what auto-context would be offered next, but does not itself clear
   history already in the conversation.
