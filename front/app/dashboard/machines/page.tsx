@@ -1,27 +1,7 @@
 import React from "react";
-import MachineLister from '@/app/ui/dashboard/components/machines/lister'
-import MachineInfraLister from '@/app/ui/dashboard/components/machines/infra/infra-lister'
-import { Text, Space, Tabs, TabsList, TabsTab, TabsPanel } from '@mantine/core'
+
+import MachineTabs from '@/app/ui/dashboard/components/machines/machine-tabs'
 
 export default async function Machines() {
-  return (
-    <Tabs color="var(--mantine-color-brand-4)" defaultValue="machine-vsphere">
-      <TabsList>
-        <TabsTab value="machine-vsphere">
-          <Text size="md" fw={700}>vSphere Machines</Text>
-        </TabsTab>
-        <TabsTab value="machine">
-          <Text size="md" fw={700}>Machines</Text>
-        </TabsTab>
-      </TabsList>
-      <TabsPanel value="machine">
-        <Space h="lg" />
-        <MachineLister />
-      </TabsPanel>
-      <TabsPanel value="machine-vsphere">
-        <Space h="lg" />
-        <MachineInfraLister />
-      </TabsPanel>
-    </Tabs>
-  )
+  return <MachineTabs/>
 }

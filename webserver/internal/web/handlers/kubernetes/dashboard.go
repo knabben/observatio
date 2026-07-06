@@ -34,6 +34,30 @@ func HandleComponentsVersion(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// HandleInfraCapabilities returns which infrastructure providers (Docker, vSphere) are
+// installed in the connected environment, and their version.
+func HandleInfraCapabilities(w http.ResponseWriter, r *http.Request) {
+	var (
+		ctx        = r.Context()
+		capability models.InfrastructureCapability
+	)
+
+	cli, err := clusterapi.NewClientWithScheme(ctx, system.Scheme)
+	if system.HandleError(w, http.StatusInternalServerError, err) {
+		return
+	}
+
+	capability, err = clusterapi.GenerateInfrastructureCapability(ctx, cli)
+	if system.HandleError(w, http.StatusInternalServerError, err) {
+		return
+	}
+
+	err = system.WriteResponse(w, capability)
+	if system.HandleError(w, http.StatusInternalServerError, err) {
+		return
+	}
+}
+
 // HandleClusterInfo returns the information about the cluster.
 func HandleClusterInfo(w http.ResponseWriter, r *http.Request) {
 	var (

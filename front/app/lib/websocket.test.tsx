@@ -10,7 +10,7 @@ describe("sendInitialRequest", () => {
     const readyState = ReadyState.OPEN;
     const type = "cluster-infra";
     sendInitialRequest(readyState, type, mockSendJsonMessage);
-    expect(mockSendJsonMessage).toHaveBeenCalledWith({types: [type]});
+    expect(mockSendJsonMessage).toHaveBeenCalledWith({type});
   });
 
   it("should not send the initial request when WebSocket connection is not open", () => {
@@ -26,6 +26,6 @@ describe("sendInitialRequest", () => {
     const readyState = ReadyState.OPEN;
     const type = "user-data";
     sendInitialRequest(readyState, type, mockSendJsonMessage);
-    expect(mockSendJsonMessage).toHaveBeenCalledWith({types: [type]});
+    expect(mockSendJsonMessage).toHaveBeenCalledWith({type});
   });
 });

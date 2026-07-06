@@ -6,6 +6,7 @@ import (
 
 	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/fetchers"
 	"github.com/knabben/observatio/webserver/internal/infra/models"
+	"github.com/knabben/observatio/webserver/internal/infra/providerkind"
 	corev1 "k8s.io/api/core/v1"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/client-go/rest"
@@ -157,6 +158,30 @@ func GenerateComponentVersions(ctx context.Context, c client.Client) (components
 		})
 	}
 	return components, nil
+}
+
+// GenerateInfrastructureCapability reports which infrastructure providers (Docker, vSphere)
+// are installed in the connected environment, and their version, derived from the same
+// clusterctl provider inventory used by GenerateComponentVersions.
+func GenerateInfrastructureCapability(ctx context.Context, c client.Client) (models.InfrastructureCapability, error) {
+	components, err := GenerateComponentVersions(ctx, c)
+	if err != nil {
+		return models.InfrastructureCapability{}, err
+	}
+
+	var capability models.InfrastructureCapability
+	for _, component := range components {
+		if component.Kind != string(clusterctlv1.InfrastructureProviderType) {
+			continue
+		}
+		switch component.ProviderName {
+		case providerkind.Docker:
+			capability.Docker = models.ProviderStatus{Installed: true, Version: component.Version}
+		case providerkind.VSphere:
+			capability.VSphere = models.ProviderStatus{Installed: true, Version: component.Version}
+		}
+	}
+	return capability, nil
 }
 
 // GenerateClusterTopology generates the cluster topology by building the owner-reference

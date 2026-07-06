@@ -8,10 +8,12 @@ import {StatusIndicator} from "@/app/ui/dashboard/shared/status-indicator";
 import {allReady} from "@/app/ui/dashboard/shared/status";
 import {ObjectTable} from '@/app/ui/dashboard/shared/object-table';
 import {ColumnDef} from '@/app/ui/dashboard/base/types';
+import {ProviderBadge} from '@/app/ui/dashboard/shared/provider-badge';
 
 const columns: ColumnDef<MachineType>[] = [
   {header: 'Name', render: (m) => m.metadata?.name ?? '—'},
   {header: 'Namespace', render: (m) => <Badge variant="light" color="gray">{m.metadata?.namespace ?? '—'}</Badge>},
+  {header: 'Provider', render: (m) => <ProviderBadge provider={m.provider}/>},
   {header: 'Version', render: (m) => m.version ?? '—'},
   {header: 'Cluster', render: (m) => m.cluster ?? '—'},
   {header: 'Age', render: (m) => m.age ?? '—', align: 'center'},

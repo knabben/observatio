@@ -21,6 +21,7 @@ export type ClusterType = {
   metadata?: Meta,
   paused?: boolean,
   age?: string,
+  provider?: string,
   status?: {
     ready?: boolean,
     phase?: string,
@@ -78,4 +79,12 @@ export type Modules = {
   controlPlane?: boolean,
   targetObjectName?: string,
   moduleUUID?: string,
+}
+
+export type ClusterInfraDockerType = {
+  metadata?: Meta,
+  cluster?: string,
+  age?: string,
+  loadBalancerIP?: string,
+  ready?: boolean,
 }

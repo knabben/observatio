@@ -10,6 +10,7 @@ export type MachineType = {
   cluster?: string,
   nodeName?: string,
   providerID?: string,
+  provider?: string,
   version?: string,
   age?: string,
   status?: {
@@ -19,6 +20,13 @@ export type MachineType = {
   }
 }
 
+
+export type MachineInfraDockerType = {
+  metadata?: Meta,
+  providerID?: string,
+  age?: string,
+  ready?: boolean,
+}
 
 export type MachineInfraType = {
   metadata?: Meta,

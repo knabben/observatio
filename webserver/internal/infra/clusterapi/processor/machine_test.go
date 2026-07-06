@@ -143,6 +143,34 @@ func TestProcessMachine(t *testing.T) {
 	}
 }
 
+// TestProcessMachine_Provider ensures a Machine whose infrastructure reference is
+// unrecognized never errors/panics and is reported as "unknown" rather than silently
+// dropped, per US3 (graceful degradation).
+func TestProcessMachine_Provider(t *testing.T) {
+	tests := []struct {
+		name         string
+		kind         string
+		wantProvider string
+	}{
+		{"docker machine", "DockerMachine", "docker"},
+		{"vsphere machine", "VSphereMachine", "vsphere"},
+		{"unrecognized provider kind", "AWSMachine", "unknown"},
+		{"empty kind", "", "unknown"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			machine := clusterv1.Machine{
+				Spec: clusterv1.MachineSpec{
+					InfrastructureRef: corev1.ObjectReference{Kind: tt.kind},
+				},
+			}
+			result := ProcessMachine(machine)
+			assert.Equal(t, tt.wantProvider, result.Provider)
+		})
+	}
+}
+
 func TestProcessMachineInfra(t *testing.T) {
 	tests := []struct {
 		name   string

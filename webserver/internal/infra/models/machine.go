@@ -37,6 +37,10 @@ type Machine struct {
 	// infrastructure provider for the Machine.
 	ProviderID string `json:"providerID,omitempty"`
 
+	// Provider is the normalized infrastructure provider backing this machine
+	// ("docker", "vsphere", or "unknown"), derived from Spec.InfrastructureRef.Kind.
+	Provider string `json:"provider"`
+
 	// ProcessMachine returns the list of Machines objects from the mgmt cluster.
 	Version string `json:"version,omitempty"`
 
@@ -91,4 +95,25 @@ type MachineInfra struct {
 
 	// Status represents the current status details of a machine's infrastructure.
 	Status capv.VSphereMachineStatus `json:"status"`
+}
+
+// MachineInfraDockerResponse stores the list of Docker-backed machines in the cluster.
+type MachineInfraDockerResponse struct {
+	Total    int                  `json:"total"`
+	Failing  int                  `json:"failing"`
+	Machines []MachineInfraDocker `json:"machines"`
+}
+
+// MachineInfraDocker represents the infra details of a Docker (CAPD) machine.
+type MachineInfraDocker struct {
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	// Age represents the time passed until the object is created.
+	Age string `json:"age,omitempty"`
+
+	// ProviderID represents the unique identifier of the machine provider.
+	ProviderID string `json:"providerID,omitempty"`
+
+	// Ready reports the DockerMachine's status.ready field.
+	Ready bool `json:"ready"`
 }

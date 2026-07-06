@@ -14,7 +14,10 @@ import (
 	"k8s.io/client-go/rest"
 
 	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
+
+	"github.com/knabben/observatio/webserver/internal/infra/models"
 )
 
 var (
@@ -54,6 +57,90 @@ func Test_GenerateCompVersions(t *testing.T) {
 			assert.Equal(t, tt.provider.Type, component.Kind)
 			assert.Equal(t, tt.provider.Version, component.Version)
 		}
+	}
+}
+
+func Test_GenerateInfrastructureCapability(t *testing.T) {
+	tests := []struct {
+		name        string
+		providers   []client.Object
+		wantDocker  models.ProviderStatus
+		wantVSphere models.ProviderStatus
+	}{
+		{
+			name: "docker only",
+			providers: []client.Object{
+				&clusterctlv1.Provider{
+					ObjectMeta:   metav1.ObjectMeta{Name: "infrastructure-docker", Namespace: "default"},
+					ProviderName: "docker",
+					Type:         string(clusterctlv1.InfrastructureProviderType),
+					Version:      "v1.10.10",
+				},
+			},
+			wantDocker:  models.ProviderStatus{Installed: true, Version: "v1.10.10"},
+			wantVSphere: models.ProviderStatus{Installed: false, Version: ""},
+		},
+		{
+			name: "vsphere only",
+			providers: []client.Object{
+				&clusterctlv1.Provider{
+					ObjectMeta:   metav1.ObjectMeta{Name: "infrastructure-vsphere", Namespace: "default"},
+					ProviderName: "vsphere",
+					Type:         string(clusterctlv1.InfrastructureProviderType),
+					Version:      "v1.12.0",
+				},
+			},
+			wantDocker:  models.ProviderStatus{Installed: false, Version: ""},
+			wantVSphere: models.ProviderStatus{Installed: true, Version: "v1.12.0"},
+		},
+		{
+			name: "both installed",
+			providers: []client.Object{
+				&clusterctlv1.Provider{
+					ObjectMeta:   metav1.ObjectMeta{Name: "infrastructure-docker", Namespace: "default"},
+					ProviderName: "docker",
+					Type:         string(clusterctlv1.InfrastructureProviderType),
+					Version:      "v1.10.10",
+				},
+				&clusterctlv1.Provider{
+					ObjectMeta:   metav1.ObjectMeta{Name: "infrastructure-vsphere", Namespace: "default"},
+					ProviderName: "vsphere",
+					Type:         string(clusterctlv1.InfrastructureProviderType),
+					Version:      "v1.12.0",
+				},
+			},
+			wantDocker:  models.ProviderStatus{Installed: true, Version: "v1.10.10"},
+			wantVSphere: models.ProviderStatus{Installed: true, Version: "v1.12.0"},
+		},
+		{
+			name: "neither installed",
+			providers: []client.Object{
+				&clusterctlv1.Provider{
+					ObjectMeta:   metav1.ObjectMeta{Name: "bootstrap-kubeadm", Namespace: "default"},
+					ProviderName: "kubeadm",
+					Type:         string(clusterctlv1.BootstrapProviderType),
+					Version:      "v1.9.4",
+				},
+			},
+			wantDocker:  models.ProviderStatus{Installed: false, Version: ""},
+			wantVSphere: models.ProviderStatus{Installed: false, Version: ""},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var providers clusterctlv1.ProviderList
+			c := fake.NewClientBuilder().
+				WithScheme(scheme).
+				WithObjects(tt.providers...).
+				WithLists(&providers).
+				Build()
+
+			capability, err := GenerateInfrastructureCapability(context.Background(), c)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.wantDocker, capability.Docker)
+			assert.Equal(t, tt.wantVSphere, capability.VSphere)
+		})
 	}
 }
 

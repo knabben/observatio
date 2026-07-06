@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/knabben/observatio/webserver/internal/infra/models"
+	"github.com/knabben/observatio/webserver/internal/infra/providerkind"
 	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 )
@@ -30,6 +31,7 @@ func ProcessMachine(m clusterv1.Machine) models.Machine {
 		Cluster:    m.Spec.ClusterName,
 		NodeName:   nodeRef,
 		ProviderID: providerId,
+		Provider:   providerkind.FromKind(m.Spec.InfrastructureRef.Kind),
 		Version:    stringPointer(m.Spec.Version),
 		Bootstrap:  bootstrap,
 		Status:     m.Status,

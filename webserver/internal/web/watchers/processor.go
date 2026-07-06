@@ -40,7 +40,10 @@ func WatchResourceViaWebSocket(ctx context.Context, config WebSocketWatchConfig)
 		return fmt.Errorf("failed to create dynamic client: %w", err)
 	}
 
-	watcher, err := dynamicClient.Resource(config.GVR).Namespace("").Watch(ctx, metav1.ListOptions{})
+	// ResourceVersion "0" makes the API server relist current objects as synthetic
+	// ADDED events before switching to live updates; without it, objects that
+	// already existed before the watch opened would never be sent.
+	watcher, err := dynamicClient.Resource(config.GVR).Namespace("").Watch(ctx, metav1.ListOptions{ResourceVersion: "0"})
 	if err != nil {
 		return fmt.Errorf("failed to create watcher for %v: %w", config.GVR, err)
 	}
