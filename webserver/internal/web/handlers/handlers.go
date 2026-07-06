@@ -27,6 +27,9 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	router.HandleFunc("/api/clusters/list", kubernetes.HandleClusterList).Methods("GET")
 	router.HandleFunc("/api/clusters/infra/list", kubernetes.HandleClusterInfraList).Methods("GET")
 
+	// Infrastructure provider detection
+	router.HandleFunc("/api/infra/capabilities", kubernetes.HandleInfraCapabilities).Methods("GET")
+
 	// Cluster API dashboard Handlers
 	router.HandleFunc("/api/clusters/info", kubernetes.HandleClusterInfo).Methods("GET")
 	router.HandleFunc("/api/clusters/components", kubernetes.HandleComponentsVersion).Methods("GET")

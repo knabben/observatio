@@ -37,6 +37,10 @@ type Machine struct {
 	// infrastructure provider for the Machine.
 	ProviderID string `json:"providerID,omitempty"`
 
+	// Provider is the normalized infrastructure provider backing this machine
+	// ("docker", "vsphere", or "unknown"), derived from Spec.InfrastructureRef.Kind.
+	Provider string `json:"provider"`
+
 	// ProcessMachine returns the list of Machines objects from the mgmt cluster.
 	Version string `json:"version,omitempty"`
 

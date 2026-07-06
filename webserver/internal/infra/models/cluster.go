@@ -34,6 +34,10 @@ type Cluster struct {
 	// InfrastructureRef references the infrastructure-specific cluster configuration.
 	InfrastructureRef *corev1.ObjectReference `json:"infrastructureRef,omitempty"`
 
+	// Provider is the normalized infrastructure provider backing this cluster
+	// ("docker", "vsphere", or "unknown"), derived from InfrastructureRef.Kind.
+	Provider string `json:"provider"`
+
 	// Topology defines the cluster topology, including class type, Kubernetes version, and worker/replica configurations.
 	Topology ClusterClassType `json:"topology"`
 

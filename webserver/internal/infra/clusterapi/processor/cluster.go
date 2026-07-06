@@ -6,6 +6,7 @@ import (
 	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
 
 	"github.com/knabben/observatio/webserver/internal/infra/models"
+	"github.com/knabben/observatio/webserver/internal/infra/providerkind"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 )
 
@@ -31,6 +32,12 @@ func ProcessCluster(cl clusterv1.Cluster) (cluster models.Cluster) {
 	if cl.Spec.ClusterNetwork != nil {
 		clusterNetwork = *cl.Spec.ClusterNetwork
 	}
+	var provider string
+	if cl.Spec.InfrastructureRef != nil {
+		provider = providerkind.FromKind(cl.Spec.InfrastructureRef.Kind)
+	} else {
+		provider = providerkind.Unknown
+	}
 	cluster = models.Cluster{
 		ObjectMeta:           cl.ObjectMeta,
 		Paused:               cl.Spec.Paused,
@@ -39,6 +46,7 @@ func ProcessCluster(cl clusterv1.Cluster) (cluster models.Cluster) {
 		ControlPlaneEndpoint: cl.Spec.ControlPlaneEndpoint,
 		ControlPlaneRef:      cl.Spec.ControlPlaneRef,
 		InfrastructureRef:    cl.Spec.InfrastructureRef,
+		Provider:             provider,
 		Age:                  formatDuration(time.Since(cl.CreationTimestamp.Time)),
 		Status:               cl.Status,
 	}

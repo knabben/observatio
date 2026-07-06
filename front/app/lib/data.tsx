@@ -14,6 +14,27 @@ async function getJSON<T = any>(path: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+// ----- Infrastructure provider detection -----
+
+export interface ProviderStatus {
+  installed: boolean;
+  version: string;
+}
+
+export interface InfrastructureCapability {
+  docker: ProviderStatus;
+  vsphere: ProviderStatus;
+}
+
+export const emptyInfrastructureCapability: InfrastructureCapability = {
+  docker: {installed: false, version: ''},
+  vsphere: {installed: false, version: ''},
+};
+
+export async function getInfraCapabilities(): Promise<InfrastructureCapability> {
+  return getJSON<InfrastructureCapability>(`/api/infra/capabilities`)
+}
+
 // ----- Dashboard -----
 
 export async function getComponentsVersion() {

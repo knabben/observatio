@@ -50,36 +50,36 @@ starting baseline before touching any code.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T003 Create `webserver/internal/infra/providerkind/providerkind.go` with
+- [X] T003 Create `webserver/internal/infra/providerkind/providerkind.go` with
   `FromKind(kind string) string`, mapping `DockerCluster`/`DockerMachine` → `docker`,
   `VSphereCluster`/`VSphereMachine` → `vsphere`, anything else (including empty) → `unknown`.
-- [ ] T004 [P] Add unit tests in `webserver/internal/infra/providerkind/providerkind_test.go`
+- [X] T004 [P] Add unit tests in `webserver/internal/infra/providerkind/providerkind_test.go`
   covering docker/vsphere/unknown/empty-string `Kind` inputs.
 - [X] T005 ~~Register the Docker infra scheme~~ — SKIPPED per T001 finding: Docker infra objects are
   read via the dynamic/unstructured client (no typed `dockerv1` package), so no `runtime.Scheme`
   registration is needed or possible for them.
-- [ ] T006 Add `InfrastructureCapability` and `ProviderStatus` structs to
+- [X] T006 Add `InfrastructureCapability` and `ProviderStatus` structs to
   `webserver/internal/infra/models/capability.go` per data-model.md.
-- [ ] T007 Add `GenerateInfrastructureCapability(ctx, c) (models.InfrastructureCapability, error)` in
+- [X] T007 Add `GenerateInfrastructureCapability(ctx, c) (models.InfrastructureCapability, error)` in
   `webserver/internal/infra/clusterapi/dashboard.go`, reusing the existing
   `clusterctlv1.ProviderList` lookup already performed by `GenerateComponentVersions`
   (filter `Kind == "InfrastructureProvider"` and `ProviderName` in `{docker, vsphere}`; research.md R1).
-- [ ] T008 [P] Add tests for `GenerateInfrastructureCapability` in
+- [X] T008 [P] Add tests for `GenerateInfrastructureCapability` in
   `webserver/internal/infra/clusterapi/dashboard_test.go` using a CAPI fake client seeded with
   `clusterctlv1.Provider` fixtures: docker-only, vsphere-only, both, neither installed.
-- [ ] T009 Add `HandleInfraCapabilities` in `webserver/internal/web/handlers/kubernetes/dashboard.go`
+- [X] T009 Add `HandleInfraCapabilities` in `webserver/internal/web/handlers/kubernetes/dashboard.go`
   and register `GET /api/infra/capabilities` in `webserver/internal/web/handlers/handlers.go`
   (depends on T007).
-- [ ] T010 Add a `Provider string` field to `models.Cluster`
+- [X] T010 Add a `Provider string` field to `models.Cluster`
   (`webserver/internal/infra/models/cluster.go`) and populate it via
   `providerkind.FromKind(InfrastructureRef.Kind)` wherever `models.Cluster` is built (the processor
   that already sets `InfrastructureRef`) (depends on T003).
-- [ ] T011 Add a `Provider string` field to `models.Machine`
+- [X] T011 Add a `Provider string` field to `models.Machine`
   (`webserver/internal/infra/models/machine.go`) and populate it the same way from the raw
   `clusterv1.Machine.Spec.InfrastructureRef.Kind` (depends on T003).
-- [ ] T012 [P] Add `front/app/lib/capabilities.ts`: fetch helper + TypeScript type for
-  `GET /api/infra/capabilities` (depends on T009 for the response shape, can be scaffolded in
-  parallel against contracts/infra-detection-api.md).
+- [X] T012 [P] Add `getInfraCapabilities()` + `InfrastructureCapability`/`ProviderStatus` types to
+  `front/app/lib/data.tsx` (co-located with every other REST fetch helper in this codebase, rather
+  than a new `capabilities.ts` file, per existing convention) for `GET /api/infra/capabilities`.
 
 **Checkpoint**: Foundation ready — all user stories can now proceed.
 
