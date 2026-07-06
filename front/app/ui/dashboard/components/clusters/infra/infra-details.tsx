@@ -5,6 +5,22 @@ import {SimpleGrid } from '@mantine/core';
 import Specification from "@/app/ui/dashboard/components/clusters/infra/specification";
 import {IconCheck, IconX} from "@tabler/icons-react";
 import ObjectDetails from "@/app/ui/dashboard/base/details";
+import {ObjectContext} from "@/app/ui/dashboard/ai-panel/ai-panel-context";
+import {useCurrentObjectContext} from "@/app/ui/dashboard/ai-panel/use-current-object-context";
+import {AskAIButton} from "@/app/ui/dashboard/ai-panel/ask-ai-button";
+
+function buildContext(cluster: ClusterInfraType): ObjectContext {
+  return {
+    kind: 'VSphereCluster',
+    name: cluster.metadata?.name ?? '',
+    namespace: cluster.metadata?.namespace ?? '',
+    status: cluster.status?.ready ? 'Ready' : `Not ready${cluster.status?.failureReason ? `: ${cluster.status.failureReason}` : ''}`,
+    keySpecFields: {
+      server: cluster.server ?? '—',
+      controlPlaneEndpoint: cluster.controlPlaneEndpoint ?? '—',
+    },
+  };
+}
 
 /**
  * Displays infrastructure details of a given cluster, including cluster specifications,
@@ -14,6 +30,8 @@ import ObjectDetails from "@/app/ui/dashboard/base/details";
 export default function ClusterInfraDetails({
   cluster,
 }: { cluster: ClusterInfraType }) {
+  useCurrentObjectContext(buildContext(cluster));
+
   const tabs = [
     {
       label: "Specification",
@@ -30,6 +48,7 @@ export default function ClusterInfraDetails({
               : <IconX color="red" size={40}/>
           }
           <Text className="font-bold" fw={700}>{cluster.metadata?.name}</Text>
+          <AskAIButton context={buildContext(cluster)}/>
         </Group>
       </div>
       <div>

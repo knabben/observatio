@@ -137,36 +137,36 @@ pre-filled.
 
 ### Tests for User Story 2
 
-- [ ] T017 [P] [US2] Jest test for `use-current-object-context.ts`: registers on mount, unregisters
+- [X] T017 [P] [US2] Jest test for `use-current-object-context.ts`: registers on mount, unregisters
   on unmount, and — critically — the panel's `queryField` only auto-refreshes while
   `queryFieldTouched` is `false`, in `front/app/ui/dashboard/ai-panel/use-current-object-context.test.ts`.
-- [ ] T018 [P] [US2] Jest test for `ask-ai-button.tsx`: clicking it opens the panel with `queryField`
+- [X] T018 [P] [US2] Jest test for `ask-ai-button.tsx`: clicking it opens the panel with `queryField`
   already set from that screen's `ObjectContext`.
 
 ### Implementation for User Story 2
 
-- [ ] T019 [US2] Create `front/app/ui/dashboard/ai-panel/use-current-object-context.ts`: hook each
+- [X] T019 [US2] Create `front/app/ui/dashboard/ai-panel/use-current-object-context.ts`: hook each
   detail screen calls with its `ObjectContext` (kind/name/namespace/status/keySpecFields per
   data-model.md); updates `AIPanelState.currentObjectContext` and refreshes `queryField` only when
   `queryFieldTouched` is `false` (FR-006, FR-009); sets `queryFieldTouched` on manual edit (FR-008);
   clears registration on unmount so a list/overview screen's absence of a call means no context
   (FR-007) (depends on T002).
-- [ ] T020 [P] [US2] Create `front/app/ui/dashboard/ai-panel/ask-ai-button.tsx`: the per-screen
+- [X] T020 [P] [US2] Create `front/app/ui/dashboard/ai-panel/ask-ai-button.tsx`: the per-screen
   quick-action calling `useAIPanel().open()` with `queryField` seeded from that screen's
   `ObjectContext` (FR-016) (depends on T002, T019).
-- [ ] T021 [P] [US2] Wire `use-current-object-context` + `AskAIButton` into
+- [X] T021 [P] [US2] Wire `use-current-object-context` + `AskAIButton` into
   `clusters/details.tsx` (identity/status/key spec fields for a Cluster).
-- [ ] T022 [P] [US2] Wire into `clusters/infra/infra-details.tsx` (vSphere ClusterInfra fields:
+- [X] T022 [P] [US2] Wire into `clusters/infra/infra-details.tsx` (vSphere ClusterInfra fields:
   server, thumbprint, control plane endpoint).
-- [ ] T023 [P] [US2] Wire into `clusters/infra/docker-details.tsx` (Docker ClusterInfra fields:
+- [X] T023 [P] [US2] Wire into `clusters/infra/docker-details.tsx` (Docker ClusterInfra fields:
   load balancer IP, ready).
-- [ ] T024 [P] [US2] Wire into `machines/details.tsx` (Machine fields: node name, provider ID,
+- [X] T024 [P] [US2] Wire into `machines/details.tsx` (Machine fields: node name, provider ID,
   bootstrap, version).
-- [ ] T025 [P] [US2] Wire into `machines/infra/infra-details.tsx` (vSphere MachineInfra fields:
+- [X] T025 [P] [US2] Wire into `machines/infra/infra-details.tsx` (vSphere MachineInfra fields:
   template, CPU/memory/disk).
-- [ ] T026 [P] [US2] Wire into `machines/infra/docker-details.tsx` (Docker MachineInfra fields:
+- [X] T026 [P] [US2] Wire into `machines/infra/docker-details.tsx` (Docker MachineInfra fields:
   provider ID, ready).
-- [ ] T027 [P] [US2] Wire into `mds/details.tsx` (MachineDeployment fields: bootstrap/infra
+- [X] T027 [P] [US2] Wire into `mds/details.tsx` (MachineDeployment fields: bootstrap/infra
   template refs, version).
 
 **Checkpoint**: US1 + US2 together are independently testable — the panel is global and starts

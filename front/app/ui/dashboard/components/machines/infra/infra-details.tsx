@@ -9,10 +9,29 @@ import {
 import {IconCheck, IconX} from "@tabler/icons-react";
 import Specification from "@/app/ui/dashboard/components/machines/infra/specification";
 import ObjectDetails from "@/app/ui/dashboard/base/details";
+import {ObjectContext} from "@/app/ui/dashboard/ai-panel/ai-panel-context";
+import {useCurrentObjectContext} from "@/app/ui/dashboard/ai-panel/use-current-object-context";
+import {AskAIButton} from "@/app/ui/dashboard/ai-panel/ask-ai-button";
+
+function buildContext(machine: MachineInfraType): ObjectContext {
+  return {
+    kind: 'VSphereMachine',
+    name: machine.metadata?.name ?? '',
+    namespace: machine.metadata?.namespace ?? '',
+    status: machine.status?.ready ? 'Ready' : `Not ready${machine.status?.failureReason ? `: ${machine.status.failureReason}` : ''}`,
+    keySpecFields: {
+      template: machine.template ?? '—',
+      numCPUs: String(machine.numCPUs ?? '—'),
+      memoryMiB: String(machine.memoryMiB ?? '—'),
+    },
+  };
+}
 
 export default function MachineInfraDetails({
   machine
 }: {machine: MachineInfraType}) {
+  useCurrentObjectContext(buildContext(machine));
+
   const tabs = [
     {
       label: "Specification",
@@ -29,6 +48,7 @@ export default function MachineInfraDetails({
               : <IconX color="red" size={40}/>
           }
           <Text className="font-bold" fw={700}>{machine.metadata?.name}</Text>
+          <AskAIButton context={buildContext(machine)}/>
         </Group>
       </div>
       <div>

@@ -2,8 +2,9 @@ import '@testing-library/jest-dom';
 import {screen} from '@testing-library/react';
 import {Grid} from '@mantine/core';
 import {render as baseRender} from '@/app/ui/dashboard/utils/test-render';
+import {AIPanelProvider} from '@/app/ui/dashboard/ai-panel/ai-panel-context';
 
-const render = (ui: React.ReactNode) => baseRender(<Grid>{ui}</Grid>);
+const render = (ui: React.ReactNode) => baseRender(<AIPanelProvider><Grid>{ui}</Grid></AIPanelProvider>);
 
 import ClusterDetails from './clusters/details';
 import ClusterInfraDetails from './clusters/infra/infra-details';

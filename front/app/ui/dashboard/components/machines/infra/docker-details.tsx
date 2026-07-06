@@ -9,10 +9,27 @@ import {
 import {IconCheck, IconX} from "@tabler/icons-react";
 import DockerSpecification from "@/app/ui/dashboard/components/machines/infra/docker-specification";
 import ObjectDetails from "@/app/ui/dashboard/base/details";
+import {ObjectContext} from "@/app/ui/dashboard/ai-panel/ai-panel-context";
+import {useCurrentObjectContext} from "@/app/ui/dashboard/ai-panel/use-current-object-context";
+import {AskAIButton} from "@/app/ui/dashboard/ai-panel/ask-ai-button";
+
+function buildContext(machine: MachineInfraDockerType): ObjectContext {
+  return {
+    kind: 'DockerMachine',
+    name: machine.metadata?.name ?? '',
+    namespace: machine.metadata?.namespace ?? '',
+    status: machine.ready ? 'Ready' : 'Not ready',
+    keySpecFields: {
+      providerID: machine.providerID ?? '—',
+    },
+  };
+}
 
 export default function MachineInfraDockerDetails({
   machine
 }: {machine: MachineInfraDockerType}) {
+  useCurrentObjectContext(buildContext(machine));
+
   const tabs = [
     {
       label: "Specification",
@@ -29,6 +46,7 @@ export default function MachineInfraDockerDetails({
               : <IconX color="red" size={40}/>
           }
           <Text className="font-bold" fw={700}>{machine.metadata?.name}</Text>
+          <AskAIButton context={buildContext(machine)}/>
         </Group>
       </div>
       <div>

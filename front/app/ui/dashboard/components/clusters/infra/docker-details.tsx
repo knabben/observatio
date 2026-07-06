@@ -5,6 +5,21 @@ import {SimpleGrid} from '@mantine/core';
 import DockerSpecification from "@/app/ui/dashboard/components/clusters/infra/docker-specification";
 import {IconCheck, IconX} from "@tabler/icons-react";
 import ObjectDetails from "@/app/ui/dashboard/base/details";
+import {ObjectContext} from "@/app/ui/dashboard/ai-panel/ai-panel-context";
+import {useCurrentObjectContext} from "@/app/ui/dashboard/ai-panel/use-current-object-context";
+import {AskAIButton} from "@/app/ui/dashboard/ai-panel/ask-ai-button";
+
+function buildContext(cluster: ClusterInfraDockerType): ObjectContext {
+  return {
+    kind: 'DockerCluster',
+    name: cluster.metadata?.name ?? '',
+    namespace: cluster.metadata?.namespace ?? '',
+    status: cluster.ready ? 'Ready' : 'Not ready',
+    keySpecFields: {
+      loadBalancerIP: cluster.loadBalancerIP ?? '—',
+    },
+  };
+}
 
 /**
  * Displays infrastructure details of a Docker (CAPD) cluster: readiness, namespace, age,
@@ -13,6 +28,8 @@ import ObjectDetails from "@/app/ui/dashboard/base/details";
 export default function ClusterInfraDockerDetails({
   cluster,
 }: { cluster: ClusterInfraDockerType }) {
+  useCurrentObjectContext(buildContext(cluster));
+
   const tabs = [
     {
       label: "Specification",
@@ -29,6 +46,7 @@ export default function ClusterInfraDockerDetails({
               : <IconX color="red" size={40}/>
           }
           <Text className="font-bold" fw={700}>{cluster.metadata?.name}</Text>
+          <AskAIButton context={buildContext(cluster)}/>
         </Group>
       </div>
       <div>
