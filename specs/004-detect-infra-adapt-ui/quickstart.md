@@ -3,6 +3,19 @@
 Manual verification steps once the feature is implemented, covering each acceptance scenario in
 `spec.md`.
 
+**Live validation (2026-07-06)**: Scenario 1 (Docker-only) was run end-to-end against the real
+`kind-capi-mgmt` cluster (Docker/CAPD-backed) using a standalone build on a scratch port:
+- `GET /api/infra/capabilities` → `{"docker":{"installed":true,"version":"v1.10.10"},"vsphere":{"installed":false,"version":""}}`.
+- `GET /api/clusters/list` / `GET /api/machines/list` → each item carries `"provider":"docker"`.
+- `GET /api/clusters/infra/list` (no `?provider=`) auto-selected Docker and returned the real
+  `DockerCluster`; `GET /api/clusters/infra/list?provider=vsphere` correctly returned `404 vsphere
+  infrastructure provider is not installed`.
+- WebSocket `{"type":"cluster-infra-docker"}` and `{"type":"machine-infra-docker"}` both streamed
+  the real Docker objects immediately (`ADDED` events) on connect.
+Scenarios 2/3/4/5 (vSphere-only, mixed, unknown provider, no provider) are covered by the fake-client
+and component test suites — no vSphere or multi-provider live cluster was available in this
+environment to exercise those end-to-end.
+
 ## 1. Docker-only environment
 
 1. Point the backend at a management cluster with only the Docker (CAPD) infrastructure provider

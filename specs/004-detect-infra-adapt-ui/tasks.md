@@ -226,12 +226,18 @@ clear, non-crashing result.
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T032 [P] Run through `quickstart.md` manually against docker-only, vsphere-only, mixed, and
-  no-provider environments.
-- [ ] T033 [P] Update route documentation/comments for the new `/api/infra/capabilities` endpoint in
-  `webserver/internal/web/handlers/handlers.go`.
-- [ ] T034 Run `make build`, `make run-tests-backend`, and `make run-tests-frontend` end-to-end
-  before opening a PR (Constitution Principle V gate).
+- [X] T032 [P] Ran `quickstart.md` scenario 1 (Docker-only) live end-to-end against the real
+  `kind-capi-mgmt` cluster — capabilities, cluster/machine `provider` field, infra REST
+  auto-select/404, and both new WebSocket types all confirmed against real cluster data. See
+  quickstart.md's "Live validation" note. Scenarios 2-5 (vSphere-only, mixed, unknown, none) are
+  covered by the fake-client/component test suites — no additional live cluster of those shapes
+  was available in this environment.
+- [X] T033 [P] Updated route documentation/comments in
+  `webserver/internal/web/handlers/handlers.go` for the new `/api/infra/capabilities` endpoint,
+  the provider-dispatch behavior of the `/infra/list` routes, and the new WebSocket object types.
+- [X] T034 Ran `make run-tests-backend`, `make run-tests-frontend`, and `make build` end-to-end —
+  all green. `make build`'s production lint pass caught one unused import
+  (`infra-capability-context.tsx`) that `tsc`/`jest` had missed; fixed and re-verified.
 
 ---
 

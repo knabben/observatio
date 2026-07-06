@@ -23,11 +23,15 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 		}
 	})
 
-	// Cluster API handlers
+	// Cluster API handlers. Each Cluster/Machine item carries a derived "provider"
+	// (docker/vsphere/unknown); the /infra/list routes accept an optional ?provider=
+	// query param and otherwise auto-select the first provider reported installed by
+	// /api/infra/capabilities, returning 404 if the resolved/requested provider isn't installed.
 	router.HandleFunc("/api/clusters/list", kubernetes.HandleClusterList).Methods("GET")
 	router.HandleFunc("/api/clusters/infra/list", kubernetes.HandleClusterInfraList).Methods("GET")
 
-	// Infrastructure provider detection
+	// Infrastructure provider detection: which of Docker/vSphere are installed in the
+	// connected environment, and their version (see specs/004-detect-infra-adapt-ui).
 	router.HandleFunc("/api/infra/capabilities", kubernetes.HandleInfraCapabilities).Methods("GET")
 
 	// Cluster API dashboard Handlers
@@ -40,11 +44,13 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	// Cluster API Machine Deployments Handlers
 	router.HandleFunc("/api/machinesdeployment/list", kubernetes.HandleMachineDeployments).Methods("GET")
 
-	// Cluster API Machine Handlers
+	// Cluster API Machine Handlers (same provider dispatch as /api/clusters/infra/list)
 	router.HandleFunc("/api/machines/list", kubernetes.HandleMachines).Methods("GET")
 	router.HandleFunc("/api/machines/infra/list", kubernetes.HandleMachineInfra).Methods("GET")
 
-	// Start the websocker handlers
+	// Start the websocket handlers. Live resource lists (Clusters/Machines listing
+	// screens) stream over /ws/watcher, not these REST endpoints — object types include
+	// "cluster-infra-docker"/"machine-infra-docker" alongside the existing vSphere ones.
 	startWebSocketHandlers(router)
 
 	// Static React bundle hosting handler
