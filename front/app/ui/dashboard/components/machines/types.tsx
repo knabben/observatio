@@ -10,6 +10,7 @@ export type MachineType = {
   cluster?: string,
   nodeName?: string,
   providerID?: string,
+  provider?: string,
   version?: string,
   age?: string,
   status?: {

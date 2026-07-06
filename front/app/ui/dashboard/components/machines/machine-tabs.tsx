@@ -11,6 +11,7 @@ import {getInfraCapabilities, emptyInfrastructureCapability} from '@/app/lib/dat
 import {useFetchState} from '@/app/ui/dashboard/shared/use-fetch-state';
 import {EmptyState} from '@/app/ui/dashboard/shared/empty-state';
 import {CenteredLoader} from '@/app/ui/dashboard/utils/loader';
+import {InfraCapabilityProvider} from '@/app/ui/dashboard/shared/infra-capability-context';
 
 /**
  * Renders the Machines screen's tabs, adapting to whichever infrastructure provider(s) are
@@ -30,47 +31,49 @@ export default function MachineTabs() {
   const noProviderDetected = !capability.docker.installed && !capability.vsphere.installed;
 
   return (
-    <Tabs color="var(--mantine-color-brand-4)" defaultValue="machine">
-      <TabsList>
-        <TabsTab value="machine">
-          <Text size="md" fw={700}>Machines</Text>
-        </TabsTab>
+    <InfraCapabilityProvider value={capability}>
+      <Tabs color="var(--mantine-color-brand-4)" defaultValue="machine">
+        <TabsList>
+          <TabsTab value="machine">
+            <Text size="md" fw={700}>Machines</Text>
+          </TabsTab>
+          {capability.docker.installed &&
+            <TabsTab value="machine-docker">
+              <Text size="md" fw={700}>Docker Machines</Text>
+            </TabsTab>
+          }
+          {capability.vsphere.installed &&
+            <TabsTab value="machine-vsphere">
+              <Text size="md" fw={700}>vSphere Machines</Text>
+            </TabsTab>
+          }
+        </TabsList>
+
+        <TabsPanel value="machine">
+          <Space h="lg"/>
+          <MachineLister/>
+          {noProviderDetected &&
+            <>
+              <Space h="lg"/>
+              <EmptyState label="No supported infrastructure provider detected"/>
+            </>
+          }
+        </TabsPanel>
+
         {capability.docker.installed &&
-          <TabsTab value="machine-docker">
-            <Text size="md" fw={700}>Docker Machines</Text>
-          </TabsTab>
-        }
-        {capability.vsphere.installed &&
-          <TabsTab value="machine-vsphere">
-            <Text size="md" fw={700}>vSphere Machines</Text>
-          </TabsTab>
-        }
-      </TabsList>
-
-      <TabsPanel value="machine">
-        <Space h="lg"/>
-        <MachineLister/>
-        {noProviderDetected &&
-          <>
+          <TabsPanel value="machine-docker">
             <Space h="lg"/>
-            <EmptyState label="No supported infrastructure provider detected"/>
-          </>
+            <MachineInfraDockerLister/>
+          </TabsPanel>
         }
-      </TabsPanel>
 
-      {capability.docker.installed &&
-        <TabsPanel value="machine-docker">
-          <Space h="lg"/>
-          <MachineInfraDockerLister/>
-        </TabsPanel>
-      }
-
-      {capability.vsphere.installed &&
-        <TabsPanel value="machine-vsphere">
-          <Space h="lg"/>
-          <MachineInfraLister/>
-        </TabsPanel>
-      }
-    </Tabs>
+        {capability.vsphere.installed &&
+          <TabsPanel value="machine-vsphere">
+            <Space h="lg"/>
+            <MachineInfraLister/>
+          </TabsPanel>
+        }
+      </Tabs>
+    </InfraCapabilityProvider>
   )
 }

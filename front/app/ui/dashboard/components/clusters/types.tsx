@@ -21,6 +21,7 @@ export type ClusterType = {
   metadata?: Meta,
   paused?: boolean,
   age?: string,
+  provider?: string,
   status?: {
     ready?: boolean,
     phase?: string,

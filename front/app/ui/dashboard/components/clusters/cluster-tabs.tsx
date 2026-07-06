@@ -11,6 +11,7 @@ import {getInfraCapabilities, emptyInfrastructureCapability} from '@/app/lib/dat
 import {useFetchState} from '@/app/ui/dashboard/shared/use-fetch-state';
 import {EmptyState} from '@/app/ui/dashboard/shared/empty-state';
 import {CenteredLoader} from '@/app/ui/dashboard/utils/loader';
+import {InfraCapabilityProvider} from '@/app/ui/dashboard/shared/infra-capability-context';
 
 /**
  * Renders the Clusters screen's tabs, adapting to whichever infrastructure provider(s) are
@@ -32,47 +33,49 @@ export default function ClusterTabs() {
   const noProviderDetected = !capability.docker.installed && !capability.vsphere.installed;
 
   return (
-    <Tabs color="var(--mantine-color-brand-4)" defaultValue="clusters">
-      <TabsList>
-        <TabsTab value="clusters">
-          <Text size="md" fw={700}>Clusters</Text>
-        </TabsTab>
+    <InfraCapabilityProvider value={capability}>
+      <Tabs color="var(--mantine-color-brand-4)" defaultValue="clusters">
+        <TabsList>
+          <TabsTab value="clusters">
+            <Text size="md" fw={700}>Clusters</Text>
+          </TabsTab>
+          {capability.docker.installed &&
+            <TabsTab value="docker">
+              <Text size="md" fw={700}>Docker Clusters</Text>
+            </TabsTab>
+          }
+          {capability.vsphere.installed &&
+            <TabsTab value="vsphere">
+              <Text size="md" fw={700}>vSphere Clusters</Text>
+            </TabsTab>
+          }
+        </TabsList>
+
+        <TabsPanel value="clusters">
+          <Space h="lg"/>
+          <ClusterLister/>
+          {noProviderDetected &&
+            <>
+              <Space h="lg"/>
+              <EmptyState label="No supported infrastructure provider detected"/>
+            </>
+          }
+        </TabsPanel>
+
         {capability.docker.installed &&
-          <TabsTab value="docker">
-            <Text size="md" fw={700}>Docker Clusters</Text>
-          </TabsTab>
-        }
-        {capability.vsphere.installed &&
-          <TabsTab value="vsphere">
-            <Text size="md" fw={700}>vSphere Clusters</Text>
-          </TabsTab>
-        }
-      </TabsList>
-
-      <TabsPanel value="clusters">
-        <Space h="lg"/>
-        <ClusterLister/>
-        {noProviderDetected &&
-          <>
+          <TabsPanel value="docker">
             <Space h="lg"/>
-            <EmptyState label="No supported infrastructure provider detected"/>
-          </>
+            <ClusterInfraDockerLister/>
+          </TabsPanel>
         }
-      </TabsPanel>
 
-      {capability.docker.installed &&
-        <TabsPanel value="docker">
-          <Space h="lg"/>
-          <ClusterInfraDockerLister/>
-        </TabsPanel>
-      }
-
-      {capability.vsphere.installed &&
-        <TabsPanel value="vsphere">
-          <Space h="lg"/>
-          <ClusterInfraLister/>
-        </TabsPanel>
-      }
-    </Tabs>
+        {capability.vsphere.installed &&
+          <TabsPanel value="vsphere">
+            <Space h="lg"/>
+            <ClusterInfraLister/>
+          </TabsPanel>
+        }
+      </Tabs>
+    </InfraCapabilityProvider>
   )
 }

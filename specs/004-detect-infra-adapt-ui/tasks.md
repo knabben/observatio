@@ -167,20 +167,20 @@ shows a correct provider(+version) badge matching that resource's actual backing
 
 ### Tests for User Story 2
 
-- [ ] T023 [P] [US2] Frontend test for the provider badge component: correct label/version for
+- [X] T023 [P] [US2] Frontend test for the provider badge component: correct label/version for
   docker/vsphere, "Unknown" for an unrecognized provider, in
   `front/app/ui/dashboard/shared/provider-badge.test.tsx`.
 
 ### Implementation for User Story 2
 
-- [ ] T024 [P] [US2] Create `front/app/ui/dashboard/shared/provider-badge.tsx`: takes a `provider`
+- [X] T024 [P] [US2] Create `front/app/ui/dashboard/shared/provider-badge.tsx`: takes a `provider`
   string and the capabilities response, renders "Docker vX.Y.Z" / "vSphere vX.Y.Z" / "Unknown".
-- [ ] T025 [US2] Add a `provider` field to `ClusterType` in
+- [X] T025 [US2] Add a `provider` field to `ClusterType` in
   `front/app/ui/dashboard/components/clusters/types.tsx` (mirrors backend T010).
-- [ ] T026 [US2] Wire `provider-badge.tsx` into
+- [X] T026 [US2] Wire `provider-badge.tsx` into
   `front/app/ui/dashboard/components/clusters/table.tsx` row rendering, resolving the version by
   looking up `provider` in the capabilities response (depends on T012, T024, T025).
-- [ ] T027 [US2] Wire the same badge into the Machines list table (depends on T011, T024).
+- [X] T027 [US2] Wire the same badge into the Machines list table (depends on T011, T024).
 
 **Checkpoint**: US2 is independently testable — every Clusters/Machines row shows a correct
 provider(+version) or Unknown badge.
