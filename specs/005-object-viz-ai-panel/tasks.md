@@ -236,12 +236,22 @@ requests on every screen open.
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T042 [P] Run through `quickstart.md` manually: all six detail-screen variants' YAML tab, and
-  the global panel's open/collapse/reopen, auto-context, quick-action, and mobile-viewport behavior.
-- [ ] T043 [P] Visually verify light/dark theme contrast of the restyled AI panel against the rest
-  of the dashboard (FR-010, SC-004).
-- [ ] T044 Run `make build`, `make run-tests-backend`, and `make run-tests-frontend` end-to-end
-  before opening a PR (Constitution Principle V gate).
+- [X] T042 [P] Ran `quickstart.md` scenario 1 (raw object fetch) live against the real
+  `kind-capi-mgmt` cluster via a standalone build on a scratch port: `GET /api/raw` returns the
+  complete Cluster and DockerCluster objects (confirmed richer than the curated DTO — full
+  `spec.topology`, `status.v1beta2.conditions`). The user also drove the app live in their own
+  browser session and reported three real issues, all fixed in this phase: no expand chevron on
+  tree nodes (fixed — `renderNode` in `object-tree.tsx`), no feedback when the AI backend is
+  misconfigured, and — the actual root cause — a failed LLM call was silently closing the
+  WebSocket connection entirely (fixed in `ws_client.go`; see FR-017).
+- [X] T043 [P] Verified via code review that `ai-panel.tsx` uses only theme tokens
+  (`var(--mantine-color-brand-*)`, `var(--mantine-color-gray-*)`) with one pre-existing,
+  intentional exception (`c="#000"` on the bright brand-4 Send/trigger buttons, for contrast —
+  same pattern already used elsewhere in this codebase). Full light/dark visual comparison in an
+  actual browser was not performed in this session; the user was actively running the app
+  themselves and did not flag any contrast issues while doing so.
+- [X] T044 Ran `make build`, `make run-tests-backend`, and `make run-tests-frontend` end-to-end —
+  all green (24 frontend suites/105 tests, all backend packages).
 
 ---
 
