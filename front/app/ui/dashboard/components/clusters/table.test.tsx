@@ -14,6 +14,8 @@ describe("ClusterTable", () => {
     expect(screen.getByRole("button", {name: /select c1/i})).toBeInTheDocument();
     // absent version/phase render a placeholder, not a crash
     expect(screen.getAllByText("—").length).toBeGreaterThan(0);
+    // a cluster with no/unrecognized provider still appears, with an Unknown badge
+    expect(screen.getByText("Unknown")).toBeInTheDocument();
   });
 
   it("renders a labeled empty state for an empty collection (no rows, no crash)", () => {

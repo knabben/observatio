@@ -198,20 +198,26 @@ clear, non-crashing result.
 
 ### Tests for User Story 3
 
-- [ ] T028 [P] [US3] Backend test: cluster/machine listing does not error when `infrastructureRef.kind`
-  is an unrecognized value, and `GET /api/infra/capabilities` returns both `installed:false` when no
-  matching provider inventory entries exist.
-- [ ] T029 [P] [US3] Frontend test: Clusters screen renders the "no supported infrastructure provider
-  detected" message when both capability flags are false, and renders an unrecognized-provider
-  cluster in the main list without forcing open a provider tab for it.
+- [X] T028 [P] [US3] Backend test: `TestProcessCluster_Provider`/`TestProcessMachine_Provider` in
+  `processor/cluster_test.go`/`machine_test.go` confirm an unrecognized (or, for Cluster, absent)
+  `infrastructureRef.kind` never errors/panics and resolves to `"unknown"`. The
+  `GET /api/infra/capabilities` "neither installed" case was already covered by
+  `Test_GenerateInfrastructureCapability` (T008) and `Test_resolveInfraProvider` (T013).
+- [X] T029 [P] [US3] Frontend test: `cluster-tabs.test.tsx`/`machine-tabs.test.tsx` (T014) already
+  cover the "no supported infrastructure provider detected" message for both screens; added an
+  assertion to the existing `clusters/table.test.tsx` partial-cluster case confirming an
+  unrecognized/absent-provider cluster still renders in the main list with an "Unknown" badge
+  rather than being dropped.
 
 ### Implementation for User Story 3
 
-- [ ] T030 [US3] Add a "no supported infrastructure provider detected" message in
-  `front/app/dashboard/clusters/page.tsx`, using the existing shared `empty-state.tsx` component,
-  shown when both `docker.installed` and `vsphere.installed` are false (depends on T012, T021).
-- [ ] T031 [US3] Confirm/adjust `HandleClusterInfraList` and `HandleMachineInfra` return a clear
-  `404` (never a panic or silent empty `200`) when the resolved/requested provider isn't installed
+- [X] T030 [US3] Already delivered as part of T021/T022 (`ClusterTabs`/`MachineTabs` render the
+  "no supported infrastructure provider detected" `EmptyState` when both `docker.installed` and
+  `vsphere.installed` are false).
+- [X] T031 [US3] Verified by code review (consistent with T013's handler-testability note —
+  `HandleClusterInfraList`/`HandleMachineInfra` always construct a real client, so this isn't
+  fake-client-testable): both handlers check `capability.<Provider>.Installed` before dispatching
+  and call `http.Error(w, ..., http.StatusNotFound)` otherwise — never a panic or a silent `200`
   (depends on T017, T018).
 
 **Checkpoint**: All three user stories are independently functional.

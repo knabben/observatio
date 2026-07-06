@@ -7,6 +7,7 @@ import (
 	"github.com/knabben/observatio/webserver/internal/infra/models"
 	"github.com/stretchr/testify/assert"
 
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
@@ -504,6 +505,32 @@ func TestProcessClusterInfraResponse(t *testing.T) {
 			assert.Equal(t, tt.expected.Total, result.Total)
 			assert.Equal(t, tt.expected.Failing, result.Failing)
 			assert.Equal(t, tt.expected.Clusters, result.Clusters)
+		})
+	}
+}
+
+// TestProcessCluster_Provider ensures a Cluster whose infrastructure reference is
+// unrecognized (or absent) never errors/panics and is reported as "unknown" rather than
+// silently dropped, per US3 (graceful degradation).
+func TestProcessCluster_Provider(t *testing.T) {
+	tests := []struct {
+		name         string
+		infraRef     *corev1.ObjectReference
+		wantProvider string
+	}{
+		{"docker cluster", &corev1.ObjectReference{Kind: "DockerCluster"}, "docker"},
+		{"vsphere cluster", &corev1.ObjectReference{Kind: "VSphereCluster"}, "vsphere"},
+		{"unrecognized provider kind", &corev1.ObjectReference{Kind: "AWSCluster"}, "unknown"},
+		{"missing infrastructure reference", nil, "unknown"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cluster := clusterv1.Cluster{
+				Spec: clusterv1.ClusterSpec{InfrastructureRef: tt.infraRef},
+			}
+			result := ProcessCluster(cluster)
+			assert.Equal(t, tt.wantProvider, result.Provider)
 		})
 	}
 }
