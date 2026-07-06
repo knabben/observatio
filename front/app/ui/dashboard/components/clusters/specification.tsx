@@ -1,6 +1,7 @@
 import {ClusterType} from "@/app/ui/dashboard/components/clusters/types";
 import {Grid, GridCol, Pill, Space, Table} from "@mantine/core";
 import Panel from "@/app/ui/dashboard/utils/panel";
+import ConditionsTable from "@/app/ui/dashboard/shared/conditions-table";
 import {sourceSans400} from "@/fonts";
 import React from "react";
 
@@ -82,6 +83,8 @@ export default function Specification({
             </Table.Tbody>
           </Table>
         } />
+        <Space h="md" />
+        <ConditionsTable conditions={cluster.status?.conditions ?? []}/>
         </GridCol>
       </Grid>
   )

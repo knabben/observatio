@@ -3,26 +3,48 @@ import React from "react";
 import {MachineType} from "@/app/ui/dashboard/components/machines/types";
 import ObjectDetails from "@/app/ui/dashboard/base/details";
 import Specification from "@/app/ui/dashboard/components/machines/specification";
-import AITroubleshooting from "@/app/ui/dashboard/base/ai-troubleshooting";
 
 import {IconCheck, IconX } from "@tabler/icons-react";
 import {Group, SimpleGrid, Stack, Text} from "@mantine/core";
+import {ObjectContext} from "@/app/ui/dashboard/ai-panel/ai-panel-context";
+import {useCurrentObjectContext} from "@/app/ui/dashboard/ai-panel/use-current-object-context";
+import {AskAIButton} from "@/app/ui/dashboard/ai-panel/ask-ai-button";
+import {ObjectTree} from "@/app/ui/dashboard/shared/object-tree";
+import {RESOURCE_GVR} from "@/app/lib/resource-gvr";
+
+function buildContext(machine: MachineType): ObjectContext {
+  const ready = Boolean(machine.status?.infrastructureReady && machine.status?.bootstrapReady);
+  return {
+    kind: 'Machine',
+    name: machine.metadata?.name ?? '',
+    namespace: machine.metadata?.namespace ?? '',
+    status: ready ? 'Ready' : 'Not ready',
+    keySpecFields: {
+      nodeName: machine.nodeName ?? '—',
+      providerID: machine.providerID ?? '—',
+      version: machine.version ?? '—',
+    },
+  };
+}
 
 export default function MachineDetails({
   machine,
 }: { machine: MachineType}) {
+  useCurrentObjectContext(buildContext(machine));
+
   const tabs = [
   {
     label: "Specification",
     content: (machine: MachineType) => <Specification machine={machine} />
   },
   {
-    label: "AI Troubleshooting",
-    content: (machine: MachineType) => <AITroubleshooting
-      objectType="machine"
-      objectName={machine.metadata?.name ?? ''}
-      objectNamespace={machine.metadata?.namespace ?? ''}
-      conditions={machine.status?.conditions ?? []} />
+    label: "YAML",
+    content: (machine: MachineType) => <ObjectTree
+      gvr={RESOURCE_GVR.machine}
+      namespace={machine.metadata?.namespace ?? ''}
+      name={machine.metadata?.name ?? ''}
+      resourceVersion={machine.metadata?.resourceVersion}
+    />
   }];
   const headerRender = (machine: MachineType) => (
     <SimpleGrid cols={{base: 1, sm: 2}}>
@@ -34,6 +56,7 @@ export default function MachineDetails({
             : <IconX color="red" size={40}/>
           }
           <Text className="font-bold" fw={700}>{machine.metadata?.name}</Text>
+          <AskAIButton context={buildContext(machine)}/>
         </Group>
       </div>
       <div>

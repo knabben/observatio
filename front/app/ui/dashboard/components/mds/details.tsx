@@ -4,27 +4,50 @@ import {Group, Stack, Text} from "@mantine/core";
 import {SimpleGrid} from '@mantine/core';
 import {MachineDeploymentType} from "@/app/ui/dashboard/components/mds/types";
 import Specification from "@/app/ui/dashboard/components/mds/specification";
-import AITroubleshooting from "@/app/ui/dashboard/base/ai-troubleshooting";
 
 import ObjectDetails from "@/app/ui/dashboard/base/details";
 import {IconCheck, IconMinus, IconX} from "@tabler/icons-react";
+import {ObjectContext} from "@/app/ui/dashboard/ai-panel/ai-panel-context";
+import {useCurrentObjectContext} from "@/app/ui/dashboard/ai-panel/use-current-object-context";
+import {AskAIButton} from "@/app/ui/dashboard/ai-panel/ask-ai-button";
+import {ObjectTree} from "@/app/ui/dashboard/shared/object-tree";
+import {RESOURCE_GVR} from "@/app/lib/resource-gvr";
+
+function buildContext(md: MachineDeploymentType): ObjectContext {
+  const unavailable = md.status?.unavailableReplicas;
+  const status = unavailable == null ? 'Unknown' : unavailable === 0 ? 'Ready' : `${unavailable} replica(s) unavailable`;
+  return {
+    kind: 'MachineDeployment',
+    name: md.metadata?.name ?? '',
+    namespace: md.metadata?.namespace ?? '',
+    status,
+    keySpecFields: {
+      cluster: md.cluster ?? '—',
+      templateVersion: md.templateversion ?? '—',
+      replicas: String(md.replicas ?? '—'),
+    },
+  };
+}
 
 export default function MachineDeploymentDetails({
   md,
 }: { md: MachineDeploymentType}) {
+  useCurrentObjectContext(buildContext(md));
+
   const tabs = [
     {
       label: "Specification",
       content: (md: MachineDeploymentType) => <Specification md={md} />
     },
     {
-      label: "AI Troubleshooting",
-      content: (md: MachineDeploymentType) => <AITroubleshooting
-        objectType="machinedeployment"
-        objectName={md.metadata?.name ?? ''}
-        objectNamespace={md.metadata?.namespace ?? ''}
-        conditions={md.status?.conditions ?? []} />
-    }
+      label: "YAML",
+      content: (md: MachineDeploymentType) => <ObjectTree
+        gvr={RESOURCE_GVR.machineDeployment}
+        namespace={md.metadata?.namespace ?? ''}
+        name={md.metadata?.name ?? ''}
+        resourceVersion={md.metadata?.resourceVersion}
+      />
+    },
   ];
   const headerRender = (md: MachineDeploymentType) => (
     <SimpleGrid cols={{base: 1, sm: 2}}>
@@ -38,6 +61,7 @@ export default function MachineDeploymentDetails({
                 : <IconX color="red" size={40}/>
           }
           <Text className="font-bold" fw={700}>{md.metadata?.name}</Text>
+          <AskAIButton context={buildContext(md)}/>
         </Group>
       </div>
       <div>

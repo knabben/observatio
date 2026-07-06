@@ -2,27 +2,51 @@ import React from "react";
 import {ClusterInfraDockerType} from "@/app/ui/dashboard/components/clusters/types";
 import {Group, Stack, Text} from "@mantine/core";
 import {SimpleGrid} from '@mantine/core';
-import AITroubleshooting from "@/app/ui/dashboard/base/ai-troubleshooting";
+import DockerSpecification from "@/app/ui/dashboard/components/clusters/infra/docker-specification";
 import {IconCheck, IconX} from "@tabler/icons-react";
 import ObjectDetails from "@/app/ui/dashboard/base/details";
+import {ObjectContext} from "@/app/ui/dashboard/ai-panel/ai-panel-context";
+import {useCurrentObjectContext} from "@/app/ui/dashboard/ai-panel/use-current-object-context";
+import {AskAIButton} from "@/app/ui/dashboard/ai-panel/ask-ai-button";
+import {ObjectTree} from "@/app/ui/dashboard/shared/object-tree";
+import {RESOURCE_GVR} from "@/app/lib/resource-gvr";
+
+function buildContext(cluster: ClusterInfraDockerType): ObjectContext {
+  return {
+    kind: 'DockerCluster',
+    name: cluster.metadata?.name ?? '',
+    namespace: cluster.metadata?.namespace ?? '',
+    status: cluster.ready ? 'Ready' : 'Not ready',
+    keySpecFields: {
+      loadBalancerIP: cluster.loadBalancerIP ?? '—',
+    },
+  };
+}
 
 /**
  * Displays infrastructure details of a Docker (CAPD) cluster: readiness, namespace, age,
- * and load balancer IP, plus AI troubleshooting grounded in this resource.
+ * and load balancer IP.
  */
 export default function ClusterInfraDockerDetails({
   cluster,
 }: { cluster: ClusterInfraDockerType }) {
+  useCurrentObjectContext(buildContext(cluster));
+
   const tabs = [
     {
-      label: "AI Troubleshooting",
-      content: (cluster: ClusterInfraDockerType) => <AITroubleshooting
-        objectType="dockercluster"
-        objectName={cluster.metadata?.name ?? ''}
-        objectNamespace={cluster.metadata?.namespace ?? ''}
-        conditions={[]}
+      label: "Specification",
+      content: (cluster: ClusterInfraDockerType) => <DockerSpecification cluster={cluster} />
+    },
+    {
+      label: "YAML",
+      content: (cluster: ClusterInfraDockerType) => <ObjectTree
+        gvr={RESOURCE_GVR.dockerCluster}
+        namespace={cluster.metadata?.namespace ?? ''}
+        name={cluster.metadata?.name ?? ''}
+        resourceVersion={cluster.metadata?.resourceVersion}
       />
-    }];
+    },
+  ];
   const headerRender = (cluster: ClusterInfraDockerType) => (
     <SimpleGrid cols={{base: 1, sm: 2}}>
       <div className="flex items-center h-full">
@@ -33,6 +57,7 @@ export default function ClusterInfraDockerDetails({
               : <IconX color="red" size={40}/>
           }
           <Text className="font-bold" fw={700}>{cluster.metadata?.name}</Text>
+          <AskAIButton context={buildContext(cluster)}/>
         </Group>
       </div>
       <div>

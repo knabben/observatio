@@ -72,8 +72,12 @@ func (c *WSClient) reader() {
 		// Start to chat with the bot agent, sending the first message.
 		response, err := (*c.service).ChatWithAgent(ctx, message)
 		if err != nil {
-			logger.Error(err, "error writing response message to client")
-			return
+			// A failed LLM call (e.g. missing/invalid API key, upstream outage) must not drop
+			// the WebSocket connection - send a safe, generic error message back to the client
+			// (never the raw error, which may contain credential/endpoint details) and keep the
+			// session open so the operator can retry once the server is reconfigured.
+			logger.Error(err, "error requesting response from AI agent")
+			response = llm.ToMessageParam("The AI assistant is not available right now. Please check the server's AI configuration and try again later.")
 		}
 
 		result, err := json.Marshal(response)

@@ -7,25 +7,46 @@ import {
   Stack,
 } from "@mantine/core";
 import {IconCheck, IconX} from "@tabler/icons-react";
-import AITroubleshooting from "@/app/ui/dashboard/base/ai-troubleshooting";
 import Specification from "@/app/ui/dashboard/components/machines/infra/specification";
 import ObjectDetails from "@/app/ui/dashboard/base/details";
+import {ObjectContext} from "@/app/ui/dashboard/ai-panel/ai-panel-context";
+import {useCurrentObjectContext} from "@/app/ui/dashboard/ai-panel/use-current-object-context";
+import {AskAIButton} from "@/app/ui/dashboard/ai-panel/ask-ai-button";
+import {ObjectTree} from "@/app/ui/dashboard/shared/object-tree";
+import {RESOURCE_GVR} from "@/app/lib/resource-gvr";
+
+function buildContext(machine: MachineInfraType): ObjectContext {
+  return {
+    kind: 'VSphereMachine',
+    name: machine.metadata?.name ?? '',
+    namespace: machine.metadata?.namespace ?? '',
+    status: machine.status?.ready ? 'Ready' : `Not ready${machine.status?.failureReason ? `: ${machine.status.failureReason}` : ''}`,
+    keySpecFields: {
+      template: machine.template ?? '—',
+      numCPUs: String(machine.numCPUs ?? '—'),
+      memoryMiB: String(machine.memoryMiB ?? '—'),
+    },
+  };
+}
 
 export default function MachineInfraDetails({
   machine
 }: {machine: MachineInfraType}) {
+  useCurrentObjectContext(buildContext(machine));
+
   const tabs = [
     {
       label: "Specification",
       content: (machine: MachineInfraType) => <Specification machine={machine} />
     },
     {
-      label: "AI Troubleshooting",
-      content: (machine: MachineInfraType) => <AITroubleshooting
-        objectType="vspheremachine"
-        objectName={machine.metadata?.name ?? ''}
-        objectNamespace={machine.metadata?.namespace ?? ''}
-        conditions={machine.status?.conditions ?? []} />
+      label: "YAML",
+      content: (machine: MachineInfraType) => <ObjectTree
+        gvr={RESOURCE_GVR.vsphereMachine}
+        namespace={machine.metadata?.namespace ?? ''}
+        name={machine.metadata?.name ?? ''}
+        resourceVersion={machine.metadata?.resourceVersion}
+      />
     }];
 
   const headerRender = (machine: MachineInfraType) => (
@@ -38,6 +59,7 @@ export default function MachineInfraDetails({
               : <IconX color="red" size={40}/>
           }
           <Text className="font-bold" fw={700}>{machine.metadata?.name}</Text>
+          <AskAIButton context={buildContext(machine)}/>
         </Group>
       </div>
       <div>
