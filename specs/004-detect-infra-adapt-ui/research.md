@@ -40,25 +40,31 @@ Machine — no extra API calls, no proprietary type in the core domain (Constitu
   rejected: the owning `Cluster`'s `infrastructureRef.Kind` already carries this; an extra per-row
   fetch would be redundant and slower.
 
-## R3: Docker infrastructure provider Go types
+## R3: Docker infrastructure provider Go types — SUPERSEDED, see below
 
-**Decision**: Import Docker infra types from the Docker-provider subpackage of the **already-present**
-`sigs.k8s.io/cluster-api` v1.9.6 module (`test/infrastructure/docker/api/v1beta1`, providing
-`DockerCluster`/`DockerMachine`) — no new `go.mod` entry, since the module is already a resolved
-dependency (used today for `clusterv1`/`clusterctlv1`). Register it in the shared `runtime.Scheme`
-(`webserver/internal/web/handlers/system/utils.go`) alongside `clusterctlv1`, `clusterv1`, `capv`.
+**Decision (revised after implementation spike)**: Do **not** import
+`sigs.k8s.io/cluster-api/test/infrastructure/docker/api/v1beta1`. Confirmed via `go get` during
+implementation: `test/infrastructure/docker` is a **separate nested Go module**
+(`sigs.k8s.io/cluster-api/test`), not just a subpackage of the already-present
+`sigs.k8s.io/cluster-api` module. Importing it forces upgrading `sigs.k8s.io/cluster-api` from the
+pinned `v1.9.6` to `v1.13.3`, plus a cascade of transitive bumps (`k8s.io/client-go` v0.32.1→v0.35.4,
+`sigs.k8s.io/controller-runtime` v0.19.7→v0.23.3, and others) — exactly the invasive, unjustified
+dependency change this plan set out to avoid.
 
-**Rationale**: Keeps the new `ClusterInfraDocker`/`MachineInfraDocker` fetchers structurally identical
-to the existing vSphere ones (`ListClusterInfra` → `capv.VSphereClusterList`), preserving the
-established pattern instead of hand-rolling unstructured/dynamic decoding.
+**Revised decision**: Fetch Docker infra details (`DockerCluster`/`DockerMachine`,
+`infrastructure.cluster.x-k8s.io/v1beta1`) via the existing dynamic/unstructured client
+(`clusterapi.NewDynamicClient`, already used by the WebSocket watchers), decoding only the fields the
+Docker infra view actually needs (`status.ready`, `status.conditions`, `spec.loadBalancerIP` for
+Cluster; `status.ready`, `spec.providerID` for Machine) via
+`runtime.DefaultUnstructuredConverter.FromUnstructured` into small local structs — the same
+conversion pattern the watchers package already uses for typed CAPI objects. No `runtime.Scheme`
+registration needed for these two kinds since they're never typed-decoded through the controller-runtime
+client. `models.ClusterInfraDocker`/`models.MachineInfraDocker` (data-model.md) are unaffected — only
+how they're populated changes.
 
-**Risk / validation**: This subpackage lives under `test/infrastructure/docker` (CAPI's own reference
-Docker provider, "CAPD" — appropriate given the spec's assumption that Docker environments are
-local/dev/test-oriented). Confirm during implementation that this subpackage resolves and compiles
-cleanly against the pinned `v1.9.6` module before writing the fetcher.
-**Fallback** if it does not: decode only the two fields actually needed (`status.ready`,
-`spec.loadBalancerIP`) via the dynamic/unstructured client already available
-(`clusterapi.NewDynamicClient`), avoiding any new dependency risk.
+**Original risk note (for record)**: this subpackage lives under `test/infrastructure/docker` (CAPI's
+own reference Docker provider, "CAPD"); the module-boundary issue above was exactly the risk flagged
+before implementation, and the fallback documented then is now the actual, confirmed approach.
 
 ## R4: REST surface for the new/changed endpoints
 

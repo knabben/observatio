@@ -32,11 +32,13 @@ Structure for exact new/changed files.
 **Purpose**: De-risk the one open technical question from research.md (R3) and confirm a clean
 starting baseline before touching any code.
 
-- [ ] T001 [P] Verify `sigs.k8s.io/cluster-api/test/infrastructure/docker/api/v1beta1` (Docker
-  `DockerCluster`/`DockerMachine` types) resolves and compiles under the pinned `v1.9.6` module: add
-  a throwaway import in a scratch `.go` file under `webserver/`, run `go build ./...`, confirm
-  success, then delete the scratch file. If it fails to resolve, fall back to the dynamic/unstructured
-  client approach noted in research.md R3 and adjust T015-T016 below accordingly.
+- [X] T001 [P] Verify `sigs.k8s.io/cluster-api/test/infrastructure/docker/api/v1beta1` (Docker
+  `DockerCluster`/`DockerMachine` types) resolves and compiles under the pinned `v1.9.6` module.
+  **Result: does NOT resolve as a subpackage** — confirmed via `go get`, which revealed
+  `test/infrastructure/docker` is a separate nested Go module and pulled `cluster-api` v1.9.6→v1.13.3
+  plus a cascade of `k8s.io/*`/`controller-runtime` upgrades. Reverted `go.mod`/`go.sum` immediately.
+  Falling back to the dynamic/unstructured client approach (research.md R3, revised) for T015/T016/T018 —
+  no `dockerv1` scheme registration (drop from T005).
 - [ ] T002 [P] Confirm `make build`, `make run-tests-backend`, and `make run-tests-frontend` all pass
   on a clean checkout of `004-detect-infra-adapt-ui` before starting implementation.
 
@@ -53,9 +55,9 @@ starting baseline before touching any code.
   `VSphereCluster`/`VSphereMachine` → `vsphere`, anything else (including empty) → `unknown`.
 - [ ] T004 [P] Add unit tests in `webserver/internal/infra/providerkind/providerkind_test.go`
   covering docker/vsphere/unknown/empty-string `Kind` inputs.
-- [ ] T005 Register the Docker infra scheme (`dockerv1 "sigs.k8s.io/cluster-api/test/infrastructure/docker/api/v1beta1"`)
-  via `AddToScheme` in `webserver/internal/web/handlers/system/utils.go`, alongside the existing
-  `clusterctlv1`/`clusterv1`/`capv` registrations.
+- [X] T005 ~~Register the Docker infra scheme~~ — SKIPPED per T001 finding: Docker infra objects are
+  read via the dynamic/unstructured client (no typed `dockerv1` package), so no `runtime.Scheme`
+  registration is needed or possible for them.
 - [ ] T006 Add `InfrastructureCapability` and `ProviderStatus` structs to
   `webserver/internal/infra/models/capability.go` per data-model.md.
 - [ ] T007 Add `GenerateInfrastructureCapability(ctx, c) (models.InfrastructureCapability, error)` in
@@ -105,10 +107,14 @@ scoped.
 ### Implementation for User Story 1
 
 - [ ] T015 [P] [US1] Add `models.ClusterInfraDocker` struct to
-  `webserver/internal/infra/models/cluster.go` per data-model.md.
+  `webserver/internal/infra/models/cluster.go` per data-model.md (revised: `Cluster`,
+  `LoadBalancerIP`, `Ready`, `Conditions` — no `dockerv1` type reference).
 - [ ] T016 [P] [US1] Add `fetchers.ListClusterInfraDocker` in
   `webserver/internal/infra/clusterapi/fetchers/cluster_infra_docker.go`, listing
-  `dockerv1.DockerClusterList` (mirrors the existing `ListClusterInfra` for vSphere).
+  `DockerCluster` objects (`infrastructure.cluster.x-k8s.io/v1beta1`) via
+  `clusterapi.NewDynamicClient` + `unstructured.UnstructuredList`, reading
+  `spec.loadBalancerIP`/`status.ready`/`status.conditions` field-by-field (research.md R3 revised —
+  no typed `dockerv1` package).
 - [ ] T017 [US1] Extend `HandleClusterInfraList` in
   `webserver/internal/web/handlers/kubernetes/cluster.go` to accept an optional `?provider=` query
   param, default to the first `installed` provider from `GenerateInfrastructureCapability`, dispatch
@@ -116,7 +122,8 @@ scoped.
   isn't installed (depends on T007, T015, T016).
 - [ ] T018 [US1] Mirror the same dispatch for Machines: extend `HandleMachineInfra` in
   `webserver/internal/web/handlers/kubernetes/machine.go`, adding
-  `fetchers.ListMachineInfraDocker` and `models.MachineInfraDocker` (FR-008) (depends on T007).
+  `fetchers.ListMachineInfraDocker` (dynamic client + unstructured decode of `DockerMachine`, same
+  approach as T016) and `models.MachineInfraDocker` (FR-008) (depends on T007).
 - [ ] T019 [P] [US1] Generalize `front/app/ui/dashboard/components/clusters/infra/infra-lister.tsx`
   and `infra-table.tsx` to accept a provider config (title + columns) instead of the hardcoded
   vSphere title/columns.

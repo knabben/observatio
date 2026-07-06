@@ -24,7 +24,7 @@ external configuration, and no new Go module dependency.
 ## Technical Context
 
 **Language/Version**: Go 1.25 (backend, `webserver/`); TypeScript 5.9, React 19, Next.js 15.3 (App Router, static export) (frontend, `front/`)
-**Primary Dependencies**: `sigs.k8s.io/cluster-api` v1.9.6 (`clusterv1`, `clusterctlv1` — both already imported), `sigs.k8s.io/cluster-api-provider-vsphere` v1.12.0 (`capv`, already imported), `sigs.k8s.io/controller-runtime` client, `k8s.io/client-go` v0.32.1; Docker infra types resolved from the **already-present** `sigs.k8s.io/cluster-api` module (`test/infrastructure/docker/api/v1beta1`) — no new go.mod entry. Frontend: existing Mantine UI 7 (`Tabs`, `Badge`) and the shared config-driven components introduced by `003-screen-ui-refactor` (`shared/object-table.tsx`, `shared/status-indicator.tsx`, `shared/empty-state.tsx`)
+**Primary Dependencies**: `sigs.k8s.io/cluster-api` v1.9.6 (`clusterv1`, `clusterctlv1` — both already imported), `sigs.k8s.io/cluster-api-provider-vsphere` v1.12.0 (`capv`, already imported), `sigs.k8s.io/controller-runtime` client, `k8s.io/client-go` v0.32.1 (including its dynamic client, already used by the WebSocket watchers). Docker infra details (`DockerCluster`/`DockerMachine`) are read via the existing dynamic/unstructured client and decoded into small local structs — **not** via `sigs.k8s.io/cluster-api/test/infrastructure/docker`, which was confirmed during implementation to be a separate nested Go module that would force `cluster-api` v1.9.6→v1.13.3 plus a cascade of `k8s.io/*`/`controller-runtime` upgrades (see research.md R3). No go.mod changes. Frontend: existing Mantine UI 7 (`Tabs`, `Badge`) and the shared config-driven components introduced by `003-screen-ui-refactor` (`shared/object-table.tsx`, `shared/status-indicator.tsx`, `shared/empty-state.tsx`)
 **Storage**: N/A — stateless; all data read live from the connected cluster's API server
 **Testing**: Go `testing` + `testify` with CAPI fake clients (existing pattern in `webserver/internal/infra/clusterapi/dashboard_test.go`); Jest 29 + `@testing-library/react` via the shared `test-render.tsx` helper (existing pattern from `003-screen-ui-refactor`)
 **Target Platform**: Same single-binary deployment — Next.js static export embedded in and served by the Go binary
@@ -79,7 +79,7 @@ webserver/
 │   ├── dashboard.go                        # existing GenerateComponentVersions (clusterctlv1.ProviderList) reused for capability detection
 │   └── fetchers/
 │       ├── cluster.go                      # extend ClusterInput; add ProviderFromKind helper reuse
-│       ├── cluster_infra_docker.go         # NEW: ListClusterInfraDocker (mirrors vSphere ListClusterInfra)
+│       ├── cluster_infra_docker.go         # NEW: ListClusterInfraDocker — dynamic client + unstructured decode (no typed dockerv1 import)
 │       └── machine.go                      # add Provider derivation to Machine/MachineInfra
 ├── internal/infra/models/
 │   ├── cluster.go                          # add Provider string field to Cluster
@@ -89,7 +89,6 @@ webserver/
 │   └── providerkind.go                     # NEW: shared FromKind(kind string) string helper (docker/vsphere/unknown)
 └── internal/web/handlers/
     ├── handlers.go                         # NEW route: GET /api/infra/capabilities; extend /api/clusters/infra/list with ?provider=
-    ├── system/utils.go                     # register dockerv1 (test/infrastructure/docker/api/v1beta1) in Scheme
     └── kubernetes/
         ├── dashboard.go                    # NEW HandleInfraCapabilities (filters existing GenerateComponentVersions output)
         └── cluster.go                      # extend HandleClusterInfraList to dispatch docker/vsphere by provider
@@ -113,8 +112,10 @@ front/
 `providerkind` helper package shared by cluster/machine fetchers to turn an `infrastructureRef.Kind`
 into `docker`/`vsphere`/`unknown`, (2) a new capability endpoint built on the **already-existing**
 `clusterctlv1.ProviderList`-backed `GenerateComponentVersions` (no new provider-inventory mechanism),
-and (3) a Docker-mirrored infra fetcher/model alongside the existing vSphere one, registered in the
-same `runtime.Scheme`. Frontend work replaces the hardcoded 2-tab Clusters page and vSphere-only
+and (3) a Docker-mirrored infra fetcher/model alongside the existing vSphere one — populated via the
+existing dynamic/unstructured client rather than a typed Docker package (see research.md R3: the
+typed package lives in a separate nested Go module and would force a major, unjustified dependency
+upgrade). Frontend work replaces the hardcoded 2-tab Clusters page and vSphere-only
 infra table with capability-driven, config-based equivalents built on the shared components
 `003-screen-ui-refactor` already introduced (`shared/object-table.tsx`, `shared/status-indicator.tsx`,
 `shared/empty-state.tsx`), and adds one new shared `provider-badge.tsx`. No backend WebSocket

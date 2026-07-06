@@ -40,25 +40,29 @@ version, derived from the clusterctl provider inventory (`clusterctlv1.ProviderL
 
 `webserver/internal/infra/models/cluster.go` (alongside existing `ClusterInfra`)
 
-Provider-specific detail for Docker-backed clusters, populated from `dockerv1.DockerCluster`
-(analogous to how `ClusterInfra` wraps `capv.VSphereClusterStatus` today).
+Provider-specific detail for Docker-backed clusters, populated from the `DockerCluster` object
+(`infrastructure.cluster.x-k8s.io/v1beta1`) read via the dynamic/unstructured client and decoded
+field-by-field (see research.md R3 — the typed `dockerv1` package is not used; it lives in a separate
+Go module that would force a major dependency upgrade).
 
 | Field | Type | Notes |
 |---|---|---|
 | `Cluster` | `string` | Owning Cluster name. |
-| `LoadBalancerIP` | `string` | Docker-provider equivalent of vSphere's `Server`. |
-| `Status` | `dockerv1.DockerClusterStatus` | Raw upstream status, same pattern as `ClusterInfra.Status`. |
+| `LoadBalancerIP` | `string` | Read from `spec.loadBalancerIP`; Docker-provider equivalent of vSphere's `Server`. |
+| `Ready` | `bool` | Read from `status.ready`. |
+| `Conditions` | `[]clusterv1.Condition` | Read from `status.conditions`, decoded generically (same shape as core CAPI conditions). |
 
 ## MachineInfraDocker (new entity, mirrors existing MachineInfra)
 
 `webserver/internal/infra/models/machine.go`
 
-Provider-specific detail for Docker-backed machines, populated from `dockerv1.DockerMachine`.
+Provider-specific detail for Docker-backed machines, populated from the `DockerMachine` object via
+the same dynamic/unstructured decode approach as `ClusterInfraDocker`.
 
 | Field | Type | Notes |
 |---|---|---|
-| `ProviderID` | `string` | Existing-shape field, reused. |
-| `Status` | `dockerv1.DockerMachineStatus` | Raw upstream status. |
+| `ProviderID` | `string` | Read from `spec.providerID`; existing-shape field, reused. |
+| `Ready` | `bool` | Read from `status.ready`. |
 
 Note: Docker machines have no direct equivalent of vSphere's `NumCPUs`/`MemoryMiB`/`DiskGiB`/
 `CloneMode`/`PowerOffMode` (those are vSphere-specific virtualization concepts); the Docker view
