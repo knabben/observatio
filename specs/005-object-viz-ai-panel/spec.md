@@ -143,6 +143,9 @@ a curated subset) is visible in a readable, expandable/collapsible tree structur
 - What happens if the AI panel is opened while the underlying live stream for the current object
   has failed or is disconnected? (The panel should still open; context pre-fill uses the last known
   data, or is omitted if none is available yet — it never crashes the panel.)
+- What happens if the AI assistant itself is not configured or unreachable (e.g., a missing API
+  key on the backend)? (The panel shows a clear "not available" message and disables sending,
+  rather than silently accepting input that will never get a response.)
 - What happens if an object has no meaningful conditions or status yet (e.g., just created)? (The
   auto-filled context states that plainly rather than fabricating detail.)
 - What happens on very small viewports (narrow browser windows) when the AI panel is expanded?
@@ -195,6 +198,9 @@ a curated subset) is visible in a readable, expandable/collapsible tree structur
 - **FR-016**: Each object's detail screen MUST offer a one-click "Ask AI about this" quick-action
   that opens the global AI panel already pre-filled with that object's context, in addition to the
   passive global side-trigger (FR-001) that pre-fills based on whatever is currently in view.
+- **FR-017**: If the AI assistant's connection cannot be established (e.g., the backend is not
+  configured with the credentials it needs), the panel MUST show a clear "not available" message
+  and disable sending, rather than silently accepting input with no way to succeed.
 
 ### Key Entities
 

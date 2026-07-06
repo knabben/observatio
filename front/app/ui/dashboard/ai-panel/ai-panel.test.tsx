@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import {fireEvent, screen} from '@testing-library/react';
+import {act, fireEvent, screen} from '@testing-library/react';
 import {render} from '@/app/ui/dashboard/utils/test-render';
 import useWebSocket, {ReadyState} from 'react-use-websocket';
 
@@ -50,5 +50,32 @@ describe('AIPanel', () => {
     });
     expect(screen.getByText('<img src=x onerror="window.__pwned=true">')).toBeInTheDocument();
     expect(container.querySelector('img')).toBeNull();
+  });
+
+  it('shows a not-available message and disables Send when reconnect attempts are exhausted (FR-017)', () => {
+    let onReconnectStop: (() => void) | undefined;
+    mockedUseWebSocket.mockImplementation((_url, options) => {
+      onReconnectStop = options?.onReconnectStop as (() => void) | undefined;
+      return {
+        sendJsonMessage: jest.fn(),
+        lastJsonMessage: null,
+        readyState: ReadyState.CONNECTING,
+      } as unknown as ReturnType<typeof useWebSocket>;
+    });
+
+    render(
+      <AIPanelProvider>
+        <AIPanel/>
+        <AIPanelTrigger/>
+      </AIPanelProvider>,
+    );
+    fireEvent.click(screen.getByRole('button', {name: /open ai troubleshooting panel/i}));
+
+    expect(screen.queryByText(/not available/i)).not.toBeInTheDocument();
+
+    act(() => onReconnectStop?.());
+
+    expect(screen.getByText(/not available/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', {name: 'Send'})).toBeDisabled();
   });
 });

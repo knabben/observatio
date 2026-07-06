@@ -11,9 +11,10 @@ import {
   Text,
   Textarea,
 } from '@mantine/core';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {v4 as uuidv4} from 'uuid';
 import {ReadyState} from 'react-use-websocket';
+import {IconAlertTriangle} from '@tabler/icons-react';
 import {WebSocket, WS_URL_CHATBOT} from '@/app/lib/websocket';
 import {useAIPanel} from '@/app/ui/dashboard/ai-panel/ai-panel-context';
 
@@ -29,9 +30,17 @@ const AI_RESPONSE_TIMEOUT_MS = 30_000;
 export default function AIPanel() {
   const {isOpen, close, messages, setMessages, queryField, setQueryField} = useAIPanel();
   const [isLoading, setIsLoading] = useState(false);
+  const [unavailable, setUnavailable] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const responseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const {sendJsonMessage, lastJsonMessage, readyState} = WebSocket(WS_URL_CHATBOT);
+  const onReconnectStop = useCallback(() => setUnavailable(true), []);
+  const {sendJsonMessage, lastJsonMessage, readyState} = WebSocket(WS_URL_CHATBOT, {onReconnectStop});
+
+  // A fresh successful connection clears any earlier "unavailable" state (e.g. the operator
+  // reopened the panel after the server was reconfigured/restarted).
+  useEffect(() => {
+    if (readyState === ReadyState.OPEN) setUnavailable(false);
+  }, [readyState]);
 
   useEffect(() => {
     if (lastJsonMessage) {
@@ -143,10 +152,11 @@ export default function AIPanel() {
           autosize
           minRows={2}
           maxRows={6}
+          disabled={unavailable}
         />
         <Button
           onClick={requestIA}
-          disabled={isLoading || readyState !== ReadyState.OPEN}
+          disabled={isLoading || readyState !== ReadyState.OPEN || unavailable}
           bg="var(--mantine-color-brand-4)"
           c="#000"
           variant="filled"
@@ -154,6 +164,15 @@ export default function AIPanel() {
           Send
         </Button>
       </Group>
+      {unavailable && (
+        <Group gap="xs" px="md" pb="md" wrap="nowrap">
+          <IconAlertTriangle size={16} color="var(--mantine-color-red-6)"/>
+          <Text size="xs" c="red.6">
+            AI assistant is not available — the server could not establish a connection (it may not
+            be configured, e.g. a missing API key).
+          </Text>
+        </Group>
+      )}
     </Drawer>
   );
 }

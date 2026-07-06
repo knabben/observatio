@@ -1,11 +1,33 @@
 'use client';
 
 import React, {useEffect, useState} from 'react';
-import {Tree, useTree} from '@mantine/core';
+import {Group, RenderTreeNodePayload, Text, Tree, useTree} from '@mantine/core';
+import {IconChevronRight} from '@tabler/icons-react';
 import {getRawObject, ResourceGVR} from '@/app/lib/data';
 import {toTreeData} from '@/app/ui/dashboard/shared/to-tree-data';
 import {CenteredLoader} from '@/app/ui/dashboard/utils/loader';
 import {ErrorState} from '@/app/ui/dashboard/shared/error-state';
+
+/** Renders each node with a rotating chevron when it has children, so it's visually clear which
+ * items can be expanded — Mantine's Tree has no such indicator by default. */
+function renderNode({node, expanded, hasChildren, elementProps}: RenderTreeNodePayload) {
+  return (
+    <Group gap={4} {...elementProps}>
+      {hasChildren ? (
+        <IconChevronRight
+          size={14}
+          style={{
+            transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
+            transition: 'transform 150ms ease',
+          }}
+        />
+      ) : (
+        <span style={{width: 14, display: 'inline-block'}}/>
+      )}
+      <Text size="sm">{node.label}</Text>
+    </Group>
+  );
+}
 
 /**
  * Renders the complete underlying object (every field the backend returns, not the curated
@@ -56,7 +78,7 @@ export function ObjectTree({
 
   return (
     <div style={{maxHeight: 600, overflowY: 'auto'}}>
-      <Tree data={toTreeData(data)} tree={tree}/>
+      <Tree data={toTreeData(data)} tree={tree} renderNode={renderNode}/>
     </div>
   );
 }
