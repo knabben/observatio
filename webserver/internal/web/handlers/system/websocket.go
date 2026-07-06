@@ -28,6 +28,7 @@ const (
 	TypeMachineInfraDocker ObjectType = "machine-infra-docker"
 	TypeMachineDeployment  ObjectType = "machine-deployment"
 	TypeChatbot            ObjectType = "chatbot"
+	TypeDay2Ops            ObjectType = "day2ops"
 )
 
 var (
@@ -40,6 +41,7 @@ var (
 		TypeMachineInfra:       watchers.WatchMachinesInfra,
 		TypeMachineInfraDocker: watchers.WatchDockerMachines,
 		TypeMachineDeployment:  watchers.WatchMachineDeployments,
+		TypeDay2Ops:            watchers.WatchDay2Ops,
 	}
 )
 
@@ -58,9 +60,16 @@ func HandleWatcher(w http.ResponseWriter, r *http.Request) {
 	if handleError(w, http.StatusInternalServerError, err) {
 		return
 	}
+	defer conn.Close() // nolint
+
+	// Past this point the connection has been hijacked for the websocket: errors (a client
+	// disconnecting mid-watch, an unreadable first message) can only be logged, never turned
+	// into an http.Error - that would write to an already-hijacked ResponseWriter.
+	logger := log.FromContext(r.Context())
 
 	message, err := parseMessage(conn)
-	if handleError(w, http.StatusInternalServerError, err) {
+	if err != nil {
+		logger.Error(err, "error parsing websocket message")
 		return
 	}
 
@@ -70,9 +79,8 @@ func HandleWatcher(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = watchHandler(r.Context(), conn, objType)
-	if handleError(w, http.StatusInternalServerError, err) {
-		return
+	if err := watchHandler(r.Context(), conn, objType); err != nil {
+		logger.Error(err, "error handling websocket watch")
 	}
 }
 
@@ -89,9 +97,12 @@ func HandleChatbot(pool *ClientPool, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = registerClient(pool, conn)
-	if HandleError(w, http.StatusInternalServerError, err) {
-		return
+	// Past this point the connection has been hijacked for the websocket, so a registration
+	// failure can only be logged and the connection closed - not turned into an http.Error,
+	// which would write to an already-hijacked ResponseWriter.
+	if err := registerClient(pool, conn); err != nil {
+		log.FromContext(r.Context()).Error(err, "error registering websocket client")
+		conn.Close() // nolint
 	}
 }
 
