@@ -8,6 +8,8 @@ import ObjectDetails from "@/app/ui/dashboard/base/details";
 import {ObjectContext} from "@/app/ui/dashboard/ai-panel/ai-panel-context";
 import {useCurrentObjectContext} from "@/app/ui/dashboard/ai-panel/use-current-object-context";
 import {AskAIButton} from "@/app/ui/dashboard/ai-panel/ask-ai-button";
+import {ObjectTree} from "@/app/ui/dashboard/shared/object-tree";
+import {RESOURCE_GVR} from "@/app/lib/resource-gvr";
 
 function buildContext(cluster: ClusterInfraType): ObjectContext {
   return {
@@ -36,6 +38,15 @@ export default function ClusterInfraDetails({
     {
       label: "Specification",
       content: (cluster: ClusterInfraType) => <Specification cluster={cluster} />
+    },
+    {
+      label: "YAML",
+      content: (cluster: ClusterInfraType) => <ObjectTree
+        gvr={RESOURCE_GVR.vsphereCluster}
+        namespace={cluster.metadata?.namespace ?? ''}
+        name={cluster.metadata?.name ?? ''}
+        resourceVersion={cluster.metadata?.resourceVersion}
+      />
     },
   ];
   const headerRender = (cluster: ClusterInfraType) => (

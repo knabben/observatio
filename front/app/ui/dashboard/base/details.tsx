@@ -48,7 +48,7 @@ export default function ObjectDetails<T>({
       {tabs.length === 0 ? (
         <EmptyState label="No details available"/>
       ) : (
-        <Tabs mb="md" color="var(--mantine-color-brand-8)" defaultValue={tabs[0].label}>
+        <Tabs mb="md" color="var(--mantine-color-brand-8)" defaultValue={tabs[0].label} keepMounted={false}>
           <Tabs.List>
             {tabs.map((tab) => (
               <Tabs.Tab key={tab.label} value={tab.label}>{tab.label}</Tabs.Tab>

@@ -9,6 +9,8 @@ import {Group, SimpleGrid, Stack, Text} from "@mantine/core";
 import {ObjectContext} from "@/app/ui/dashboard/ai-panel/ai-panel-context";
 import {useCurrentObjectContext} from "@/app/ui/dashboard/ai-panel/use-current-object-context";
 import {AskAIButton} from "@/app/ui/dashboard/ai-panel/ask-ai-button";
+import {ObjectTree} from "@/app/ui/dashboard/shared/object-tree";
+import {RESOURCE_GVR} from "@/app/lib/resource-gvr";
 
 function buildContext(machine: MachineType): ObjectContext {
   const ready = Boolean(machine.status?.infrastructureReady && machine.status?.bootstrapReady);
@@ -34,6 +36,15 @@ export default function MachineDetails({
   {
     label: "Specification",
     content: (machine: MachineType) => <Specification machine={machine} />
+  },
+  {
+    label: "YAML",
+    content: (machine: MachineType) => <ObjectTree
+      gvr={RESOURCE_GVR.machine}
+      namespace={machine.metadata?.namespace ?? ''}
+      name={machine.metadata?.name ?? ''}
+      resourceVersion={machine.metadata?.resourceVersion}
+    />
   }];
   const headerRender = (machine: MachineType) => (
     <SimpleGrid cols={{base: 1, sm: 2}}>

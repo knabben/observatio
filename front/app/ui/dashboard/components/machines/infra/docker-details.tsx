@@ -12,6 +12,8 @@ import ObjectDetails from "@/app/ui/dashboard/base/details";
 import {ObjectContext} from "@/app/ui/dashboard/ai-panel/ai-panel-context";
 import {useCurrentObjectContext} from "@/app/ui/dashboard/ai-panel/use-current-object-context";
 import {AskAIButton} from "@/app/ui/dashboard/ai-panel/ask-ai-button";
+import {ObjectTree} from "@/app/ui/dashboard/shared/object-tree";
+import {RESOURCE_GVR} from "@/app/lib/resource-gvr";
 
 function buildContext(machine: MachineInfraDockerType): ObjectContext {
   return {
@@ -34,6 +36,15 @@ export default function MachineInfraDockerDetails({
     {
       label: "Specification",
       content: (machine: MachineInfraDockerType) => <DockerSpecification machine={machine} />
+    },
+    {
+      label: "YAML",
+      content: (machine: MachineInfraDockerType) => <ObjectTree
+        gvr={RESOURCE_GVR.dockerMachine}
+        namespace={machine.metadata?.namespace ?? ''}
+        name={machine.metadata?.name ?? ''}
+        resourceVersion={machine.metadata?.resourceVersion}
+      />
     }];
 
   const headerRender = (machine: MachineInfraDockerType) => (

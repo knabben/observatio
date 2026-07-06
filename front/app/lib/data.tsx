@@ -35,6 +35,25 @@ export async function getInfraCapabilities(): Promise<InfrastructureCapability> 
   return getJSON<InfrastructureCapability>(`/api/infra/capabilities`)
 }
 
+// ----- Raw object (YAML tree tab) -----
+
+export interface ResourceGVR {
+  group: string;
+  version: string;
+  resource: string;
+}
+
+export async function getRawObject(params: ResourceGVR & { namespace: string; name: string }): Promise<unknown> {
+  const query = new URLSearchParams({
+    group: params.group,
+    version: params.version,
+    resource: params.resource,
+    namespace: params.namespace,
+    name: params.name,
+  }).toString();
+  return getJSON(`/api/raw?${query}`)
+}
+
 // ----- Dashboard -----
 
 export async function getComponentsVersion() {

@@ -186,40 +186,49 @@ objects, and reflects live updates.
 
 ### Tests for User Story 3
 
-- [ ] T028 [P] [US3] Go test for `HandleRawObject` in
+- [X] T028 [P] [US3] Go test for `HandleRawObject` in
   `webserver/internal/web/handlers/kubernetes/raw_test.go`: missing required query param → 400;
   unresolvable group/version/resource → 400/404 (per contracts/raw-object-api.md).
-- [ ] T029 [P] [US3] Jest test for `to-tree-data.ts`: nested objects, arrays, scalar leaves, and an
+- [X] T029 [P] [US3] Jest test for `to-tree-data.ts`: nested objects, arrays, scalar leaves, and an
   empty object all convert to valid `TreeNodeData[]` with unique `value` paths, in
   `front/app/ui/dashboard/shared/to-tree-data.test.ts`.
-- [ ] T030 [P] [US3] Jest test for `object-tree.tsx`: renders a tree for a fetched object, shows a
+- [X] T030 [P] [US3] Jest test for `object-tree.tsx`: renders a tree for a fetched object, shows a
   loading state before the fetch resolves, and re-fetches when the passed `resourceVersion` prop
   changes, in `front/app/ui/dashboard/shared/object-tree.test.tsx`.
 
 ### Implementation for User Story 3
 
-- [ ] T031 [US3] Add `HandleRawObject` in `webserver/internal/web/handlers/kubernetes/raw.go`:
+- [X] T031 [US3] Add `HandleRawObject` in `webserver/internal/web/handlers/kubernetes/raw.go`:
   parses `group`/`version`/`resource`/`namespace`/`name` query params, calls
   `clusterapi.NewDynamicClient(ctx).Resource(gvr).Namespace(ns).Get(ctx, name, metav1.GetOptions{})`,
   writes `obj.Object` as JSON; register `GET /api/raw` in
   `webserver/internal/web/handlers/handlers.go` (contracts/raw-object-api.md).
-- [ ] T032 [P] [US3] Create `front/app/ui/dashboard/shared/to-tree-data.ts`: converts arbitrary
+- [X] T032 [P] [US3] Create `front/app/ui/dashboard/shared/to-tree-data.ts`: converts arbitrary
   JSON into Mantine `TreeNodeData[]` (data-model.md).
-- [ ] T033 [US3] Create `front/app/ui/dashboard/shared/object-tree.tsx`: fetches `/api/raw` with the
+- [X] T033 [US3] Create `front/app/ui/dashboard/shared/object-tree.tsx`: fetches `/api/raw` with the
   GVR/namespace/name for the given object on first mount, renders via Mantine's `Tree`, and
   re-fetches when the object's `resourceVersion` changes (research.md R2) (depends on T031, T032).
-- [ ] T034 [P] [US3] Add a small frontend GVR constant table (alongside `object-tree.tsx` or in
+- [X] T034 [P] [US3] Add a small frontend GVR constant table (alongside `object-tree.tsx` or in
   `front/app/lib/`) mapping each screen to its `{group, version, resource}` (Cluster, DockerCluster,
   VSphereCluster, Machine, DockerMachine, VSphereMachine, MachineDeployment) per
   contracts/raw-object-api.md.
-- [ ] T035 [P] [US3] Add the "YAML" tab (rendering `<ObjectTree .../>`) to `clusters/details.tsx`
+**Discovered mid-implementation**: Mantine's `Tabs` defaults to `keepMounted={true}`, which mounts
+*every* tab's content immediately (hidden via CSS), not just the active one — this made
+`ObjectTree` eagerly fetch `/api/raw` for every object detail view regardless of which tab the
+operator had open, contradicting the plan's "on-demand, only when the tab is opened" design
+(research.md R2) and confirmed by an `act()` warning during testing. Fixed by adding
+`keepMounted={false}` to the shared `Tabs` in `front/app/ui/dashboard/base/details.tsx` — now only
+the active tab's content function is called, matching the intended design and avoiding needless
+requests on every screen open.
+
+- [X] T035 [P] [US3] Add the "YAML" tab (rendering `<ObjectTree .../>`) to `clusters/details.tsx`
   (depends on T033, T034).
-- [ ] T036 [P] [US3] Same for `clusters/infra/infra-details.tsx`.
-- [ ] T037 [P] [US3] Same for `clusters/infra/docker-details.tsx`.
-- [ ] T038 [P] [US3] Same for `machines/details.tsx`.
-- [ ] T039 [P] [US3] Same for `machines/infra/infra-details.tsx`.
-- [ ] T040 [P] [US3] Same for `machines/infra/docker-details.tsx`.
-- [ ] T041 [P] [US3] Same for `mds/details.tsx`.
+- [X] T036 [P] [US3] Same for `clusters/infra/infra-details.tsx`.
+- [X] T037 [P] [US3] Same for `clusters/infra/docker-details.tsx`.
+- [X] T038 [P] [US3] Same for `machines/details.tsx`.
+- [X] T039 [P] [US3] Same for `machines/infra/infra-details.tsx`.
+- [X] T040 [P] [US3] Same for `machines/infra/docker-details.tsx`.
+- [X] T041 [P] [US3] Same for `mds/details.tsx`.
 
 **Checkpoint**: All three user stories are independently functional.
 

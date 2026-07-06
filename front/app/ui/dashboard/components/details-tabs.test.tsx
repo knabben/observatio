@@ -18,6 +18,7 @@ const meta = {name: 'r1', namespace: 'default'};
 
 function expectSpecificationTabOnlyNoAI() {
   expect(screen.getByRole('tab', {name: 'Specification'})).toBeInTheDocument();
+  expect(screen.getByRole('tab', {name: 'YAML'})).toBeInTheDocument();
   expect(screen.queryByRole('tab', {name: 'AI Troubleshooting'})).not.toBeInTheDocument();
 }
 

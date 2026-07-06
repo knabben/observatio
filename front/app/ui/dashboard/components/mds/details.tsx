@@ -10,6 +10,8 @@ import {IconCheck, IconMinus, IconX} from "@tabler/icons-react";
 import {ObjectContext} from "@/app/ui/dashboard/ai-panel/ai-panel-context";
 import {useCurrentObjectContext} from "@/app/ui/dashboard/ai-panel/use-current-object-context";
 import {AskAIButton} from "@/app/ui/dashboard/ai-panel/ask-ai-button";
+import {ObjectTree} from "@/app/ui/dashboard/shared/object-tree";
+import {RESOURCE_GVR} from "@/app/lib/resource-gvr";
 
 function buildContext(md: MachineDeploymentType): ObjectContext {
   const unavailable = md.status?.unavailableReplicas;
@@ -36,6 +38,15 @@ export default function MachineDeploymentDetails({
     {
       label: "Specification",
       content: (md: MachineDeploymentType) => <Specification md={md} />
+    },
+    {
+      label: "YAML",
+      content: (md: MachineDeploymentType) => <ObjectTree
+        gvr={RESOURCE_GVR.machineDeployment}
+        namespace={md.metadata?.namespace ?? ''}
+        name={md.metadata?.name ?? ''}
+        resourceVersion={md.metadata?.resourceVersion}
+      />
     },
   ];
   const headerRender = (md: MachineDeploymentType) => (

@@ -12,6 +12,8 @@ import ObjectDetails from "@/app/ui/dashboard/base/details";
 import {ObjectContext} from "@/app/ui/dashboard/ai-panel/ai-panel-context";
 import {useCurrentObjectContext} from "@/app/ui/dashboard/ai-panel/use-current-object-context";
 import {AskAIButton} from "@/app/ui/dashboard/ai-panel/ask-ai-button";
+import {ObjectTree} from "@/app/ui/dashboard/shared/object-tree";
+import {RESOURCE_GVR} from "@/app/lib/resource-gvr";
 
 function buildContext(machine: MachineInfraType): ObjectContext {
   return {
@@ -36,6 +38,15 @@ export default function MachineInfraDetails({
     {
       label: "Specification",
       content: (machine: MachineInfraType) => <Specification machine={machine} />
+    },
+    {
+      label: "YAML",
+      content: (machine: MachineInfraType) => <ObjectTree
+        gvr={RESOURCE_GVR.vsphereMachine}
+        namespace={machine.metadata?.namespace ?? ''}
+        name={machine.metadata?.name ?? ''}
+        resourceVersion={machine.metadata?.resourceVersion}
+      />
     }];
 
   const headerRender = (machine: MachineInfraType) => (

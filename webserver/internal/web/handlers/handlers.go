@@ -34,6 +34,11 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	// connected environment, and their version (see specs/004-detect-infra-adapt-ui).
 	router.HandleFunc("/api/infra/capabilities", kubernetes.HandleInfraCapabilities).Methods("GET")
 
+	// Raw object passthrough for the object detail screens' YAML tree tab: returns the
+	// complete Kubernetes object for ?group=&version=&resource=&namespace=&name=, bypassing
+	// every curated DTO (see specs/005-object-viz-ai-panel/contracts/raw-object-api.md).
+	router.HandleFunc("/api/raw", kubernetes.HandleRawObject).Methods("GET")
+
 	// Cluster API dashboard Handlers
 	router.HandleFunc("/api/clusters/info", kubernetes.HandleClusterInfo).Methods("GET")
 	router.HandleFunc("/api/clusters/components", kubernetes.HandleComponentsVersion).Methods("GET")
