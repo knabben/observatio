@@ -97,43 +97,60 @@ scoped.
 
 ### Tests for User Story 1
 
-- [ ] T013 [P] [US1] Backend test for `HandleClusterInfraList` dispatch (auto-selects the installed
-  provider, honors `?provider=` override, returns 404 for an uninstalled/unknown provider) in
-  `webserver/internal/web/handlers/kubernetes/cluster_test.go`.
-- [ ] T014 [P] [US1] Frontend test: Clusters page renders the correct tab set (docker-only,
-  vsphere-only, both) from a mocked `/api/infra/capabilities` response, in
-  `front/app/dashboard/clusters/page.test.tsx`.
+- [X] T013 [P] [US1] Backend test for the dispatch/selection logic (auto-selects the installed
+  provider, honors `?provider=` override, rejects an unrecognized value) in
+  `webserver/internal/web/handlers/kubernetes/cluster_test.go`. Scoped to `resolveInfraProvider`
+  directly rather than the full HTTP handler: `HandleClusterInfraList`/`HandleMachineInfra` always
+  construct a real `client.Client` via `clusterapi.NewClientWithScheme` (no fake-client seam),
+  matching this codebase's existing pattern where handlers themselves are untested and their pure
+  logic is extracted and tested instead (e.g. `ProcessCluster`).
+- [X] T014 [P] [US1] Frontend test: `ClusterTabs` renders the correct tab set (docker-only,
+  vsphere-only, both, neither) from a mocked `getInfraCapabilities()` response, in
+  `front/app/ui/dashboard/components/clusters/cluster-tabs.test.tsx` (co-located with the
+  component it tests, per this codebase's convention, rather than a `page.test.tsx`).
 
 ### Implementation for User Story 1
 
-- [ ] T015 [P] [US1] Add `models.ClusterInfraDocker` struct to
+- [X] T015 [P] [US1] Add `models.ClusterInfraDocker` struct to
   `webserver/internal/infra/models/cluster.go` per data-model.md (revised: `Cluster`,
   `LoadBalancerIP`, `Ready`, `Conditions` — no `dockerv1` type reference).
-- [ ] T016 [P] [US1] Add `fetchers.ListClusterInfraDocker` in
+- [X] T016 [P] [US1] Add `fetchers.ListClusterInfraDocker` in
   `webserver/internal/infra/clusterapi/fetchers/cluster_infra_docker.go`, listing
   `DockerCluster` objects (`infrastructure.cluster.x-k8s.io/v1beta1`) via
   `clusterapi.NewDynamicClient` + `unstructured.UnstructuredList`, reading
   `spec.loadBalancerIP`/`status.ready`/`status.conditions` field-by-field (research.md R3 revised —
   no typed `dockerv1` package).
-- [ ] T017 [US1] Extend `HandleClusterInfraList` in
+- [X] T017 [US1] Extend `HandleClusterInfraList` in
   `webserver/internal/web/handlers/kubernetes/cluster.go` to accept an optional `?provider=` query
   param, default to the first `installed` provider from `GenerateInfrastructureCapability`, dispatch
   to the Docker or vSphere fetcher accordingly, and return `404` when the resolved/requested provider
   isn't installed (depends on T007, T015, T016).
-- [ ] T018 [US1] Mirror the same dispatch for Machines: extend `HandleMachineInfra` in
+- [X] T018 [US1] Mirror the same dispatch for Machines: extend `HandleMachineInfra` in
   `webserver/internal/web/handlers/kubernetes/machine.go`, adding
   `fetchers.ListMachineInfraDocker` (dynamic client + unstructured decode of `DockerMachine`, same
   approach as T016) and `models.MachineInfraDocker` (FR-008) (depends on T007).
-- [ ] T019 [P] [US1] Generalize `front/app/ui/dashboard/components/clusters/infra/infra-lister.tsx`
-  and `infra-table.tsx` to accept a provider config (title + columns) instead of the hardcoded
-  vSphere title/columns.
-- [ ] T020 [P] [US1] Add a Docker infra config (columns: name, namespace, load balancer IP, age,
-  status) alongside the existing vSphere config, using the generalized components from T019.
-- [ ] T021 [US1] Replace the static 2-tab `Tabs` in `front/app/dashboard/clusters/page.tsx` with
-  tabs built dynamically from `capabilities.ts` (T012) — a provider's tab renders only when
-  `installed` is true (depends on T012, T019, T020).
-- [ ] T022 [US1] Apply the same dynamic-tab/config pattern to the Machines listing screen's infra
-  tab (depends on T018, T019).
+- [X] T019/T020 [P] [US1] Revised approach: rather than generalizing the vSphere-specific
+  `infra-lister.tsx`/`infra-table.tsx` in place (risking FR-010's "existing vSphere behavior
+  unchanged" guarantee, and awkward given Docker's flat `ready` vs vSphere's nested
+  `status.ready`), added parallel Docker components mirroring the vSphere trio exactly:
+  `clusters/infra/docker-{lister,table,details}.tsx` and
+  `machines/infra/docker-{lister,table,details}.tsx`, plus `ClusterInfraDockerType`/
+  `MachineInfraDockerType` in each `types.tsx`.
+  **Also discovered mid-implementation (research.md R6)**: the existing infra listers are
+  WebSocket-driven (`BaseLister` → `useResourceStream` → `ws://.../ws/watcher`), not REST — the
+  `/api/clusters/infra/list`/`/api/machines/infra/list` REST endpoints (R4) are unused by the UI.
+  Added `watchers.WatchDockerClusters`/`WatchDockerMachines` (dynamic-client watch on
+  `dockerclusters`/`dockermachines`, reusing the existing `WatchResourceViaWebSocket` helper — so
+  the earlier `ResourceVersion:"0"` fix applies automatically) and registered new WS object types
+  `"cluster-infra-docker"`/`"machine-infra-docker"` in `system/websocket.go`. Exported
+  `fetchers.ProcessDockerCluster`/`ProcessDockerMachine` so both the REST fetcher and the WS
+  watcher share one decode path.
+- [X] T021 [US1] Replaced the static 2-tab `Tabs` in `front/app/dashboard/clusters/page.tsx` with a
+  new `ClusterTabs` client component driven by `getInfraCapabilities()` — a provider's tab renders
+  only when `installed` is true; shows a "no supported infrastructure provider detected" message
+  when neither is (covers US3's empty-state ahead of schedule). `page.tsx` is now a thin shell.
+- [X] T022 [US1] Same pattern applied to Machines via a new `MachineTabs` component;
+  `machines/page.tsx` is now a thin shell.
 
 **Checkpoint**: US1 is independently testable — Docker/vSphere/mixed environments each show exactly
 the right infra view(s).

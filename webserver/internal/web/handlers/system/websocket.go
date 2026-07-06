@@ -20,22 +20,26 @@ const (
 type ObjectType string
 
 const (
-	TypeClusterInfra      ObjectType = "cluster-infra"
-	TypeCluster           ObjectType = "cluster"
-	TypeMachine           ObjectType = "machine"
-	TypeMachineInfra      ObjectType = "machine-infra"
-	TypeMachineDeployment ObjectType = "machine-deployment"
-	TypeChatbot           ObjectType = "chatbot"
+	TypeClusterInfra       ObjectType = "cluster-infra"
+	TypeClusterInfraDocker ObjectType = "cluster-infra-docker"
+	TypeCluster            ObjectType = "cluster"
+	TypeMachine            ObjectType = "machine"
+	TypeMachineInfra       ObjectType = "machine-infra"
+	TypeMachineInfraDocker ObjectType = "machine-infra-docker"
+	TypeMachineDeployment  ObjectType = "machine-deployment"
+	TypeChatbot            ObjectType = "chatbot"
 )
 
 var (
 	// watchHandlers maps object types to their respective watch functions
 	watchHandlers = map[ObjectType]websocketWatcher{
-		TypeClusterInfra:      watchers.WatchVSphereClusters,
-		TypeCluster:           watchers.WatchClusters,
-		TypeMachine:           watchers.WatchMachines,
-		TypeMachineInfra:      watchers.WatchMachinesInfra,
-		TypeMachineDeployment: watchers.WatchMachineDeployments,
+		TypeClusterInfra:       watchers.WatchVSphereClusters,
+		TypeClusterInfraDocker: watchers.WatchDockerClusters,
+		TypeCluster:            watchers.WatchClusters,
+		TypeMachine:            watchers.WatchMachines,
+		TypeMachineInfra:       watchers.WatchMachinesInfra,
+		TypeMachineInfraDocker: watchers.WatchDockerMachines,
+		TypeMachineDeployment:  watchers.WatchMachineDeployments,
 	}
 )
 

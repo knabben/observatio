@@ -7,6 +7,7 @@ import (
 	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 
+	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/fetchers"
 	"github.com/knabben/observatio/webserver/internal/infra/clusterapi/processor"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -23,6 +24,11 @@ var (
 		Group:    "infrastructure.cluster.x-k8s.io",
 		Version:  "v1beta1",
 		Resource: "vspheremachines",
+	}
+	dockerMachineGVR = schema.GroupVersionResource{
+		Group:    "infrastructure.cluster.x-k8s.io",
+		Version:  "v1beta1",
+		Resource: "dockermachines",
 	}
 )
 
@@ -65,5 +71,19 @@ func WatchMachinesInfra(ctx context.Context, conn *websocket.Conn, objType strin
 		Conn:       conn,
 		Converter:  converter,
 		GVR:        machineInfraGVR,
+	})
+}
+
+// WatchDockerMachines streams events of DockerMachines to a WebSocket connection using a dynamic Kubernetes client.
+func WatchDockerMachines(ctx context.Context, conn *websocket.Conn, objType string) error {
+	converter := func(event runtime.Object) (any, error) {
+		unstructuredObj := event.(*unstructured.Unstructured)
+		return fetchers.ProcessDockerMachine(*unstructuredObj), nil
+	}
+	return WatchResourceViaWebSocket(ctx, WebSocketWatchConfig{
+		ObjectType: objType,
+		Conn:       conn,
+		Converter:  converter,
+		GVR:        dockerMachineGVR,
 	})
 }

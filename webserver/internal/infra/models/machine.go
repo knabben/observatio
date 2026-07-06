@@ -96,3 +96,24 @@ type MachineInfra struct {
 	// Status represents the current status details of a machine's infrastructure.
 	Status capv.VSphereMachineStatus `json:"status"`
 }
+
+// MachineInfraDockerResponse stores the list of Docker-backed machines in the cluster.
+type MachineInfraDockerResponse struct {
+	Total    int                  `json:"total"`
+	Failing  int                  `json:"failing"`
+	Machines []MachineInfraDocker `json:"machines"`
+}
+
+// MachineInfraDocker represents the infra details of a Docker (CAPD) machine.
+type MachineInfraDocker struct {
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	// Age represents the time passed until the object is created.
+	Age string `json:"age,omitempty"`
+
+	// ProviderID represents the unique identifier of the machine provider.
+	ProviderID string `json:"providerID,omitempty"`
+
+	// Ready reports the DockerMachine's status.ready field.
+	Ready bool `json:"ready"`
+}

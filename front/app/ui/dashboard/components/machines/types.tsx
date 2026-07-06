@@ -20,6 +20,13 @@ export type MachineType = {
 }
 
 
+export type MachineInfraDockerType = {
+  metadata?: Meta,
+  providerID?: string,
+  age?: string,
+  ready?: boolean,
+}
+
 export type MachineInfraType = {
   metadata?: Meta,
   providerID?: string,

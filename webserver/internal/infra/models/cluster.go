@@ -103,3 +103,28 @@ type ClusterInfra struct {
 
 	Status capv.VSphereClusterStatus `json:"status"`
 }
+
+// ClusterInfraDockerResponse returns the ClusterInfraDocker list payload and internal
+// formatted list of clusters.
+type ClusterInfraDockerResponse struct {
+	Total    int                  `json:"total"`
+	Failing  int                  `json:"failing"`
+	Clusters []ClusterInfraDocker `json:"clusters"`
+}
+
+// ClusterInfraDocker stores the definition for a Docker (CAPD) infrastructure cluster.
+type ClusterInfraDocker struct {
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	// Cluster specifies the owning cluster of the ClusterInfraDocker object.
+	Cluster string `json:"cluster"`
+
+	// Age represents the creation timestamp of the ClusterInfraDocker resource in a human-readable duration format.
+	Age string `json:"age"`
+
+	// LoadBalancerIP is the Docker-provider equivalent of vSphere's Server field.
+	LoadBalancerIP string `json:"loadBalancerIP"`
+
+	// Ready reports the DockerCluster's status.ready field.
+	Ready bool `json:"ready"`
+}

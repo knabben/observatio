@@ -79,3 +79,11 @@ export type Modules = {
   targetObjectName?: string,
   moduleUUID?: string,
 }
+
+export type ClusterInfraDockerType = {
+  metadata?: Meta,
+  cluster?: string,
+  age?: string,
+  loadBalancerIP?: string,
+  ready?: boolean,
+}

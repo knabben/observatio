@@ -66,6 +66,31 @@ how they're populated changes.
 own reference Docker provider, "CAPD"); the module-boundary issue above was exactly the risk flagged
 before implementation, and the fallback documented then is now the actual, confirmed approach.
 
+## R6: Live infra lists are WebSocket-driven, not REST — corrected during implementation
+
+**Finding**: The existing Clusters/Machines infra tabs (`ClusterInfraLister`, `MachineInfraLister`)
+render via `BaseLister` → `useResourceStream(objectType)`, which subscribes over
+`ws://.../ws/watcher` with `{"type": objectType}` (e.g. `"cluster-infra"` →
+`watchers.WatchVSphereClusters`). The REST `/api/clusters/infra/list` /
+`/api/machines/infra/list` endpoints (R4 below) are **not** called by these components at all —
+they're vestigial/unused REST helpers. Per Constitution Principle II, live cluster state must be
+WebSocket-delivered, and the existing UI already follows that.
+
+**Revised decision**: In addition to the REST dispatch (R4), add two new WebSocket object types —
+`"cluster-infra-docker"` and `"machine-infra-docker"` — backed by new
+`watchers.WatchDockerClusters`/`watchers.WatchDockerMachines` functions that watch the
+`dockerclusters`/`dockermachines` GVRs via the dynamic client (same `WatchResourceViaWebSocket`
+helper already used for every other watcher, so the `ResourceVersion: "0"` fix applies
+automatically) and convert each event via the same decode logic as the REST fetchers
+(`fetchers.ProcessDockerCluster`/`ProcessDockerMachine`, exported for reuse). The frontend's
+`ClusterInfraLister`/`MachineInfraLister` become provider-aware: they pick the `docker` or
+`vsphere` object type/title/columns based on the detected provider rather than being hardcoded to
+vSphere.
+
+**Rationale**: This is the actual mechanism that must change for Docker clusters to appear live in
+the adaptive listing screens — the REST endpoints alone would not make anything appear in the
+existing UI.
+
 ## R4: REST surface for the new/changed endpoints
 
 **Decision**: Add `GET /api/infra/capabilities` returning `InfrastructureCapability`. Generalize the

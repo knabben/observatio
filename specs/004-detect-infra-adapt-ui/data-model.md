@@ -47,10 +47,9 @@ Go module that would force a major dependency upgrade).
 
 | Field | Type | Notes |
 |---|---|---|
-| `Cluster` | `string` | Owning Cluster name. |
+| `Cluster` | `string` | Owning Cluster name, read from the object's owner reference. |
 | `LoadBalancerIP` | `string` | Read from `spec.loadBalancerIP`; Docker-provider equivalent of vSphere's `Server`. |
-| `Ready` | `bool` | Read from `status.ready`. |
-| `Conditions` | `[]clusterv1.Condition` | Read from `status.conditions`, decoded generically (same shape as core CAPI conditions). |
+| `Ready` | `bool` | Read from `status.ready` — the single field needed for the status indicator. |
 
 ## MachineInfraDocker (new entity, mirrors existing MachineInfra)
 
