@@ -9,6 +9,9 @@ export interface WSRequest {
   content: string;
   timestamp: string;
   actor: string;
+  /** Streaming marker: absent/empty for a one-shot message, "delta" to append to the in-progress
+   *  message with the same id, or "done" once that streamed reply has finished. */
+  event?: string;
 }
 
 /** Whatever object a detail screen is currently showing, registered for AI auto-context. */

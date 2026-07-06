@@ -5,18 +5,22 @@ import {
   Button,
   Drawer,
   Group,
+  Loader,
   Paper,
   ScrollArea,
   Stack,
   Text,
   Textarea,
+  TypographyStylesProvider,
 } from '@mantine/core';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {v4 as uuidv4} from 'uuid';
 import {ReadyState} from 'react-use-websocket';
 import {IconAlertTriangle} from '@tabler/icons-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {WebSocket, WS_URL_CHATBOT} from '@/app/lib/websocket';
-import {useAIPanel} from '@/app/ui/dashboard/ai-panel/ai-panel-context';
+import {useAIPanel, WSRequest} from '@/app/ui/dashboard/ai-panel/ai-panel-context';
 
 /** Bounded time to await an AI response before resetting the loading indicator. */
 const AI_RESPONSE_TIMEOUT_MS = 30_000;
@@ -43,19 +47,34 @@ export default function AIPanel() {
   }, [readyState]);
 
   useEffect(() => {
-    if (lastJsonMessage) {
-      setMessages((prev) => [...prev, lastJsonMessage as (typeof messages)[number]]);
-      setIsLoading(false);
-      if (responseTimeoutRef.current) clearTimeout(responseTimeoutRef.current);
+    if (!lastJsonMessage) return;
+    const chunk = lastJsonMessage as WSRequest;
+
+    // A streamed reply arrives as one or more "delta" chunks sharing the same id, followed by a
+    // "done" chunk once it's finished; a chunk with no event is a one-shot complete message
+    // (e.g. the "AI assistant is not available" error), handled the same way "done" clears loading.
+    if (chunk.event === 'delta') {
+      setMessages((prev) => {
+        const last = prev[prev.length - 1];
+        if (last?.id === chunk.id && last.actor === 'agent') {
+          return [...prev.slice(0, -1), {...last, content: last.content + chunk.content, timestamp: chunk.timestamp}];
+        }
+        return [...prev, chunk];
+      });
+      return;
     }
+
+    if (chunk.event !== 'done') {
+      setMessages((prev) => [...prev, chunk]);
+    }
+    setIsLoading(false);
+    if (responseTimeoutRef.current) clearTimeout(responseTimeoutRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastJsonMessage]);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({top: scrollRef.current.scrollHeight, behavior: 'smooth'});
-    }
-  }, [messages]);
+    scrollRef.current?.scrollTo?.({top: scrollRef.current.scrollHeight, behavior: 'smooth'});
+  }, [messages, isLoading]);
 
   // Clear any pending response timeout on unmount so it never fires against a stale component.
   useEffect(() => () => {
@@ -126,11 +145,18 @@ export default function AIPanel() {
                     : '1px solid var(--mantine-color-gray-4)',
                 }}
               >
-                {/* Plain-text render only — the content is untrusted (user/AI supplied) and
-                    React escapes it automatically; no dangerouslySetInnerHTML. */}
-                <Text size="sm" className="break-all" style={{lineHeight: 1.5, whiteSpace: 'pre-wrap'}}>
-                  {message.content}
-                </Text>
+                {message.actor === 'agent' ? (
+                  // react-markdown parses to React elements, not raw HTML - any literal
+                  // "<tag>" in the (untrusted, model-generated) content renders as escaped
+                  // text rather than becoming a real DOM element (no dangerouslySetInnerHTML).
+                  <TypographyStylesProvider p={0} m={0} fz="sm" style={{lineHeight: 1.5, overflowWrap: 'break-word'}}>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+                  </TypographyStylesProvider>
+                ) : (
+                  <Text size="sm" style={{lineHeight: 1.5, whiteSpace: 'pre-wrap', overflowWrap: 'break-word'}}>
+                    {message.content}
+                  </Text>
+                )}
                 <Text size="xs" c="dimmed" mt="xs">
                   {message.timestamp}
                 </Text>
@@ -140,6 +166,19 @@ export default function AIPanel() {
               )}
             </Group>
           ))}
+          {isLoading && (
+            <Group align="flex-start" justify="flex-start" gap="sm">
+              <Avatar size="sm" color="gray" variant="outline" radius="xl">BOT</Avatar>
+              <Paper
+                p="md"
+                radius="lg"
+                bg="var(--mantine-color-gray-1)"
+                style={{border: '1px solid var(--mantine-color-gray-4)'}}
+              >
+                <Loader size="xs" type="dots" color="var(--mantine-color-brand-4)"/>
+              </Paper>
+            </Group>
+          )}
         </Stack>
       </ScrollArea>
       <Group p="md" style={{borderTop: '1px solid var(--mantine-color-default-border)'}} wrap="nowrap" align="flex-end">

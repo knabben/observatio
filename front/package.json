@@ -26,6 +26,7 @@
     "clsx": "^2.1.1",
     "dayjs": "^1.11.21",
     "heroicons": "^2.2.0",
+    "markdown-to-jsx": "^9.8.2",
     "next": "15.3.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

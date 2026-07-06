@@ -1,7 +1,6 @@
 package llm
 
 import (
-	"fmt"
 	"os/exec"
 	"strings"
 
@@ -31,13 +30,11 @@ func KubectlTool() anthropic.ToolParam {
 	}
 }
 
+// RunKubectl executes a kubectl command and returns its combined stdout/stderr output. The output
+// is returned even when the command fails, so a failure can be reported back to the model as a
+// tool result (letting it explain the failure or retry) instead of aborting the whole exchange.
 func RunKubectl(command string) (string, error) {
-	// Execute kubectl command using os/exec
 	cmd := exec.Command("kubectl", strings.Fields(command)...)
 	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return "", fmt.Errorf("error executing kubectl command: %v", err)
-	}
-
-	return string(output), nil
+	return string(output), err
 }
