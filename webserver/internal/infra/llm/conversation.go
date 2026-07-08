@@ -30,12 +30,12 @@ func (cm *ConversationManager) AddAssistantMessage(content string) {
 	cm.messages = append(cm.messages, message)
 }
 
-// GetConversationHistory returns the current conversation history
+// GetConversationHistory returns the most recent conversation history, up to stopper messages.
 func (cm *ConversationManager) GetConversationHistory() []anthropic.MessageParam {
 	if len(cm.messages) <= cm.stopper {
 		return cm.messages
 	}
-	return cm.messages[:cm.stopper]
+	return cm.messages[len(cm.messages)-cm.stopper:]
 }
 
 // ClearHistory clears the conversation history

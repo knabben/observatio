@@ -13,6 +13,10 @@ type ObjectInfo struct {
 	Name      string
 	PositionX int32
 	PositionY int32
+	// Failed marks this object as currently unhealthy (FR-style status coloring): when true, the
+	// node is rendered in a status color (red) regardless of its layer's normal palette, so a
+	// failing object stands out at a glance.
+	Failed bool
 }
 
 // NodeData represents the data content of a Node
@@ -68,7 +72,14 @@ func generateNodeID(info ObjectInfo) string {
 	return info.Name + info.GVR.String()
 }
 
+// failedStyle is used for any node whose underlying object is currently unhealthy, overriding the
+// normal per-layer palette so a failure stands out regardless of where it sits in the hierarchy.
+var failedStyle = NodeStyle{BackgroundColor: "#C0392B", Color: "#ffffff"}
+
 func generateStyle(info ObjectInfo) NodeStyle {
+	if info.Failed {
+		return failedStyle
+	}
 	if _, ok := styles[info.PositionY]; ok {
 		return styles[info.PositionY]
 	}

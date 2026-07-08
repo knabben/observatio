@@ -4,17 +4,34 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"regexp"
+	"os"
+	"strings"
 
 	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/go-logr/logr"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
+const (
+	// defaultModel is used when the ANTHROPIC_MODEL env var isn't set. Pinning an explicit
+	// constant (with an env override for operators) means upgrading or rolling back the model is
+	// a one-line change or a deploy-time config value, never a silent 404 when Anthropic retires
+	// a "-latest" style alias out from under a hardcoded string.
+	defaultModel anthropic.Model = anthropic.ModelClaudeSonnet5
+
+	// maxToolIterations bounds how many tool-call round trips a single chat turn can make, so a
+	// model repeatedly requesting tools can't turn one user message into an unbounded loop.
+	maxToolIterations = 5
+)
+
 type ObservationService struct {
 	// anthropicClient is the client used for interacting with the Anthropic API.
 	anthropicClient anthropic.Client
+
+	// model is the Anthropic model used for chat completions.
+	model anthropic.Model
 
 	// conversationManager is a map that stores active conversations for each client.
 	conversationManager *ConversationManager
@@ -32,6 +49,7 @@ type ObservationService struct {
 func NewObservationService() (*ObservationService, error) {
 	service := &ObservationService{
 		anthropicClient:     anthropic.NewClient(),
+		model:               resolveModel(),
 		agents:              make(map[string]*Agent),
 		wsConnections:       make(map[string]*websocket.Conn),
 		conversationManager: NewConversationManager(5),
@@ -41,8 +59,20 @@ func NewObservationService() (*ObservationService, error) {
 	return service, nil
 }
 
-// ChatWithAgent facilitates a conversation between a user and an AI agent by managing message history and API interactions.
-func (s *ObservationService) ChatWithAgent(ctx context.Context, message *ChatMessage) (*ChatMessage, error) {
+// resolveModel lets ANTHROPIC_MODEL override the compiled-in default at deploy time.
+func resolveModel() anthropic.Model {
+	if m := os.Getenv("ANTHROPIC_MODEL"); m != "" {
+		return anthropic.Model(m)
+	}
+	return defaultModel
+}
+
+// StreamChatWithAgent streams the assistant's reply to the given user message: it invokes emit
+// with one or more Event:"delta" chunks as text is generated, followed by a final Event:"done"
+// chunk once the turn (including any tool calls) has finished. If the model requests a tool call,
+// the tool is executed - success or failure - and the result is fed back to the model for a
+// follow-up turn, up to maxToolIterations, instead of the tool failure aborting the exchange.
+func (s *ObservationService) StreamChatWithAgent(ctx context.Context, message *ChatMessage, emit func(*ChatMessage)) error {
 	logger := log.FromContext(ctx)
 
 	userMessage := message.Content
@@ -51,97 +81,130 @@ func (s *ObservationService) ChatWithAgent(ctx context.Context, message *ChatMes
 	}
 	s.conversationManager.AddUserMessage(userMessage)
 
-	var historyLength = s.conversationManager.GetHistoryLength()
-	if historyLength > 0 {
-		logger.Info("Found history messages", "messages", historyLength)
+	responseID := generateID()
+	history := append([]anthropic.MessageParam{}, s.conversationManager.GetConversationHistory()...)
+
+	var finalText strings.Builder
+	var stopReason anthropic.StopReason
+
+	for iteration := 0; iteration < maxToolIterations; iteration++ {
+		acc, err := s.streamOnce(ctx, history, responseID, &finalText, emit)
+		if err != nil {
+			return fmt.Errorf("claude API error: %v", err)
+		}
+		stopReason = acc.StopReason
+
+		if stopReason != anthropic.StopReasonToolUse {
+			break
+		}
+
+		history = append(history, acc.ToParam())
+
+		toolResult, ranTools, err := s.runToolCalls(acc, logger)
+		if err != nil {
+			return fmt.Errorf("claude API response format error: %v", err)
+		}
+		if !ranTools {
+			break
+		}
+		history = append(history, toolResult)
 	}
 
-	response, err := s.requestToAgent(ctx, s.conversationManager.GetConversationHistory())
-	if err != nil {
-		return nil, fmt.Errorf("claude API error: %v", err)
+	if finalText.Len() == 0 {
+		const fallback = "Bot error, try again."
+		finalText.WriteString(fallback)
+		emit(newStreamChunk(responseID, fallback, "delta"))
 	}
 
-	parsedResponse, err := s.responseFromAgent(response)
-	if err != nil {
-		return nil, fmt.Errorf("claude API response format error: %v", err)
-	}
+	emit(newStreamChunk(responseID, "", "done"))
 
-	if len(response.Content) == 0 {
-		return ToMessageParam("Bot error, try again."), nil
-	}
-
-	logger.Info("Parsed response from Claude", "response", parsedResponse)
-	s.conversationManager.AddAssistantMessage(parsedResponse)
+	logger.Info("Completed response from Claude", "stopReason", stopReason)
+	s.conversationManager.AddAssistantMessage(finalText.String())
 	s.conversationManager.TrimHistory()
-	return ToMessageParam(parsedResponse), nil
+	return nil
 }
 
-// requestAgent sends a request to the Anthropic API with specified messages and returns the API response or an error.
-func (s *ObservationService) requestToAgent(ctx context.Context, messages []anthropic.MessageParam) (*anthropic.Message, error) {
-	request := anthropic.MessageNewParams{
-		Model:     anthropic.ModelClaude3_7SonnetLatest,
+// streamOnce performs a single streamed request/response turn against the Anthropic API. Text
+// deltas are forwarded to emit as they arrive and appended to finalText; the full message is
+// accumulated and returned so the caller can inspect its stop reason and any tool_use blocks.
+func (s *ObservationService) streamOnce(ctx context.Context, history []anthropic.MessageParam, responseID string, finalText *strings.Builder, emit func(*ChatMessage)) (*anthropic.Message, error) {
+	stream := s.anthropicClient.Messages.NewStreaming(ctx, anthropic.MessageNewParams{
+		Model:     s.model,
 		MaxTokens: 4000,
 		System: []anthropic.TextBlockParam{
 			{Text: TASK_SYSTEM},
 		},
-		Messages: messages,
+		Messages: history,
 		Tools:    s.tools,
+	})
+
+	acc := anthropic.Message{}
+	for stream.Next() {
+		event := stream.Current()
+		if err := acc.Accumulate(event); err != nil {
+			return nil, err
+		}
+
+		delta, ok := event.AsAny().(anthropic.ContentBlockDeltaEvent)
+		if !ok {
+			continue
+		}
+		text, ok := delta.Delta.AsAny().(anthropic.TextDelta)
+		if !ok || text.Text == "" {
+			continue
+		}
+
+		// Strip stray markdown code-fence backticks - a single-character removal is safe to
+		// apply per-delta, unlike multi-character tag stripping which would need to buffer
+		// across chunks to avoid splitting a tag in half mid-stream.
+		chunk := strings.ReplaceAll(text.Text, "`", "")
+		finalText.WriteString(chunk)
+		emit(newStreamChunk(responseID, chunk, "delta"))
+	}
+	if err := stream.Err(); err != nil {
+		return nil, err
 	}
 
-	return s.anthropicClient.Messages.New(ctx, request)
+	return &acc, nil
 }
 
-// responseFromAgent processes the response content from the Anthropic API and constructs a formatted string combining text and tool outputs.
-// It handles text blocks and tool-use blocks, extracting detailed outputs as necessary. Returns the formatted response or an error.
-func (s *ObservationService) responseFromAgent(response *anthropic.Message) (string, error) {
-	var (
-		responseText string
-		toolResults  []string
-		logger       = log.FromContext(context.Background())
-	)
+// runToolCalls executes every tool_use block in the assistant's turn and returns a single user
+// MessageParam carrying the matching tool_result blocks. Tool failures are reported back to the
+// model as an error result (so it can explain the failure to the operator or try something else)
+// rather than aborting the exchange.
+func (s *ObservationService) runToolCalls(message *anthropic.Message, logger logr.Logger) (anthropic.MessageParam, bool, error) {
+	var results []anthropic.ContentBlockParamUnion
 
-	cleanup := func(s string) string {
-		s = regexp.MustCompile("`{3}([^`]+)`{3}").ReplaceAllString(s, "<pre>$1</pre>")
-		return regexp.MustCompile(`"([^"]+)"`).ReplaceAllString(s, "<b>$1</b>")
-	}
+	for _, block := range message.Content {
+		toolUse, ok := block.AsAny().(anthropic.ToolUseBlock)
+		if !ok {
+			continue
+		}
 
-	for _, block := range response.Content {
-		switch content := block.AsAny().(type) {
-		case anthropic.TextBlock:
-			responseText += cleanup(content.Text)
-
-		case anthropic.ToolUseBlock:
-			var toolResponse interface{}
-			switch block.Name {
-			case "kubectl":
-				var input struct {
-					Command string `json:"command"`
-				}
-				err := json.Unmarshal([]byte(block.JSON.Input.Raw()), &input)
-				if err != nil {
-					return "", err
-				}
-				logger.Info("Running kubectl command", "command", input.Command)
-				toolResponse, err = RunKubectl(input.Command)
-				if err != nil {
-					logger.Error(err, "Error running kubectl command")
-					return "", fmt.Errorf("error running kubectl command: %v", err)
-				}
-				responseText += fmt.Sprintf("\n\n<tool>kubectl %s</tool>\n", input.Command)
-				toolResults = append(toolResults, toolResponse.(string))
+		switch toolUse.Name {
+		case "kubectl":
+			var input struct {
+				Command string `json:"command"`
 			}
+			if err := json.Unmarshal([]byte(toolUse.JSON.Input.Raw()), &input); err != nil {
+				return anthropic.MessageParam{}, false, err
+			}
+
+			logger.Info("Running kubectl command", "command", input.Command)
+			output, err := RunKubectl(input.Command)
+			if err != nil {
+				logger.Error(err, "kubectl command failed", "command", input.Command)
+				results = append(results, anthropic.NewToolResultBlock(toolUse.ID, strings.TrimSpace(output+"\n"+err.Error()), true))
+				continue
+			}
+			results = append(results, anthropic.NewToolResultBlock(toolUse.ID, output, false))
 		}
 	}
 
-	if len(toolResults) > 0 {
-		responseText += "\n<tool_results>"
-		for _, toolResult := range toolResults {
-			responseText += fmt.Sprintf("<pre>%s</pre>", toolResult)
-		}
-		responseText += "</tool_results>"
+	if len(results) == 0 {
+		return anthropic.MessageParam{}, false, nil
 	}
-
-	return responseText, nil
+	return anthropic.NewUserMessage(results...), true, nil
 }
 
 func generateID() string {

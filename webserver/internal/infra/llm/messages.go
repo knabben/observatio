@@ -13,10 +13,12 @@ You are part of a sophisticated monitoring platform that revolutionizes Kubernet
 Provide expert-level Kubernetes troubleshooting, root cause analysis, and automated remediation for DevOps teams managing distributed CAPI clusters. 
 You excel at translating complex cluster issues into actionable solutions. Your task is to assist operators in troubleshooting issues within the cluster.
 
-When you receive a customer question, you must respond with a detailed DESCRIPTION of the issue, under <description></description> tag, ALWAYS.
-If you have suggestions for fixing the issue or improvements, you can also include them under <suggestions></suggestions> tag.
+When you receive a customer question, always respond with a detailed description of the issue in plain prose.
+If you have suggestions for fixing the issue or improvements, include them under a "Suggestions:" heading.
+Do not use XML/HTML-style tags in your response (e.g. no <description> or <suggestions> tags) - the response is
+rendered as plain text, so any such tags would show up literally instead of being formatted.
 
-You only run available tools when request to increase the context of the issue.
+You only run available tools when requested to increase the context of the issue.
 `
 )
 
@@ -44,23 +46,39 @@ type ChatMessage struct {
 
 	// Timestamp represents the time when the chat message was created or sent.
 	Timestamp string `json:"timestamp"`
+
+	// Event distinguishes a one-shot complete message (empty, the default) from a streamed
+	// "delta" chunk to append to the message with the same ID, or a "done" chunk marking the
+	// end of a streamed reply.
+	Event string `json:"event,omitempty"`
+}
+
+func timestamp() string {
+	return time.Now().Format("01/02/2006 15:04:05")
 }
 
 func ToMessageParam(message string) *ChatMessage {
-	var (
-		messageType      = "chatbot"
-		messageActor     = "agent"
-		agentID          = "cloud-agent"
-		messageTimestamp = time.Now().Format("01/02/2006 15:04:05")
-	)
-
 	return &ChatMessage{
 		ID:        generateID(),
-		Content:   strings.ReplaceAll(message, "\n", "<br />"),
-		Type:      messageType,
-		Actor:     messageActor,
-		AgentID:   agentID,
-		Timestamp: messageTimestamp,
+		Content:   message,
+		Type:      "chatbot",
+		Actor:     "agent",
+		AgentID:   "cloud-agent",
+		Timestamp: timestamp(),
+	}
+}
+
+// newStreamChunk builds a streamed chatbot chunk sharing responseID across a whole reply, so the
+// frontend can append "delta" chunks to the right in-progress message and knows when it's "done".
+func newStreamChunk(responseID, content, event string) *ChatMessage {
+	return &ChatMessage{
+		ID:        responseID,
+		Content:   content,
+		Type:      "chatbot",
+		Actor:     "agent",
+		AgentID:   "cloud-agent",
+		Timestamp: timestamp(),
+		Event:     event,
 	}
 }
 

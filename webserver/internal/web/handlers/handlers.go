@@ -39,6 +39,16 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	// every curated DTO (see specs/005-object-viz-ai-panel/contracts/raw-object-api.md).
 	router.HandleFunc("/api/raw", kubernetes.HandleRawObject).Methods("GET")
 
+	// Day-2 Ops dashboard's on-demand debugging-path drill-in (see
+	// specs/006-day2-ops-dashboard/contracts/day2ops-detail-api.md). The live rollup/path summary
+	// itself is delivered over /ws/watcher (type "day2ops"), not this endpoint.
+	router.HandleFunc("/api/day2ops/detail", kubernetes.HandleDay2OpsDetail).Methods("GET")
+
+	// Day-2 Ops Logs destination (see specs/006-day2-ops-dashboard/contracts/logs-api.md):
+	// controller Pod-log streaming, and static SSH connection instructions for node access.
+	router.HandleFunc("/api/logs/controller", kubernetes.HandleControllerLogs).Methods("GET")
+	router.HandleFunc("/api/logs/node-access", kubernetes.HandleNodeAccess).Methods("GET")
+
 	// Cluster API dashboard Handlers
 	router.HandleFunc("/api/clusters/info", kubernetes.HandleClusterInfo).Methods("GET")
 	router.HandleFunc("/api/clusters/components", kubernetes.HandleComponentsVersion).Methods("GET")

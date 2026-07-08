@@ -1,6 +1,7 @@
 package llm
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/anthropics/anthropic-sdk-go"
@@ -99,12 +100,17 @@ func TestGetConversationHistory(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cm := &ConversationManager{
-				stopper:  tt.stopper,
-				messages: make([]anthropic.MessageParam, tt.initialLength),
+			cm := &ConversationManager{stopper: tt.stopper}
+			for i := 0; i < tt.initialLength; i++ {
+				cm.AddUserMessage(fmt.Sprintf("message-%d", i))
 			}
 			history := cm.GetConversationHistory()
 			assert.Equal(t, tt.expectLength, len(history))
+			if len(history) > 0 {
+				lastContent := history[len(history)-1].Content[0].OfText.Text
+				assert.Equal(t, fmt.Sprintf("message-%d", tt.initialLength-1), lastContent,
+					"history must include the most recently added message")
+			}
 		})
 	}
 }

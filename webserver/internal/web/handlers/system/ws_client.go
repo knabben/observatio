@@ -3,6 +3,7 @@ package system
 import (
 	"context"
 	"encoding/json"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -17,6 +18,17 @@ type WSClient struct {
 	Send    chan []byte
 	pool    *ClientPool
 	service *llm.ObservationService
+
+	// ctx is canceled once this connection's reader loop exits (client disconnect or read
+	// error), so any Anthropic/kubectl call still in flight for this client is aborted instead
+	// of running to completion against a connection nobody is listening on anymore.
+	ctx    context.Context
+	cancel context.CancelFunc
+
+	// chatMu serializes chat turns on this connection: the UI only has one request in flight at
+	// a time, but this guards ObservationService's conversation history against a race if a
+	// second message ever arrives before the first reply finishes.
+	chatMu sync.Mutex
 }
 
 // registerClient registers a new WebSocket client with the client pool and initializes its reader and writer goroutines.
@@ -28,12 +40,15 @@ func registerClient(pool *ClientPool, conn *websocket.Conn) error {
 		return err
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
 	client := &WSClient{
 		ID:      uuid.New().String(),
 		pool:    pool,
 		conn:    conn,
 		Send:    make(chan []byte, 256),
 		service: service,
+		ctx:     ctx,
+		cancel:  cancel,
 	}
 
 	client.pool.Register <- client
@@ -42,16 +57,15 @@ func registerClient(pool *ClientPool, conn *websocket.Conn) error {
 	return nil
 }
 
-// reader continuously listens for WebSocket messages, processes them,
-// and handles message exchange with the LLM client.
+// reader continuously listens for WebSocket messages and hands each chatbot message off to the
+// LLM client. Chat turns run in their own goroutine (see handleChat) so this loop keeps reading
+// and can notice a client disconnect while a request is in flight.
 func (c *WSClient) reader() {
-	var (
-		ctx    = context.Background()
-		logger = log.FromContext(ctx)
-	)
+	logger := log.FromContext(c.ctx)
 	defer func() {
-		// Unregister the client from the pool and close the connection.
+		// Unregister the client from the pool, cancel any in-flight request, and close the connection.
 		c.pool.Unregister <- c
+		c.cancel()
 		c.conn.Close() // nolint
 	}()
 
@@ -69,40 +83,50 @@ func (c *WSClient) reader() {
 			break
 		}
 
-		// Start to chat with the bot agent, sending the first message.
-		response, err := (*c.service).ChatWithAgent(ctx, message)
-		if err != nil {
-			// A failed LLM call (e.g. missing/invalid API key, upstream outage) must not drop
-			// the WebSocket connection - send a safe, generic error message back to the client
-			// (never the raw error, which may contain credential/endpoint details) and keep the
-			// session open so the operator can retry once the server is reconfigured.
-			logger.Error(err, "error requesting response from AI agent")
-			response = llm.ToMessageParam("The AI assistant is not available right now. Please check the server's AI configuration and try again later.")
-		}
+		go c.handleChat(message)
+	}
+}
 
-		result, err := json.Marshal(response)
-		if err != nil {
-			logger.Error(err, "error writing close message")
-			return
-		}
+// handleChat runs one streamed chat turn and forwards each chunk to the client as it arrives.
+func (c *WSClient) handleChat(message *llm.ChatMessage) {
+	c.chatMu.Lock()
+	defer c.chatMu.Unlock()
 
-		select {
-		// Send the bot response to the client writer goroutine.
-		case c.Send <- result:
-		default:
-			close(c.Send)
-			delete(c.pool.Clients, c.ID)
-		}
+	logger := log.FromContext(c.ctx)
+
+	err := c.service.StreamChatWithAgent(c.ctx, message, c.sendMessage)
+	if err != nil {
+		// A failed LLM call (e.g. missing/invalid API key, upstream outage) must not drop
+		// the WebSocket connection - send a safe, generic error message back to the client
+		// (never the raw error, which may contain credential/endpoint details) and keep the
+		// session open so the operator can retry once the server is reconfigured.
+		logger.Error(err, "error requesting response from AI agent")
+		c.sendMessage(llm.ToMessageParam("The AI assistant is not available right now. Please check the server's AI configuration and try again later."))
+	}
+}
+
+// sendMessage marshals a chat message chunk and queues it for the writer goroutine.
+func (c *WSClient) sendMessage(message *llm.ChatMessage) {
+	logger := log.FromContext(c.ctx)
+
+	result, err := json.Marshal(message)
+	if err != nil {
+		logger.Error(err, "error marshalling message")
+		return
+	}
+
+	select {
+	case c.Send <- result:
+	default:
+		close(c.Send)
+		delete(c.pool.Clients, c.ID)
 	}
 }
 
 // writer manages outgoing WebSocket messages, handles sending data from the Send channel,
 // and maintains connection health.
 func (c *WSClient) writer() {
-	var (
-		ctx    = context.Background()
-		logger = log.FromContext(ctx)
-	)
+	logger := log.FromContext(c.ctx)
 
 	ticker := time.NewTicker(60 * time.Second)
 	defer func() {

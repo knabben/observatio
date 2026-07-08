@@ -5,6 +5,7 @@ import {
   DocumentDuplicateIcon,
   BanknotesIcon,
   BookOpenIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -26,6 +27,11 @@ const links = [
     name: 'Machines',
     href: '/dashboard/machines',
     icon: BookOpenIcon,
+  },
+  {
+    name: 'Logs',
+    href: '/dashboard/logs',
+    icon: DocumentTextIcon,
   },
 ];
 
