@@ -145,15 +145,37 @@ transparently as an approximation rather than silently overclaiming precision.
 
 ## R9: Delivery stays WebSocket-push via a new aggregator, preserving Principle II
 
-**Decision**: A new `day2ops/aggregator.go` subscribes to the event streams already produced by
-existing and new watchers (`webserver/internal/web/watchers/processor.go`'s
-`WatchResourceViaWebSocket`/`streamEvents` shape) and recomputes+broadcasts one consolidated
-`Day2OpsEvent` over the existing connection pool (`webserver/internal/web/handlers/system/pool.go`)
-whenever a contributing resource changes. Only on-demand deep-drill detail (e.g., the full evidence
-list behind one object's debugging path, fetched only when an operator expands it) uses a scoped
-REST endpoint (`GET /api/day2ops/detail`), identical in shape and justification to the raw-object
-REST exception already established in feature 005 (WS-triggered, on-demand REST hydration, not
-independent polling).
+**Decision** (revised after inspecting the actual watcher architecture — see note below): Every
+existing resource watcher (`webserver/internal/web/watchers/{cluster,machine,machinedeployment}.go`)
+is a *per-connection* 1:1 relay: `HandleWatcher` (`webserver/internal/web/handlers/system/websocket.go`)
+upgrades one WebSocket connection, reads a single `{"type": "..."}` message, and dispatches to one
+`Watch<Kind>(ctx, conn, objType)` function that opens exactly one K8s watch and streams its events
+directly into that one connection for its lifetime (`WatchResourceViaWebSocket`/`streamEvents`).
+There is no shared broadcast pool for resource data — `webserver/internal/web/handlers/system/pool.go`
+exists solely for the AI chatbot's fan-out, unrelated to resource watching.
+
+The Day2Ops aggregator therefore cannot "subscribe to" existing watcher streams (they're not a
+shared bus). Instead, a new `WatchDay2Ops(ctx, conn, objType)` in
+`webserver/internal/web/watchers/day2ops.go` is added to the same `watchHandlers` dispatch table
+under a new `TypeDay2Ops` (`"day2ops"`) key. On a new connection, it opens its **own** set of K8s
+watches (Cluster, Machine, MachineDeployment, MachineSet, MachineHealthCheck, provider-infra
+objects) directly via the dynamic client — following the exact same per-GVR `Watch(...)` call
+every existing watcher already uses — fans their events into one internal channel, maintains an
+in-memory snapshot, and on each event recomputes the full `Day2OpsEvent` (via pure functions in the
+`day2ops` package) and writes it to that same connection. This keeps delivery WS-push per
+Principle II, using the same primitives (`clusterapi.NewDynamicClient`, `watch.Interface`) already
+proven in every other watcher, just fanning in multiple GVRs instead of one. Only on-demand
+deep-drill detail (e.g., the full evidence list behind one object's debugging path, fetched only
+when an operator expands it) uses a scoped REST endpoint (`GET /api/day2ops/detail`), identical in
+shape and justification to the raw-object REST exception already established in feature 005
+(WS-triggered, on-demand REST hydration, not independent polling).
+
+*Correction note*: plan.md's original Project Structure described this as a package-level
+"aggregator.go... broadcasts over the existing WS connection pool" — that phrasing assumed a shared
+pub/sub mechanism that does not exist in this codebase. The actual implementation lives partly in
+`webserver/internal/web/watchers/day2ops.go` (the per-connection fan-in loop, matching the existing
+watcher convention) and partly in `webserver/internal/infra/clusterapi/day2ops/` (pure compute
+functions operating on the fanned-in snapshot) — not a single "aggregator" broadcasting to a pool.
 
 **Rationale**: Keeps the dashboard's primary rollup/severity/path data fully real-time per
 Principle II, while avoiding recomputing and re-pushing large per-object evidence payloads that

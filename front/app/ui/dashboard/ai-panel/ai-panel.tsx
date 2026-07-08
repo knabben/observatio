@@ -71,9 +71,12 @@ export default function AIPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastJsonMessage]);
 
+  // Re-run on `isOpen` too: the Drawer's content remounts on each open, so without this the
+  // panel would render scrolled to the top of a long conversation instead of its latest message.
   useEffect(() => {
+    if (!isOpen) return;
     scrollRef.current?.scrollTo?.({top: scrollRef.current.scrollHeight, behavior: 'smooth'});
-  }, [messages, isLoading]);
+  }, [messages, isLoading, isOpen]);
 
   // Clear any pending response timeout on unmount so it never fires against a stale component.
   useEffect(() => () => {
@@ -183,9 +186,15 @@ export default function AIPanel() {
       <Group p="md" style={{borderTop: '1px solid var(--mantine-color-default-border)'}} wrap="nowrap" align="flex-end">
         <Textarea
           flex={1}
-          placeholder="Ask about this issue or request specific actions..."
+          placeholder="Ask about this issue or request specific actions... (Ctrl+Enter to send)"
           value={queryField}
           onChange={(e) => setQueryField(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && queryField.trim() !== '') {
+              e.preventDefault();
+              requestIA();
+            }
+          }}
           radius="md"
           autosize
           minRows={2}

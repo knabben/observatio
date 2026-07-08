@@ -125,4 +125,51 @@ describe('AIPanel', () => {
     // "done" carries no content of its own - the merged text from the delta chunks stays put.
     expect(screen.getByText('Hello world')).toBeInTheDocument();
   });
+
+  it('sends the message on Ctrl+Enter without requiring a click on Send', () => {
+    const sendJsonMessage = jest.fn();
+    mockedUseWebSocket.mockReturnValue({
+      sendJsonMessage,
+      lastJsonMessage: null,
+      readyState: ReadyState.OPEN,
+    } as unknown as ReturnType<typeof useWebSocket>);
+
+    render(
+      <AIPanelProvider>
+        <AIPanel/>
+        <AIPanelTrigger/>
+      </AIPanelProvider>,
+    );
+    fireEvent.click(screen.getByRole('button', {name: /open ai troubleshooting panel/i}));
+
+    const textarea = screen.getByPlaceholderText(/ctrl\+enter to send/i);
+    fireEvent.change(textarea, {target: {value: 'What is wrong with this cluster?'}});
+    fireEvent.keyDown(textarea, {key: 'Enter', ctrlKey: true});
+
+    expect(sendJsonMessage).toHaveBeenCalledWith(
+      expect.objectContaining({content: 'What is wrong with this cluster?'}),
+    );
+  });
+
+  it('does not send on Ctrl+Enter when the field is empty', () => {
+    const sendJsonMessage = jest.fn();
+    mockedUseWebSocket.mockReturnValue({
+      sendJsonMessage,
+      lastJsonMessage: null,
+      readyState: ReadyState.OPEN,
+    } as unknown as ReturnType<typeof useWebSocket>);
+
+    render(
+      <AIPanelProvider>
+        <AIPanel/>
+        <AIPanelTrigger/>
+      </AIPanelProvider>,
+    );
+    fireEvent.click(screen.getByRole('button', {name: /open ai troubleshooting panel/i}));
+
+    const textarea = screen.getByPlaceholderText(/ctrl\+enter to send/i);
+    fireEvent.keyDown(textarea, {key: 'Enter', ctrlKey: true});
+
+    expect(sendJsonMessage).not.toHaveBeenCalled();
+  });
 });

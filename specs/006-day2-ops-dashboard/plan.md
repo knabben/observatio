@@ -45,7 +45,7 @@ Constitution v1.1.0 — five principles:
 | Principle | Impact | Verdict |
 |-----------|--------|---------|
 | **I. Observability & Data Consolidation** | This is the feature's direct purpose: correlating conditions, Machine phase, provider-resource state, (new) Events, and now controller Pod logs across the full CAPI hierarchy into one consolidated, per-category view instead of scattered list pages and manual `kubectl` sessions. | ✅ PASS |
-| **II. Real-Time Visibility** | Rollups, debugging paths, and severity banners are recomputed and pushed over the existing WebSocket pool whenever a contributing watched resource changes (new server-side aggregator subscribing to existing + new watchers) — no polling loop. On-demand deep-drill detail (e.g., full evidence list for a single object's path) may use a scoped REST hydration exception identical in shape to the one already justified for the raw-object endpoint in feature 005. | ✅ PASS (aggregator is WS-push; drill-in detail is a scoped, on-demand REST exception, same as 005's R2) |
+| **II. Real-Time Visibility** | Rollups, debugging paths, and severity banners are recomputed and pushed whenever a contributing watched resource changes, via a new per-connection watcher (`WatchDay2Ops`, registered in the existing `watchHandlers` dispatch table alongside every other resource watcher) that fans in several K8s watches into one WS stream — no polling loop, no shared pool (research.md R9, corrected after inspecting the actual per-connection watcher architecture). On-demand deep-drill detail (e.g., full evidence list for a single object's path) may use a scoped REST hydration exception identical in shape to the one already justified for the raw-object endpoint in feature 005. | ✅ PASS (new watcher is WS-push, same convention as every existing resource watcher; drill-in detail is a scoped, on-demand REST exception, same as 005's R2) |
 | **III. ClusterAPI Resource Model Compliance** | The two newly-watched kinds (`MachineSet`, `MachineHealthCheck`) are first-class CAPI types already part of the Cluster → MachineDeployment → Machine hierarchy (MachineSet sits between MachineDeployment and Machine; MachineHealthCheck is a first-class CAPI remediation type) — no proprietary abstraction introduced. Provider-controller health/log access (Pods/Deployments/Pod-logs in provider namespaces) uses only generic Kubernetes types, keeping infra-provider specifics opaque per this principle; the Logs view's node-access instructions are static text, not a provider-specific integration. | ✅ PASS |
 | **IV. AI-Augmented Troubleshooting** | Not required by this feature, but the new Debugging Path and Risk Warning data is structured condition/evidence data that naturally strengthens the existing AI panel's auto-context (feature 005) as a future enhancement — no conflict, no action required now. | ✅ PASS (no violation; noted synergy, out of scope here) |
 | **V. Test-Driven Quality** | Every new detector (cert-expiry, stalled-rollout, version-skew, drift, severity classifier) and the debugging-path synthesizer get Go unit tests against CAPI fake-client fixtures; new frontend components/hooks get Jest tests, following the existing patterns. | ✅ PASS |
@@ -75,9 +75,16 @@ specs/006-day2-ops-dashboard/
 webserver/
 ├── internal/web/watchers/
 │   ├── machineset.go                       # NEW: watch MachineSet (owned by MachineDeployment)
-│   └── machinehealthcheck.go               # NEW: watch MachineHealthCheck
+│   ├── machinehealthcheck.go               # NEW: watch MachineHealthCheck
+│   └── day2ops.go                          # NEW: WatchDay2Ops(ctx, conn, objType) — registered in
+│                                             # websocket.go's watchHandlers table like every other
+│                                             # resource watcher; opens its own fan-in of K8s watches
+│                                             # (Cluster/Machine/MachineDeployment/MachineSet/
+│                                             # MachineHealthCheck/provider-infra), recomputes a
+│                                             # Day2OpsEvent via the day2ops package on each event,
+│                                             # writes it to this connection (research.md R9)
 ├── internal/infra/clusterapi/
-│   ├── day2ops/                            # NEW package
+│   ├── day2ops/                            # NEW package — pure compute functions, no I/O
 │   │   ├── debugpath.go                    # Synthesizes ordered DebugLayer[] for an unhealthy
 │   │   │                                    # object from already-fetched Conditions + Machine
 │   │   │                                    # Phase + provider-infra object + (new) Events
@@ -87,13 +94,10 @@ webserver/
 │   │   │                                    # version check (apiextensions-apiserver clientset)
 │   │   ├── risk_drift.go                   # metadata.generation vs status.observedGeneration
 │   │   │                                    # mismatch on provider-infra objects
-│   │   ├── severity.go                     # Self-healing / needs-investigation / provider-degraded
-│   │   │                                    # / management-critical classifier (MachineHealthCheck,
-│   │   │                                    # provider-controller Pod/Deployment status, API-server
-│   │   │                                    # reachability, CA secret presence)
-│   │   └── aggregator.go                   # Subscribes to existing + new watcher event streams,
-│   │                                        # recomputes the consolidated Day2OpsEvent, broadcasts
-│   │                                        # over the existing WS connection pool
+│   │   └── severity.go                     # Self-healing / needs-investigation / provider-degraded
+│   │                                        # / management-critical classifier (MachineHealthCheck,
+│   │                                        # provider-controller Pod/Deployment status, API-server
+│   │                                        # reachability, CA secret presence)
 │   └── fetchers/
 │       ├── secrets.go                      # NEW: read-only Secret fetch scoped to CA/cert lookups
 │       └── controllerlogs.go               # NEW: streams a controller Pod's logs via the standard

@@ -10,7 +10,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/client-go/rest"
-	capv "sigs.k8s.io/cluster-api-provider-vsphere/apis/v1beta1"
 	clusterctlv1 "sigs.k8s.io/cluster-api/cmd/clusterctl/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -185,11 +184,13 @@ func GenerateInfrastructureCapability(ctx context.Context, c client.Client) (mod
 }
 
 // GenerateClusterTopology generates the cluster topology by building the owner-reference
-// hierarchy for VSphereMachine resources.
+// hierarchy starting from Machine resources (provider-agnostic — works whether the installed
+// infrastructure provider is Docker, vSphere, or any other, unlike the previous VSphereMachine-only
+// implementation which failed outright when that CRD wasn't installed).
 func GenerateClusterTopology(ctx context.Context, c client.Client) (topology ClusterTopology, err error) {
-	var machines []capv.VSphereMachine
-	if machines, err = fetchers.ListMachineInfra(ctx, c); err != nil {
+	var machineResponse models.MachineResponse
+	if machineResponse, err = fetchers.FetchMachines(ctx, c); err != nil {
 		return topology, err
 	}
-	return processOwnerHierarchy(ctx, machines)
+	return processOwnerHierarchy(ctx, machineResponse.Machines)
 }

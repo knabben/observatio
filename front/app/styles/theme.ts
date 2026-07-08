@@ -25,6 +25,7 @@ const brand: MantineColorsTuple = [
  */
 export const STATUS_COLORS = {
   healthy: 'green',
+  degraded: 'orange',
   notready: 'red',
   unknown: 'gray',
 } as const;

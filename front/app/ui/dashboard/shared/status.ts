@@ -1,13 +1,15 @@
 /**
- * Normalized tri-state health used by every status indicator.
+ * Normalized health used by every status indicator.
  *
  * - `healthy`  : readiness flag present and true
+ * - `degraded` : not failed, but has an open risk warning or an implicated/inconclusive debugging
+ *   layer (Day-2 Ops dashboard only — never produced by `toStatusState`/`allReady` below)
  * - `notready` : readiness flag present and false
  * - `unknown`  : readiness flag absent/undefined
  *
  * Strict comparisons only — an absent field is NEVER treated as `false`/failed.
  */
-export type StatusState = 'healthy' | 'notready' | 'unknown';
+export type StatusState = 'healthy' | 'degraded' | 'notready' | 'unknown';
 
 /**
  * Derives a tri-state from a readiness value. `undefined`/`null` → `unknown`,

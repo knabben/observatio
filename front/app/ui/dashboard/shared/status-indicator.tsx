@@ -14,12 +14,13 @@ interface StatusIndicatorProps {
 
 const CONFIG: Record<StatusState, {color: string; label: string}> = {
   healthy: {color: STATUS_COLORS.healthy, label: "Ready"},
+  degraded: {color: STATUS_COLORS.degraded, label: "Degraded"},
   notready: {color: STATUS_COLORS.notready, label: "Not ready"},
   unknown: {color: STATUS_COLORS.unknown, label: "Unknown"},
 };
 
 /**
- * Tri-state status indicator. Distinguishes healthy / not-ready / unknown by color AND
+ * Status indicator. Distinguishes healthy / degraded / not-ready / unknown by color AND
  * an accessible label (never color alone), and NEVER animates — a static/failed state
  * must not imply work-in-progress.
  */
