@@ -13,6 +13,10 @@ import MachineDetails from './machines/details';
 import MachineInfraDetails from './machines/infra/infra-details';
 import MachineInfraDockerDetails from './machines/infra/docker-details';
 import MachineDeploymentDetails from './mds/details';
+import MachineHealthCheckDetails from './machinehealthchecks/details';
+import KubeadmControlPlaneDetails from './kubeadmcontrolplanes/details';
+import MachineSetDetails from './machinesets/details';
+import ClusterClassDetails from './clusterclasses/details';
 
 const meta = {name: 'r1', namespace: 'default'};
 
@@ -73,6 +77,42 @@ describe('Object detail screens: no embedded AI Troubleshooting tab, Specificati
     render(<MachineDeploymentDetails md={{
       metadata: meta,
       status: {conditions: [{type: 'Ready', status: 'True'}]},
+    }}/>);
+    expectSpecificationTabOnlyNoAI();
+    expect(screen.getByText('Ready')).toBeInTheDocument();
+  });
+
+  it('MachineHealthCheckDetails', () => {
+    render(<MachineHealthCheckDetails mhc={{
+      metadata: meta,
+      status: {conditions: [{type: 'Ready', status: 'True'}]},
+    }}/>);
+    expectSpecificationTabOnlyNoAI();
+    expect(screen.getByText('Ready')).toBeInTheDocument();
+  });
+
+  it('KubeadmControlPlaneDetails', () => {
+    render(<KubeadmControlPlaneDetails kcp={{
+      metadata: meta,
+      status: {conditions: [{type: 'Ready', status: 'True'}]},
+    }}/>);
+    expectSpecificationTabOnlyNoAI();
+    expect(screen.getByText('Ready')).toBeInTheDocument();
+  });
+
+  it('MachineSetDetails', () => {
+    render(<MachineSetDetails ms={{
+      metadata: meta,
+      status: {conditions: [{type: 'Ready', status: 'True'}]},
+    }}/>);
+    expectSpecificationTabOnlyNoAI();
+    expect(screen.getByText('Ready')).toBeInTheDocument();
+  });
+
+  it('ClusterClassDetails', () => {
+    render(<ClusterClassDetails cc={{
+      metadata: meta, name: meta.name, namespace: meta.namespace,
+      conditions: [{type: 'Ready', status: 'True'}],
     }}/>);
     expectSpecificationTabOnlyNoAI();
     expect(screen.getByText('Ready')).toBeInTheDocument();

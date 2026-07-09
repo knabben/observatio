@@ -20,28 +20,36 @@ const (
 type ObjectType string
 
 const (
-	TypeClusterInfra       ObjectType = "cluster-infra"
-	TypeClusterInfraDocker ObjectType = "cluster-infra-docker"
-	TypeCluster            ObjectType = "cluster"
-	TypeMachine            ObjectType = "machine"
-	TypeMachineInfra       ObjectType = "machine-infra"
-	TypeMachineInfraDocker ObjectType = "machine-infra-docker"
-	TypeMachineDeployment  ObjectType = "machine-deployment"
-	TypeChatbot            ObjectType = "chatbot"
-	TypeDay2Ops            ObjectType = "day2ops"
+	TypeClusterInfra        ObjectType = "cluster-infra"
+	TypeClusterInfraDocker  ObjectType = "cluster-infra-docker"
+	TypeCluster             ObjectType = "cluster"
+	TypeMachine             ObjectType = "machine"
+	TypeMachineInfra        ObjectType = "machine-infra"
+	TypeMachineInfraDocker  ObjectType = "machine-infra-docker"
+	TypeMachineDeployment   ObjectType = "machine-deployment"
+	TypeChatbot             ObjectType = "chatbot"
+	TypeDay2Ops             ObjectType = "day2ops"
+	TypeMachineHealthCheck  ObjectType = "machinehealthcheck"
+	TypeKubeadmControlPlane ObjectType = "kubeadmcontrolplane"
+	TypeMachineSet          ObjectType = "machineset"
+	TypeClusterClass        ObjectType = "clusterclass"
 )
 
 var (
 	// watchHandlers maps object types to their respective watch functions
 	watchHandlers = map[ObjectType]websocketWatcher{
-		TypeClusterInfra:       watchers.WatchVSphereClusters,
-		TypeClusterInfraDocker: watchers.WatchDockerClusters,
-		TypeCluster:            watchers.WatchClusters,
-		TypeMachine:            watchers.WatchMachines,
-		TypeMachineInfra:       watchers.WatchMachinesInfra,
-		TypeMachineInfraDocker: watchers.WatchDockerMachines,
-		TypeMachineDeployment:  watchers.WatchMachineDeployments,
-		TypeDay2Ops:            watchers.WatchDay2Ops,
+		TypeClusterInfra:        watchers.WatchVSphereClusters,
+		TypeClusterInfraDocker:  watchers.WatchDockerClusters,
+		TypeCluster:             watchers.WatchClusters,
+		TypeMachine:             watchers.WatchMachines,
+		TypeMachineInfra:        watchers.WatchMachinesInfra,
+		TypeMachineInfraDocker:  watchers.WatchDockerMachines,
+		TypeMachineDeployment:   watchers.WatchMachineDeployments,
+		TypeDay2Ops:             watchers.WatchDay2Ops,
+		TypeMachineHealthCheck:  watchers.WatchMachineHealthChecks,
+		TypeKubeadmControlPlane: watchers.WatchKubeadmControlPlanes,
+		TypeMachineSet:          watchers.WatchMachineSets,
+		TypeClusterClass:        watchers.WatchClusterClasses,
 	}
 )
 
