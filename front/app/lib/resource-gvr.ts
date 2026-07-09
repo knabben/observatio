@@ -13,4 +13,8 @@ export const RESOURCE_GVR = {
   vsphereMachine: {group: 'infrastructure.cluster.x-k8s.io', version: 'v1beta1', resource: 'vspheremachines'},
   dockerMachine: {group: 'infrastructure.cluster.x-k8s.io', version: 'v1beta1', resource: 'dockermachines'},
   machineDeployment: {group: 'cluster.x-k8s.io', version: 'v1beta1', resource: 'machinedeployments'},
+  machineHealthCheck: {group: 'cluster.x-k8s.io', version: 'v1beta1', resource: 'machinehealthchecks'},
+  kubeadmControlPlane: {group: 'controlplane.cluster.x-k8s.io', version: 'v1beta1', resource: 'kubeadmcontrolplanes'},
+  machineSet: {group: 'cluster.x-k8s.io', version: 'v1beta1', resource: 'machinesets'},
+  clusterClass: {group: 'cluster.x-k8s.io', version: 'v1beta1', resource: 'clusterclasses'},
 } as const satisfies Record<string, ResourceGVR>;

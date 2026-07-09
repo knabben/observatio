@@ -6,6 +6,10 @@ import {
   BanknotesIcon,
   BookOpenIcon,
   DocumentTextIcon,
+  HeartIcon,
+  CpuChipIcon,
+  Squares2X2Icon,
+  RectangleGroupIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -27,6 +31,26 @@ const links = [
     name: 'Machines',
     href: '/dashboard/machines',
     icon: BookOpenIcon,
+  },
+  {
+    name: 'Machine Health Checks',
+    href: '/dashboard/machinehealthchecks',
+    icon: HeartIcon,
+  },
+  {
+    name: 'Kubeadm Control Planes',
+    href: '/dashboard/kubeadmcontrolplanes',
+    icon: CpuChipIcon,
+  },
+  {
+    name: 'Machine Sets',
+    href: '/dashboard/machinesets',
+    icon: Squares2X2Icon,
+  },
+  {
+    name: 'Cluster Classes',
+    href: '/dashboard/clusterclasses',
+    icon: RectangleGroupIcon,
   },
   {
     name: 'Logs',
