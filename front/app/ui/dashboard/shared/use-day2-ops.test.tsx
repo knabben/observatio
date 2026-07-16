@@ -29,6 +29,9 @@ const sampleData: Day2OpsData = {
   risks: [],
   severities: [],
   sourceUnavailable: false,
+  backupHealth: {
+    available: true, storageLocations: [], clusterCoverage: [], rpoThresholdSeconds: 86400, restoresInProgress: 0,
+  },
 };
 
 describe("useDay2Ops", () => {

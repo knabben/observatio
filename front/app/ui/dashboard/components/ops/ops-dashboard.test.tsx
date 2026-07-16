@@ -19,6 +19,9 @@ const allHealthyData: Day2OpsData = {
   risks: [],
   severities: [],
   sourceUnavailable: false,
+  backupHealth: {
+    available: true, storageLocations: [], clusterCoverage: [], rpoThresholdSeconds: 86400, restoresInProgress: 0,
+  },
 };
 
 function mockSocket(lastJsonMessage: unknown, readyState: ReadyState = ReadyState.OPEN) {
@@ -39,6 +42,13 @@ describe('OpsDashboard', () => {
     expect(screen.getByRole('heading', {name: 'Clusters'})).toBeInTheDocument();
     expect(screen.getByRole('heading', {name: 'Machine Deployments'})).toBeInTheDocument();
     expect(screen.getByRole('heading', {name: 'Machines'})).toBeInTheDocument();
+  });
+
+  it('renders the Backup Health card alongside the existing rollups (008/US1)', () => {
+    mockSocket({type: 'MODIFIED', event: 'day2ops', data: allHealthyData});
+    render(<OpsDashboard/>);
+
+    expect(screen.getByRole('heading', {name: 'Backup Health'})).toBeInTheDocument();
   });
 
   it('narrows to a single category in place without navigating away', () => {

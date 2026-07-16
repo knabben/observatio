@@ -78,16 +78,33 @@ func ComputeManagementClusterSeverity(sourceUnavailable bool) *FailureSeverity {
 // warning available for that cluster (FR-016): certificate issuance/rotation is blocked, and the
 // original CA cannot be substituted. caSecretFound is false when the cert-expiry fetch succeeded
 // (no permissions error) but found no "<cluster>-ca" Secret among the results.
-func ComputeCASecretMissingSeverity(objectRef ObjectRef, caSecretFound bool) *FailureSeverity {
+//
+// coverage is this cluster's backup recoverability (008/US2, computed separately by
+// ComputeClusterBackupCoverage) — nil when that data isn't available at all (e.g. Velero isn't
+// installed), in which case RecoveryInfo is left nil rather than falsely reporting
+// Recoverable: false; recoverability is genuinely unknown in that case, not known-absent.
+func ComputeCASecretMissingSeverity(objectRef ObjectRef, caSecretFound bool, coverage *ClusterBackupCoverage) *FailureSeverity {
 	if caSecretFound {
 		return nil
 	}
+	reason := fmt.Sprintf(
+		"Cluster %s's CA secret is missing or inaccessible — certificate issuance/rotation is blocked for its nodes; the original CA cannot be substituted.",
+		objectRef.Name,
+	)
+	var recoveryInfo *RecoveryInfo
+	if coverage != nil {
+		if coverage.Covered {
+			reason += fmt.Sprintf(" A backup completed %s ago covers this cluster — recovery is straightforward.", coverage.MostRecentBackupAge)
+			recoveryInfo = &RecoveryInfo{Recoverable: true, CoveringBackupAge: coverage.MostRecentBackupAge}
+		} else {
+			reason += " No covering backup exists — this cluster's data is unrecoverable."
+			recoveryInfo = &RecoveryInfo{Recoverable: false}
+		}
+	}
 	return &FailureSeverity{
-		ObjectRef: &objectRef,
-		Level:     SeverityManagementCritical,
-		Reason: fmt.Sprintf(
-			"Cluster %s's CA secret is missing or inaccessible — certificate issuance/rotation is blocked for its nodes; the original CA cannot be substituted",
-			objectRef.Name,
-		),
+		ObjectRef:    &objectRef,
+		Level:        SeverityManagementCritical,
+		Reason:       reason,
+		RecoveryInfo: recoveryInfo,
 	}
 }

@@ -6,6 +6,7 @@ import {IconAlertTriangle} from '@tabler/icons-react';
 import {useDay2Ops} from '@/app/ui/dashboard/shared/use-day2-ops';
 import {Category, HealthRollup} from '@/app/ui/dashboard/shared/use-day2-ops';
 import {HealthRollupCard} from './health-rollup-card';
+import {BackupHealthCard} from './backup-health-card';
 import {DebuggingPath} from './debugging-path';
 import {RiskWarnings} from './risk-warnings';
 import {SeverityBanner} from './severity-banner';
@@ -64,6 +65,11 @@ export function OpsDashboard() {
             <HealthRollupCard rollup={rollup}/>
           </GridCol>
         ))}
+        {filter === 'all' && (
+          <GridCol span={{base: 12, sm: 4}}>
+            <BackupHealthCard health={data.backupHealth}/>
+          </GridCol>
+        )}
       </Grid>
       {(filter === 'all' || filter === 'machine') && data.debugPaths.length > 0 && (
         <Stack gap="sm" mt="md">

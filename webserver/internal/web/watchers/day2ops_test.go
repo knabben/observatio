@@ -11,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/watch"
 	clusterv1 "sigs.k8s.io/cluster-api/api/v1beta1"
 
@@ -73,6 +74,78 @@ func Test_day2opsStore_apply_machineDeploymentAndMachine(t *testing.T) {
 	assert.Len(t, machines, 1)
 }
 
+func unstructuredEventFromMap(eventType watch.EventType, gvr schema.GroupVersionResource, obj map[string]interface{}) day2opsEvent {
+	return day2opsEvent{
+		gvr:   gvr,
+		event: watch.Event{Type: eventType, Object: &unstructured.Unstructured{Object: obj}},
+	}
+}
+
+func Test_day2opsStore_apply_veleroKinds(t *testing.T) {
+	store := newDay2opsStore()
+
+	backup := map[string]interface{}{
+		"metadata": map[string]interface{}{"name": "nightly-1", "namespace": "velero"},
+		"spec":     map[string]interface{}{"includedNamespaces": []interface{}{"default"}, "storageLocation": "default"},
+		"status":   map[string]interface{}{"phase": "Completed", "completionTimestamp": "2026-07-08T00:00:00Z"},
+	}
+	require.NoError(t, store.apply(unstructuredEventFromMap(watch.Added, backupGVR, backup)))
+	backups := store.backupsSnapshot()
+	require.Len(t, backups, 1)
+	assert.Equal(t, "nightly-1", backups[0].Name)
+	assert.Equal(t, "Completed", backups[0].Phase)
+	assert.Equal(t, []string{"default"}, backups[0].IncludedNamespaces)
+	require.NotNil(t, backups[0].CompletionTimestamp)
+
+	restore := map[string]interface{}{
+		"metadata": map[string]interface{}{"name": "restore-1", "namespace": "velero"},
+		"spec":     map[string]interface{}{"backupName": "nightly-1"},
+		"status":   map[string]interface{}{"phase": "InProgress"},
+	}
+	require.NoError(t, store.apply(unstructuredEventFromMap(watch.Added, restoreGVR, restore)))
+	restores := store.restoresSnapshot()
+	require.Len(t, restores, 1)
+	assert.Equal(t, "InProgress", restores[0].Phase)
+	assert.Equal(t, "nightly-1", restores[0].BackupName)
+
+	schedule := map[string]interface{}{
+		"metadata": map[string]interface{}{"name": "nightly", "namespace": "velero"},
+	}
+	require.NoError(t, store.apply(unstructuredEventFromMap(watch.Added, scheduleGVR, schedule)))
+	assert.Len(t, store.schedules, 1)
+
+	bsl := map[string]interface{}{
+		"metadata": map[string]interface{}{"name": "default", "namespace": "velero"},
+		"spec":     map[string]interface{}{"default": true},
+		"status":   map[string]interface{}{"phase": "Available"},
+	}
+	require.NoError(t, store.apply(unstructuredEventFromMap(watch.Added, backupStorageLocationGVR, bsl)))
+	bsls := store.backupStorageLocationsSnapshot()
+	require.Len(t, bsls, 1)
+	assert.True(t, bsls[0].Default)
+	assert.Equal(t, "Available", bsls[0].Phase)
+
+	// Deletes remove from every map, keyed by namespace/name.
+	require.NoError(t, store.apply(unstructuredEventFromMap(watch.Deleted, backupGVR, backup)))
+	assert.Len(t, store.backupsSnapshot(), 0)
+}
+
+func Test_day2opsStore_apply_veleroKinds_partialObjectDoesNotCrash(t *testing.T) {
+	store := newDay2opsStore()
+	minimal := map[string]interface{}{
+		"metadata": map[string]interface{}{"name": "bare", "namespace": "velero"},
+	}
+	require.NoError(t, store.apply(unstructuredEventFromMap(watch.Added, backupGVR, minimal)))
+	backups := store.backupsSnapshot()
+	require.Len(t, backups, 1)
+	assert.Empty(t, backups[0].Phase)
+	assert.Nil(t, backups[0].CompletionTimestamp)
+}
+
+func Test_day2opsVeleroInstalled(t *testing.T) {
+	assert.False(t, day2opsVeleroInstalled(context.Background(), nil))
+}
+
 func Test_assembleData_reflectsSnapshotAndUnavailable(t *testing.T) {
 	store := newDay2opsStore()
 	cluster := &clusterv1.Cluster{
@@ -84,7 +157,7 @@ func Test_assembleData_reflectsSnapshotAndUnavailable(t *testing.T) {
 	require.NoError(t, store.apply(evt))
 
 	ctx := context.Background()
-	data := assembleData(ctx, nil, nil, store, false)
+	data := assembleData(ctx, nil, nil, store, false, false)
 	assert.False(t, data.SourceUnavailable)
 	var clusterRollup day2ops.HealthRollup
 	for _, r := range data.Rollups {
@@ -94,7 +167,7 @@ func Test_assembleData_reflectsSnapshotAndUnavailable(t *testing.T) {
 	}
 	assert.Equal(t, 1, clusterRollup.Failed)
 
-	unavailableData := assembleData(ctx, nil, nil, store, true)
+	unavailableData := assembleData(ctx, nil, nil, store, true, false)
 	assert.True(t, unavailableData.SourceUnavailable)
 }
 
@@ -112,7 +185,7 @@ func Test_assembleData_computesDebugPathForFailedMachine(t *testing.T) {
 	evt.gvr = machineGVR
 	require.NoError(t, store.apply(evt))
 
-	data := assembleData(context.Background(), nil, nil, store, false)
+	data := assembleData(context.Background(), nil, nil, store, false, false)
 
 	require.Len(t, data.DebugPaths, 1)
 	assert.Equal(t, "worker-0", data.DebugPaths[0].ObjectRef.Name)
@@ -200,7 +273,7 @@ func Test_machineHealthCheckSeverities_flagsMaxUnhealthyBreach(t *testing.T) {
 
 func Test_ComputeManagementClusterSeverity_wiredIntoAssembleData(t *testing.T) {
 	store := newDay2opsStore()
-	data := assembleData(context.Background(), nil, nil, store, true)
+	data := assembleData(context.Background(), nil, nil, store, true, false)
 
 	require.Len(t, data.Severities, 1)
 	assert.Equal(t, day2ops.SeverityManagementCritical, data.Severities[0].Level)

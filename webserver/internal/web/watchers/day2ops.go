@@ -36,6 +36,18 @@ var machineHealthCheckGVR = schema.GroupVersionResource{Group: "cluster.x-k8s.io
 // versionSkewCRDs are the CRDs checked for stored-but-no-longer-served versions (research.md R6).
 var versionSkewCRDs = []string{"machines.cluster.x-k8s.io", "clusters.cluster.x-k8s.io"}
 
+// Velero GVRs (008) — decoded via the dynamic client without a typed Velero Go dependency
+// (research.md R1). Watched only when Velero is installed (day2opsVeleroCRDName, research.md R8).
+var (
+	backupGVR                = schema.GroupVersionResource{Group: "velero.io", Version: "v1", Resource: "backups"}
+	restoreGVR               = schema.GroupVersionResource{Group: "velero.io", Version: "v1", Resource: "restores"}
+	scheduleGVR              = schema.GroupVersionResource{Group: "velero.io", Version: "v1", Resource: "schedules"}
+	backupStorageLocationGVR = schema.GroupVersionResource{Group: "velero.io", Version: "v1", Resource: "backupstoragelocations"}
+)
+
+// day2opsVeleroCRDName is checked for existence before any Velero GVR is watched (research.md R8).
+const day2opsVeleroCRDName = "backups.velero.io"
+
 // day2opsCoreGVRs are always watched: first-class CAPI core types present on every management
 // cluster regardless of which infrastructure provider(s) are installed.
 var day2opsCoreGVRs = []schema.GroupVersionResource{
@@ -56,25 +68,40 @@ var day2opsScheme = func() *runtime.Scheme {
 // day2opsWatchedGVRs returns the core GVRs plus only the provider-infra GVRs for providers
 // actually installed in this environment (research.md; a provider's CRD, e.g. VSphereMachine,
 // does not exist at all when that provider isn't installed — attempting to watch it fails
-// immediately and must not be treated as fatal to the whole dashboard).
-func day2opsWatchedGVRs(ctx context.Context) []schema.GroupVersionResource {
+// immediately and must not be treated as fatal to the whole dashboard), plus the four Velero GVRs
+// when Velero is installed (research.md R8).
+func day2opsWatchedGVRs(ctx context.Context, apiext *apiextensionsclientset.Clientset) []schema.GroupVersionResource {
 	gvrs := append([]schema.GroupVersionResource{}, day2opsCoreGVRs...)
 
 	cli, err := clusterapi.NewClientWithScheme(ctx, day2opsScheme)
-	if err != nil {
-		return gvrs
+	if err == nil {
+		if capability, err := clusterapi.GenerateInfrastructureCapability(ctx, cli); err == nil {
+			if capability.Docker.Installed {
+				gvrs = append(gvrs, dockerMachineGVR)
+			}
+			if capability.VSphere.Installed {
+				gvrs = append(gvrs, machineInfraGVR)
+			}
+		}
 	}
-	capability, err := clusterapi.GenerateInfrastructureCapability(ctx, cli)
-	if err != nil {
-		return gvrs
-	}
-	if capability.Docker.Installed {
-		gvrs = append(gvrs, dockerMachineGVR)
-	}
-	if capability.VSphere.Installed {
-		gvrs = append(gvrs, machineInfraGVR)
+
+	if day2opsVeleroInstalled(ctx, apiext) {
+		gvrs = append(gvrs, backupGVR, restoreGVR, scheduleGVR, backupStorageLocationGVR)
 	}
 	return gvrs
+}
+
+// day2opsVeleroInstalled checks for the backups.velero.io CRD's existence rather than attempting
+// the watch unconditionally, so a non-Velero-installed management cluster (the common case) logs
+// zero errors and BackupHealth.Available can be set proactively (research.md R8). apiext may be
+// nil (e.g. in tests, or when its own construction failed), in which case Velero is treated as not
+// installed rather than erroring.
+func day2opsVeleroInstalled(ctx context.Context, apiext *apiextensionsclientset.Clientset) bool {
+	if apiext == nil {
+		return false
+	}
+	_, err := apiext.ApiextensionsV1().CustomResourceDefinitions().Get(ctx, day2opsVeleroCRDName, metav1.GetOptions{})
+	return err == nil
 }
 
 // day2opsEvent is one fanned-in watch event, tagged with which GVR it came from.
@@ -94,16 +121,25 @@ type day2opsStore struct {
 	// providerResources is keyed by the provider-infra object's OWN "namespace/name" (as referenced
 	// by a Machine's Spec.InfrastructureRef), not the owning Machine's identity.
 	providerResources map[string]day2ops.ProviderResourceStatus
+	// Velero state (008) — populated only when Velero is installed (day2opsVeleroInstalled).
+	backups                map[string]day2ops.BackupInfo
+	restores               map[string]day2ops.RestoreInfo
+	schedules              map[string]day2ops.ScheduleInfo
+	backupStorageLocations map[string]day2ops.BackupStorageLocationInfo
 }
 
 func newDay2opsStore() *day2opsStore {
 	return &day2opsStore{
-		clusters:            map[string]clusterv1.Cluster{},
-		machineDeployments:  map[string]clusterv1.MachineDeployment{},
-		machines:            map[string]clusterv1.Machine{},
-		machineSets:         map[string]clusterv1.MachineSet{},
-		machineHealthChecks: map[string]clusterv1.MachineHealthCheck{},
-		providerResources:   map[string]day2ops.ProviderResourceStatus{},
+		clusters:               map[string]clusterv1.Cluster{},
+		machineDeployments:     map[string]clusterv1.MachineDeployment{},
+		machines:               map[string]clusterv1.Machine{},
+		machineSets:            map[string]clusterv1.MachineSet{},
+		machineHealthChecks:    map[string]clusterv1.MachineHealthCheck{},
+		providerResources:      map[string]day2ops.ProviderResourceStatus{},
+		backups:                map[string]day2ops.BackupInfo{},
+		restores:               map[string]day2ops.RestoreInfo{},
+		schedules:              map[string]day2ops.ScheduleInfo{},
+		backupStorageLocations: map[string]day2ops.BackupStorageLocationInfo{},
 	}
 }
 
@@ -182,6 +218,38 @@ func (s *day2opsStore) apply(evt day2opsEvent) error {
 		} else {
 			s.providerResources[key] = day2ops.ExtractProviderResourceStatus(unstructuredObj)
 		}
+	case backupGVR:
+		info := day2ops.ExtractBackupInfo(unstructuredObj)
+		key := objectKey(info.Namespace, info.Name)
+		if evt.event.Type == watch.Deleted {
+			delete(s.backups, key)
+		} else {
+			s.backups[key] = info
+		}
+	case restoreGVR:
+		info := day2ops.ExtractRestoreInfo(unstructuredObj)
+		key := objectKey(info.Namespace, info.Name)
+		if evt.event.Type == watch.Deleted {
+			delete(s.restores, key)
+		} else {
+			s.restores[key] = info
+		}
+	case scheduleGVR:
+		info := day2ops.ExtractScheduleInfo(unstructuredObj)
+		key := objectKey(info.Namespace, info.Name)
+		if evt.event.Type == watch.Deleted {
+			delete(s.schedules, key)
+		} else {
+			s.schedules[key] = info
+		}
+	case backupStorageLocationGVR:
+		info := day2ops.ExtractBackupStorageLocationInfo(unstructuredObj)
+		key := objectKey(info.Namespace, info.Name)
+		if evt.event.Type == watch.Deleted {
+			delete(s.backupStorageLocations, key)
+		} else {
+			s.backupStorageLocations[key] = info
+		}
 	}
 	return nil
 }
@@ -259,12 +327,48 @@ func (s *day2opsStore) providerResourceSnapshot() []day2ops.ProviderResourceStat
 	return statuses
 }
 
+// backupsSnapshot returns a copy of every currently-known Velero Backup (008/US1).
+func (s *day2opsStore) backupsSnapshot() []day2ops.BackupInfo {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	out := make([]day2ops.BackupInfo, 0, len(s.backups))
+	for _, b := range s.backups {
+		out = append(out, b)
+	}
+	return out
+}
+
+// restoresSnapshot returns a copy of every currently-known Velero Restore (008/US3).
+func (s *day2opsStore) restoresSnapshot() []day2ops.RestoreInfo {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	out := make([]day2ops.RestoreInfo, 0, len(s.restores))
+	for _, r := range s.restores {
+		out = append(out, r)
+	}
+	return out
+}
+
+// backupStorageLocationsSnapshot returns a copy of every currently-known Velero
+// BackupStorageLocation (008/US1).
+func (s *day2opsStore) backupStorageLocationsSnapshot() []day2ops.BackupStorageLocationInfo {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	out := make([]day2ops.BackupStorageLocationInfo, 0, len(s.backupStorageLocations))
+	for _, b := range s.backupStorageLocations {
+		out = append(out, b)
+	}
+	return out
+}
+
 // assembleData recomputes the full Day2Ops payload from the store's current snapshot. Debugging
 // paths are computed only for currently-unhealthy Machines (FR-004), with each layer's evidence
 // capped to one line for the live WS push — the full, uncapped path is available on demand via
 // GET /api/day2ops/detail (contracts/day2ops-ws-event.md consumer contract). apiext may be nil
 // (e.g. in tests), in which case the version-skew check is skipped rather than erroring.
-func assembleData(ctx context.Context, dyn dynamic.Interface, apiext *apiextensionsclientset.Clientset, store *day2opsStore, sourceUnavailable bool) day2ops.Data {
+// veleroInstalled reflects whether the backups.velero.io CRD was found at connection setup
+// (research.md R8) — checked once, not on every recompute.
+func assembleData(ctx context.Context, dyn dynamic.Interface, apiext *apiextensionsclientset.Clientset, store *day2opsStore, sourceUnavailable bool, veleroInstalled bool) day2ops.Data {
 	clusters, machineDeployments, machines := store.snapshot()
 
 	debugPaths := make([]day2ops.DebugPath, 0)
@@ -280,7 +384,27 @@ func assembleData(ctx context.Context, dyn dynamic.Interface, apiext *apiextensi
 		debugPaths = append(debugPaths, capDebugPathEvidence(path))
 	}
 
-	certRisks, caMissingSeverities := clusterCertRisksAndSeverities(ctx, dyn, clusters)
+	clusterRefs := make([]day2ops.ObjectRef, 0, len(clusters))
+	for _, cl := range clusters {
+		clusterRefs = append(clusterRefs, day2ops.ObjectRef{
+			Group: clusterGVR.Group, Version: clusterGVR.Version, Resource: clusterGVR.Resource,
+			Namespace: cl.Namespace, Name: cl.Name,
+		})
+	}
+	backupHealth := day2ops.ComputeBackupHealth(
+		veleroInstalled, clusterRefs,
+		store.backupStorageLocationsSnapshot(), store.backupsSnapshot(), store.restoresSnapshot(),
+		day2ops.DefaultRPOThreshold, time.Now(),
+	)
+	// Indexed by "namespace/name" so clusterCertRisksAndSeverities can cross-reference each
+	// cluster's CA-secret-missing severity with its recoverability (008/US2) without recomputing
+	// coverage a second time.
+	coverageByCluster := make(map[string]day2ops.ClusterBackupCoverage, len(backupHealth.ClusterCoverage))
+	for _, c := range backupHealth.ClusterCoverage {
+		coverageByCluster[objectKey(c.ClusterRef.Namespace, c.ClusterRef.Name)] = c
+	}
+
+	certRisks, caMissingSeverities := clusterCertRisksAndSeverities(ctx, dyn, clusters, veleroInstalled, coverageByCluster)
 	risks := make([]day2ops.RiskWarning, 0)
 	risks = append(risks, certRisks...)
 	risks = append(risks, stalledRolloutRisks(store, machineDeployments)...)
@@ -301,13 +425,17 @@ func assembleData(ctx context.Context, dyn dynamic.Interface, apiext *apiextensi
 		Risks:             risks,
 		Severities:        severities,
 		SourceUnavailable: sourceUnavailable,
+		BackupHealth:      backupHealth,
 	}
 }
 
 // clusterCertRisksAndSeverities fetches each cluster's cert Secrets once and derives both the
 // cert-expiry risk warnings (FR-008) and the CA-secret-missing severity (FR-016) from the same
-// fetch, rather than reading the Secrets twice.
-func clusterCertRisksAndSeverities(ctx context.Context, dyn dynamic.Interface, clusters []clusterv1.Cluster) ([]day2ops.RiskWarning, []day2ops.FailureSeverity) {
+// fetch, rather than reading the Secrets twice. veleroInstalled and coverageByCluster (008/US2)
+// let a CA-secret-missing severity carry recoverability — coverageByCluster is only consulted
+// when veleroInstalled is true, so a cluster absent from the map when Velero isn't installed is
+// correctly treated as "no coverage data" (RecoveryInfo omitted), not "no covering backup found."
+func clusterCertRisksAndSeverities(ctx context.Context, dyn dynamic.Interface, clusters []clusterv1.Cluster, veleroInstalled bool, coverageByCluster map[string]day2ops.ClusterBackupCoverage) ([]day2ops.RiskWarning, []day2ops.FailureSeverity) {
 	risks := make([]day2ops.RiskWarning, 0)
 	severities := make([]day2ops.FailureSeverity, 0)
 	if dyn == nil {
@@ -329,7 +457,13 @@ func clusterCertRisksAndSeverities(ctx context.Context, dyn dynamic.Interface, c
 					break
 				}
 			}
-			if severity := day2ops.ComputeCASecretMissingSeverity(objectRef, caFound); severity != nil {
+			var coverage *day2ops.ClusterBackupCoverage
+			if veleroInstalled {
+				if c, ok := coverageByCluster[objectKey(cl.Namespace, cl.Name)]; ok {
+					coverage = &c
+				}
+			}
+			if severity := day2ops.ComputeCASecretMissingSeverity(objectRef, caFound, coverage); severity != nil {
 				severities = append(severities, *severity)
 			}
 		}
@@ -466,7 +600,9 @@ func WatchDay2Ops(ctx context.Context, conn *websocket.Conn, objType string) err
 	// client can't be constructed, since it's a secondary risk check, not core functionality.
 	apiextClient, _ := clusterapi.NewAPIExtensionsClient(ctx)
 
-	watchedGVRs := day2opsWatchedGVRs(ctx)
+	watchedGVRs := day2opsWatchedGVRs(ctx, apiextClient)
+	// Checked once at connection setup, not on every recompute (research.md R8).
+	veleroInstalled := day2opsVeleroInstalled(ctx, apiextClient)
 	events := make(chan day2opsEvent)
 	watchErrs := make(chan error, len(watchedGVRs))
 	watchCtx, cancel := context.WithCancel(ctx)
@@ -512,7 +648,7 @@ func WatchDay2Ops(ctx context.Context, conn *websocket.Conn, objType string) err
 	store := newDay2opsStore()
 
 	// Seed an initial snapshot immediately, so the dashboard doesn't wait for the first change.
-	if err = conn.WriteJSON(EventResponse{Type: "MODIFIED", Event: objType, Data: assembleData(ctx, dynamicClient, apiextClient, store, false)}); err != nil {
+	if err = conn.WriteJSON(EventResponse{Type: "MODIFIED", Event: objType, Data: assembleData(ctx, dynamicClient, apiextClient, store, false, veleroInstalled)}); err != nil {
 		cancel()
 		wg.Wait()
 		return fmt.Errorf("failed to write initial day2ops snapshot: %w", err)
@@ -527,7 +663,7 @@ func WatchDay2Ops(ctx context.Context, conn *websocket.Conn, objType string) err
 		case werr := <-watchErrs:
 			// A contributing watch died: tell the client the data source is unavailable, then
 			// close the connection so the frontend's own reconnect/backoff takes over (FR-017).
-			_ = conn.WriteJSON(EventResponse{Type: "MODIFIED", Event: objType, Data: assembleData(ctx, dynamicClient, apiextClient, store, true)})
+			_ = conn.WriteJSON(EventResponse{Type: "MODIFIED", Event: objType, Data: assembleData(ctx, dynamicClient, apiextClient, store, true, veleroInstalled)})
 			cancel()
 			wg.Wait()
 			return werr
@@ -537,7 +673,7 @@ func WatchDay2Ops(ctx context.Context, conn *websocket.Conn, objType string) err
 				wg.Wait()
 				return fmt.Errorf("failed to apply day2ops event: %w", err)
 			}
-			if err = conn.WriteJSON(EventResponse{Type: "MODIFIED", Event: objType, Data: assembleData(ctx, dynamicClient, apiextClient, store, false)}); err != nil {
+			if err = conn.WriteJSON(EventResponse{Type: "MODIFIED", Event: objType, Data: assembleData(ctx, dynamicClient, apiextClient, store, false, veleroInstalled)}); err != nil {
 				cancel()
 				wg.Wait()
 				return fmt.Errorf("failed to write day2ops event: %w", err)
