@@ -1,12 +1,15 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 1.0.0 → 1.1.0
-Modified principles:
-  - I. Observability-First → I. Observability & Data Consolidation (expanded:
-    added multi-source data collection and consolidation requirements)
-Added sections:
-  - Purpose & Scope (new preamble capturing project mission)
+Version change: 1.1.0 → 1.1.1
+Modified principles: None
+Modified sections:
+  - Technology Stack: recorded github.com/modelcontextprotocol/go-sdk as the AI tool-source
+    aggregation dependency (webserver/internal/infra/mcp), per the "no new runtime dependency
+    without updating this section" rule — justification given in
+    specs/009-mcp-server-client-aggregator/plan.md's Complexity Tracking table (research.md R1).
+    PATCH: records an already-justified dependency, no principle or governance change.
+Added sections: None
 Removed sections: N/A
 Templates reviewed:
   - .specify/templates/plan-template.md ✅ Constitution Check gate references
@@ -14,6 +17,13 @@ Templates reviewed:
   - .specify/templates/spec-template.md ✅ Structure unaffected by amendment
   - .specify/templates/tasks-template.md ✅ Phase structure still aligns with Principle V
 Follow-up TODOs: None — all placeholders resolved
+
+Previous entry (1.0.0 → 1.1.0):
+  Modified principles:
+    - I. Observability-First → I. Observability & Data Consolidation (expanded:
+      added multi-source data collection and consolidation requirements)
+  Added sections:
+    - Purpose & Scope (new preamble capturing project mission)
 -->
 
 # Observātiō Constitution
@@ -98,7 +108,10 @@ alongside implementation — not as an afterthought appended after the feature i
 **Backend**: Go 1.23+ with CAPI controller-runtime client
 **Frontend**: Next.js 15, React 19, TypeScript 5, Mantine UI 7, TailwindCSS 4, XYFlow 12
 **Real-time transport**: WebSocket — backend connection pool + frontend `react-use-websocket`
-**AI integration**: Anthropic Claude API via `webserver/internal/infra/llm`
+**AI integration**: Anthropic Claude API via `webserver/internal/infra/llm`; tool sources for the
+AI assistant (built-in and operator-registered external ones) are aggregated via
+`github.com/modelcontextprotocol/go-sdk` in `webserver/internal/infra/mcp` (see
+specs/009-mcp-server-client-aggregator)
 **Build tooling**: GNU Make — canonical targets: `build`, `run-backend`, `run-frontend`,
 `run-tests-backend`, `run-tests-frontend`
 **Frontend package manager**: pnpm
@@ -133,4 +146,4 @@ All feature plans MUST include a **Constitution Check** section that explicitly 
 compliance with each of the five principles. Any violation MUST be justified in the
 Complexity Tracking table before the plan is approved.
 
-**Version**: 1.1.0 | **Ratified**: 2026-04-25 | **Last Amended**: 2026-07-05
+**Version**: 1.1.1 | **Ratified**: 2026-04-25 | **Last Amended**: 2026-07-17

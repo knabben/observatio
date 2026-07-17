@@ -8,6 +8,7 @@ import (
 	gh "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/knabben/observatio/webserver/internal/infra/clusterapi"
+	mcpaggregator "github.com/knabben/observatio/webserver/internal/infra/mcp"
 	"github.com/knabben/observatio/webserver/internal/web/handlers"
 	"github.com/spf13/cobra"
 
@@ -18,8 +19,9 @@ import (
 )
 
 var (
-	address     string
-	development bool
+	address           string
+	development       bool
+	toolSourcesConfig string
 )
 
 var serveCmd = &cobra.Command{
@@ -39,8 +41,23 @@ func init() {
 
 	serveCmd.PersistentFlags().StringVar(&address, "address", ":8080", "Webserver default listening HTTP port. Default 8080.")
 	serveCmd.PersistentFlags().BoolVar(&development, "dev", false, "Development mode, no static hosting. Default false")
+	serveCmd.PersistentFlags().StringVar(&toolSourcesConfig, "tool-sources-config", "",
+		"Path to a YAML file registering external MCP tool sources for the AI assistant (see "+
+			"specs/009-mcp-server-client-aggregator/contracts/tool-sources-config.md). Unset means no "+
+			"external sources - only the built-in kubectl capability is offered. Also settable via "+
+			"the TOOL_SOURCES_CONFIG env var.")
 
 	rootCmd.AddCommand(serveCmd)
+}
+
+// resolveToolSourcesConfig lets TOOL_SOURCES_CONFIG override the --tool-sources-config flag at
+// deploy time, matching the ANTHROPIC_MODEL env-override convention already used in
+// internal/infra/llm/observation.go.
+func resolveToolSourcesConfig() string {
+	if v := os.Getenv("TOOL_SOURCES_CONFIG"); v != "" {
+		return v
+	}
+	return toolSourcesConfig
 }
 
 func RunE(cmd *cobra.Command, args []string) error {
@@ -49,10 +66,30 @@ func RunE(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	// The tool source aggregator is built once, here, and shared across every WebSocket chat
+	// connection - not rebuilt per connection - since registering a source can involve a real MCP
+	// handshake (specs/009-mcp-server-client-aggregator, research.md R2).
+	ctx := context.Background()
+	localSource, err := mcpaggregator.NewLocalToolSource(ctx)
+	if err != nil {
+		return err
+	}
+	externalSources, err := mcpaggregator.BuildExternalSources(ctx, resolveToolSourcesConfig())
+	if err != nil {
+		return err
+	}
+
+	sources := []mcpaggregator.ToolSource{localSource}
+	for _, src := range externalSources {
+		src.StartHealthChecking(ctx)
+		sources = append(sources, src)
+	}
+	aggregator := mcpaggregator.NewAggregator(sources...)
+
 	router := mux.NewRouter()
 	router.Use(web.WithKubernetes(client, config))
 	router.Use(web.WithLogger())
-	handlers.DefaultHandlers(router, development)
+	handlers.DefaultHandlers(router, development, aggregator)
 
 	allowDomain := gh.AllowedOrigins([]string{"*"})
 	allowMethods := gh.AllowedMethods([]string{"GET", "OPTIONS", "POST"})

@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-specs/008-velero-backup-recoverability/plan.md
+specs/009-mcp-server-client-aggregator/plan.md
 <!-- SPECKIT END -->
