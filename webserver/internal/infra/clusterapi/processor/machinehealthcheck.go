@@ -9,9 +9,13 @@ import (
 
 // ProcessMachineHealthCheck transforms a clusterv1.MachineHealthCheck into a models.MachineHealthCheck.
 func ProcessMachineHealthCheck(mhc clusterv1.MachineHealthCheck) models.MachineHealthCheck {
+	// mhc.Spec.MaxUnhealthy is deprecated in v1beta1 pending CAPI #10722 (no replacement exists yet
+	// in this API version), so it's read exactly once here rather than suppressing the linter at
+	// every usage site.
+	maxUnhealthyThreshold := mhc.Spec.MaxUnhealthy // nolint:staticcheck
 	var maxUnhealthy string
-	if mhc.Spec.MaxUnhealthy != nil {
-		maxUnhealthy = mhc.Spec.MaxUnhealthy.String()
+	if maxUnhealthyThreshold != nil {
+		maxUnhealthy = maxUnhealthyThreshold.String()
 	}
 
 	var nodeStartupTimeout string
