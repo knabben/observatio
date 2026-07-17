@@ -274,6 +274,17 @@ answers using the remaining healthy source, while the unhealthy one is visibly f
   handshake) and `/ws/analysis` request path work end-to-end up to the Anthropic API boundary,
   where it fails gracefully with the existing "AI assistant is not available" message rather than
   crashing.
+- **T030 initially only covered US1 live** (via T012's WS smoke test); US2/US3 were exercised only
+  through `external_test.go`'s in-memory-fake-server tests, not an actual separate process. Closed
+  the gap after-the-fact: built a standalone stdio MCP server binary (one read-only `list_backups`
+  tool) outside the repo, registered it via a real `--tool-sources-config` YAML file, and ran the
+  full `serve` binary against it. Confirmed live: (1) `GET /api/mcp/sources` shows both `kubectl`
+  and the external `velero-mcp` source, healthy, with correct capabilities, zero conflicts (US2);
+  (2) `kill -9`-ing the external source's subprocess flips it to `unhealthy` with a real
+  `lastError` on the next 30s health-check tick, while the local `kubectl` source stays healthy
+  throughout (US3 AC1/AC2); (3) the *next* tick after that spawns a **new** OS process (confirmed
+  via a different PID) and the source flips back to `healthy` automatically — no operator action,
+  no Observātiō restart (US3 AC3).
 - **Frontend test environment note (not a code deviation)**: this sandbox's default `node` (system
   package, v18.19.1) cannot load `jest.config.js` (`import` syntax) — the project's CI targets Node
   22 (`.github/workflows/build.yml`). A newer Node was available at `/snap/node/11776/bin` (v24) and
