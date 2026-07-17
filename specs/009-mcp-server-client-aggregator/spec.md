@@ -5,6 +5,16 @@
 **Status**: Draft
 **Input**: User description: "make a very strong mcp server and client using the project, it allows agreggating new MCP server to make it even more powerfull, and allows the existent tools to become one of the local mcp servers"
 
+## Clarifications
+
+### Session 2026-07-17
+
+- Q: Should the built-in kubectl-backed capability (FR-001) be packaged as a plain internal
+  adapter, or as an actual local MCP server speaking the same protocol as external sources? →
+  A: An actual local MCP server, connected in-process (no subprocess) — matching the original
+  Input's "become one of the local mcp servers" phrasing, and making it reusable by other MCP
+  clients later, not just Observātiō's own aggregator.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Existing tools become a built-in tool source (Priority: P1)
@@ -115,7 +125,10 @@ one is visibly flagged somewhere an operator would look.
 
 - **FR-001**: The assistant MUST offer its existing kubectl-backed inspection capability as a
   self-contained, named tool source, functionally equivalent to today's behavior, rather than as a
-  hard-wired special case.
+  hard-wired special case. This tool source MUST speak the same protocol as every external tool
+  source (Clarifications, 2026-07-17) — an internal adapter that merely mimics one is not
+  sufficient — so the built-in capability is structurally indistinguishable from a registered
+  external one anywhere the aggregator or an operator inspects it.
 - **FR-002**: Operators MUST be able to register an additional external tool source by supplying its
   connection information, without requiring a code change or new release.
 - **FR-003**: Operators MUST be able to view the list of currently registered tool sources, each
@@ -170,11 +183,18 @@ one is visibly flagged somewhere an operator would look.
 
 - The built-in kubectl-backed capability, once wrapped as the "local" tool source, keeps its current
   behavior and constraints; this feature does not change what that specific capability can do, only how
-  it's packaged and combined with others.
+  it's packaged and combined with others. Per Clarifications (2026-07-17), it is packaged as an actual
+  local MCP server rather than a plain internal adapter — a side effect of that choice is that this
+  same local server could, in principle, be connected to by other MCP clients later, though doing so is
+  not built or exposed by this feature (see the out-of-scope bullet below, which still stands).
 - This feature scopes only the assistant's outbound tool-consumption side (Observātiō as an aggregator/
   client of tool sources) for the existing "Ask AI about this" panel. Exposing Observātiō's own Day-2
   Ops/backup-health state as a tool source *for other, external assistants to consume* (the reverse
   direction raised in prior proposals) is a distinct, larger effort and is out of scope here.
+- Realistic external tool sources this feature targets include in-cluster MCP servers reachable over
+  HTTP (e.g. `velero-mcp`, which runs as a workload inside the management cluster and exposes
+  backup/restore capabilities) and MCP servers built or hosted via toolkits such as `kmcp` — both are
+  ordinary registered external sources under FR-002, requiring no source-specific handling.
 - Tool source registration is an administrative/deployment-time concern (config-driven), not a
   per-conversation or per-user runtime action, since this mirrors how the rest of Observātiō is
   configured today and keeps the safety boundary under operator control.

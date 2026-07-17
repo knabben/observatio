@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	mcpaggregator "github.com/knabben/observatio/webserver/internal/infra/mcp"
 	"github.com/knabben/observatio/webserver/internal/web/handlers/kubernetes"
 	"github.com/knabben/observatio/webserver/internal/web/handlers/system"
 )
@@ -15,7 +16,7 @@ import (
 //go:embed build/*
 var bundle embed.FS
 
-func DefaultHandlers(router *mux.Router, developmentMode bool) {
+func DefaultHandlers(router *mux.Router, developmentMode bool, aggregator *mcpaggregator.Aggregator) {
 	// Generic handlers, healthcheck, version, etc.
 	router.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		if err := json.NewEncoder(w).Encode(map[string]bool{"ok": true}); err != nil {
@@ -33,6 +34,11 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	// Infrastructure provider detection: which of Docker/vSphere are installed in the
 	// connected environment, and their version (see specs/004-detect-infra-adapt-ui).
 	router.HandleFunc("/api/infra/capabilities", kubernetes.HandleInfraCapabilities).Methods("GET")
+
+	// AI assistant tool source status: registered tool sources (built-in + external), their
+	// health, capabilities, and any capability-name conflicts (see
+	// specs/009-mcp-server-client-aggregator/contracts/mcp-sources-api.md).
+	router.HandleFunc("/api/mcp/sources", system.HandleMCPSources(aggregator)).Methods("GET")
 
 	// Raw object passthrough for the object detail screens' YAML tree tab: returns the
 	// complete Kubernetes object for ?group=&version=&resource=&namespace=&name=, bypassing
@@ -66,7 +72,7 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 	// Start the websocket handlers. Live resource lists (Clusters/Machines listing
 	// screens) stream over /ws/watcher, not these REST endpoints — object types include
 	// "cluster-infra-docker"/"machine-infra-docker" alongside the existing vSphere ones.
-	startWebSocketHandlers(router)
+	startWebSocketHandlers(router, aggregator)
 
 	// Static React bundle hosting handler
 	if !developmentMode {
@@ -76,7 +82,7 @@ func DefaultHandlers(router *mux.Router, developmentMode bool) {
 }
 
 // startWebSocketHandlers initializes WebSocket routes and manages their corresponding client pool behaviors.
-func startWebSocketHandlers(router *mux.Router) {
+func startWebSocketHandlers(router *mux.Router, aggregator *mcpaggregator.Aggregator) {
 	pool := &system.ClientPool{
 		Broadcast:  make(chan []byte),
 		Register:   make(chan *system.WSClient),
@@ -88,6 +94,6 @@ func startWebSocketHandlers(router *mux.Router) {
 
 	router.HandleFunc("/ws/watcher", system.HandleWatcher).Methods("GET", "OPTIONS")
 	router.HandleFunc("/ws/analysis", func(w http.ResponseWriter, r *http.Request) {
-		system.HandleChatbot(pool, w, r)
+		system.HandleChatbot(pool, aggregator, w, r)
 	}).Methods("GET", "OPTIONS")
 }

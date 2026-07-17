@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/knabben/observatio/webserver/internal/infra/llm"
+	mcpaggregator "github.com/knabben/observatio/webserver/internal/infra/mcp"
 	"github.com/knabben/observatio/webserver/internal/web/watchers"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
@@ -92,8 +93,10 @@ func HandleWatcher(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// HandleChatbot opens a connection with the client and allows chat mode.
-func HandleChatbot(pool *ClientPool, w http.ResponseWriter, r *http.Request) {
+// HandleChatbot opens a connection with the client and allows chat mode. aggregator is the
+// shared, process-wide tool source aggregator (specs/009-mcp-server-client-aggregator) - it is
+// not rebuilt per connection.
+func HandleChatbot(pool *ClientPool, aggregator *mcpaggregator.Aggregator, w http.ResponseWriter, r *http.Request) {
 	var wsUpgrader = websocket.Upgrader{
 		ReadBufferSize:  websocketBufferSize,
 		WriteBufferSize: websocketBufferSize,
@@ -108,7 +111,7 @@ func HandleChatbot(pool *ClientPool, w http.ResponseWriter, r *http.Request) {
 	// Past this point the connection has been hijacked for the websocket, so a registration
 	// failure can only be logged and the connection closed - not turned into an http.Error,
 	// which would write to an already-hijacked ResponseWriter.
-	if err := registerClient(pool, conn); err != nil {
+	if err := registerClient(pool, aggregator, conn); err != nil {
 		log.FromContext(r.Context()).Error(err, "error registering websocket client")
 		conn.Close() // nolint
 	}

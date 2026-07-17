@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/knabben/observatio/webserver/internal/infra/llm"
+	mcpaggregator "github.com/knabben/observatio/webserver/internal/infra/mcp"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
@@ -34,8 +35,8 @@ type WSClient struct {
 // registerClient registers a new WebSocket client with the client pool and initializes its reader and writer goroutines.
 // It creates a unique client ID, sets up a communication channel, and binds a new observation service for the client.
 // Returns an error if the observation service fails to initialize.
-func registerClient(pool *ClientPool, conn *websocket.Conn) error {
-	service, err := llm.NewObservationService()
+func registerClient(pool *ClientPool, aggregator *mcpaggregator.Aggregator, conn *websocket.Conn) error {
+	service, err := llm.NewObservationService(aggregator)
 	if err != nil {
 		return err
 	}

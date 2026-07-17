@@ -12,6 +12,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+
+	mcpaggregator "github.com/knabben/observatio/webserver/internal/infra/mcp"
 )
 
 const (
@@ -42,18 +44,24 @@ type ObservationService struct {
 	// wsConnections maps agent IDs to active WebSocket connections for real-time communication.
 	wsConnections map[string]*websocket.Conn
 
-	// tools represent a collection of tools available for the ObservationService to execute specific operations or commands.
-	tools []anthropic.ToolUnionParam
+	// aggregator is the shared, process-wide tool source aggregator (built-in kubectl plus any
+	// operator-registered external MCP sources) used to render the tool schema offered to Claude
+	// and to dispatch tool_use calls. It is constructed once at server startup - not per
+	// connection - since building it may involve real MCP handshakes with external sources
+	// (specs/009-mcp-server-client-aggregator).
+	aggregator *mcpaggregator.Aggregator
 }
 
-func NewObservationService() (*ObservationService, error) {
+// NewObservationService creates a per-connection chat service sharing the given process-wide
+// Aggregator. aggregator must not be nil.
+func NewObservationService(aggregator *mcpaggregator.Aggregator) (*ObservationService, error) {
 	service := &ObservationService{
 		anthropicClient:     anthropic.NewClient(),
 		model:               resolveModel(),
 		agents:              make(map[string]*Agent),
 		wsConnections:       make(map[string]*websocket.Conn),
 		conversationManager: NewConversationManager(5),
-		tools:               RenderTools(),
+		aggregator:          aggregator,
 	}
 	service.initializeAgents()
 	return service, nil
@@ -100,7 +108,7 @@ func (s *ObservationService) StreamChatWithAgent(ctx context.Context, message *C
 
 		history = append(history, acc.ToParam())
 
-		toolResult, ranTools, err := s.runToolCalls(acc, logger)
+		toolResult, ranTools, err := s.runToolCalls(ctx, acc, logger)
 		if err != nil {
 			return fmt.Errorf("claude API response format error: %v", err)
 		}
@@ -135,7 +143,7 @@ func (s *ObservationService) streamOnce(ctx context.Context, history []anthropic
 			{Text: TASK_SYSTEM},
 		},
 		Messages: history,
-		Tools:    s.tools,
+		Tools:    s.aggregator.RenderTools(),
 	})
 
 	acc := anthropic.Message{}
@@ -168,11 +176,12 @@ func (s *ObservationService) streamOnce(ctx context.Context, history []anthropic
 	return &acc, nil
 }
 
-// runToolCalls executes every tool_use block in the assistant's turn and returns a single user
-// MessageParam carrying the matching tool_result blocks. Tool failures are reported back to the
-// model as an error result (so it can explain the failure to the operator or try something else)
-// rather than aborting the exchange.
-func (s *ObservationService) runToolCalls(message *anthropic.Message, logger logr.Logger) (anthropic.MessageParam, bool, error) {
+// runToolCalls dispatches every tool_use block in the assistant's turn to its owning tool source
+// via the Aggregator, and returns a single user MessageParam carrying the matching tool_result
+// blocks. Tool-level failures (including "unknown capability" and "source unavailable") are
+// reported back to the model as an error result (so it can explain the failure to the operator or
+// try something else) rather than aborting the exchange; only a Go-level dispatch error aborts.
+func (s *ObservationService) runToolCalls(ctx context.Context, message *anthropic.Message, logger logr.Logger) (anthropic.MessageParam, bool, error) {
 	var results []anthropic.ContentBlockParamUnion
 
 	for _, block := range message.Content {
@@ -181,24 +190,13 @@ func (s *ObservationService) runToolCalls(message *anthropic.Message, logger log
 			continue
 		}
 
-		switch toolUse.Name {
-		case "kubectl":
-			var input struct {
-				Command string `json:"command"`
-			}
-			if err := json.Unmarshal([]byte(toolUse.JSON.Input.Raw()), &input); err != nil {
-				return anthropic.MessageParam{}, false, err
-			}
-
-			logger.Info("Running kubectl command", "command", input.Command)
-			output, err := RunKubectl(input.Command)
-			if err != nil {
-				logger.Error(err, "kubectl command failed", "command", input.Command)
-				results = append(results, anthropic.NewToolResultBlock(toolUse.ID, strings.TrimSpace(output+"\n"+err.Error()), true))
-				continue
-			}
-			results = append(results, anthropic.NewToolResultBlock(toolUse.ID, output, false))
+		output, isError, sourceName, err := s.aggregator.Dispatch(ctx, toolUse.Name, json.RawMessage(toolUse.JSON.Input.Raw()))
+		if err != nil {
+			return anthropic.MessageParam{}, false, err
 		}
+
+		logger.Info("Dispatched tool call", "tool", toolUse.Name, "source", sourceName, "isError", isError)
+		results = append(results, anthropic.NewToolResultBlock(toolUse.ID, output, isError))
 	}
 
 	if len(results) == 0 {

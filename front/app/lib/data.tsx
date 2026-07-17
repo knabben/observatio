@@ -35,6 +35,41 @@ export async function getInfraCapabilities(): Promise<InfrastructureCapability> 
   return getJSON<InfrastructureCapability>(`/api/infra/capabilities`)
 }
 
+// ----- AI assistant tool source status (specs/009-mcp-server-client-aggregator) -----
+
+export type MCPSourceKind = 'local' | 'external';
+export type MCPHealthState = 'healthy' | 'unhealthy' | 'unknown';
+
+export interface MCPHealthStatus {
+  state: MCPHealthState;
+  lastChecked?: string;
+  lastError?: string;
+}
+
+export interface MCPSourceStatus {
+  name: string;
+  kind: MCPSourceKind;
+  health: MCPHealthStatus;
+  capabilities: string[];
+}
+
+export interface MCPConflict {
+  capabilityName: string;
+  winningSource: string;
+  rejectedSource: string;
+}
+
+export interface MCPSourcesResponse {
+  sources: MCPSourceStatus[];
+  conflicts: MCPConflict[];
+}
+
+export const emptyMCPSourcesResponse: MCPSourcesResponse = {sources: [], conflicts: []};
+
+export async function getMCPSources(): Promise<MCPSourcesResponse> {
+  return getJSON<MCPSourcesResponse>(`/api/mcp/sources`)
+}
+
 // ----- Raw object (YAML tree tab) -----
 
 export interface ResourceGVR {
