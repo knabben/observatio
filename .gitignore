@@ -46,6 +46,8 @@ output
 
 # generated cluster credentials/manifests (capi bootstrap scripts) — never commit kubeconfigs
 scripts/generated/
+/generated/
+*.kubeconfig
 
 # public assets churn (spurious binary diffs from checkout line-ending handling)
 front/public/

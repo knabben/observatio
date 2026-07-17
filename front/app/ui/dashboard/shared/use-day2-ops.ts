@@ -54,10 +54,43 @@ export type SeverityLevel =
   | 'provider_degraded'
   | 'management_critical';
 
+export interface RecoveryInfo {
+  recoverable: boolean;
+  coveringBackupAge?: string;
+}
+
 export interface FailureSeverity {
   objectRef: ObjectRef | null;
   level: SeverityLevel;
   reason: string;
+  recoveryInfo?: RecoveryInfo;
+}
+
+export interface BackupStorageLocationStatus {
+  name: string;
+  namespace: string;
+  reachable: boolean;
+  default: boolean;
+}
+
+export type LastRestoreOutcome = '' | 'succeeded' | 'failed';
+
+export interface ClusterBackupCoverage {
+  clusterRef: ObjectRef;
+  covered: boolean;
+  mostRecentBackupAge?: string;
+  mostRecentBackupName?: string;
+  stale: boolean;
+  restoreInProgress: boolean;
+  lastRestoreOutcome: LastRestoreOutcome;
+}
+
+export interface BackupHealth {
+  available: boolean;
+  storageLocations: BackupStorageLocationStatus[];
+  clusterCoverage: ClusterBackupCoverage[];
+  rpoThresholdSeconds: number;
+  restoresInProgress: number;
 }
 
 export interface Day2OpsData {
@@ -66,7 +99,16 @@ export interface Day2OpsData {
   risks: RiskWarning[];
   severities: FailureSeverity[];
   sourceUnavailable: boolean;
+  backupHealth: BackupHealth;
 }
+
+const EMPTY_BACKUP_HEALTH: BackupHealth = {
+  available: false,
+  storageLocations: [],
+  clusterCoverage: [],
+  rpoThresholdSeconds: 0,
+  restoresInProgress: 0,
+};
 
 const EMPTY_DATA: Day2OpsData = {
   rollups: [],
@@ -74,6 +116,7 @@ const EMPTY_DATA: Day2OpsData = {
   risks: [],
   severities: [],
   sourceUnavailable: false,
+  backupHealth: EMPTY_BACKUP_HEALTH,
 };
 
 interface Day2OpsState {

@@ -100,12 +100,54 @@ const (
 	SeverityManagementCritical SeverityLevel = "management_critical"
 )
 
+// RecoveryInfo augments a CA-secret-missing FailureSeverity with backup-based recoverability
+// (008/US2). Nil for every severity kind other than CA-secret-missing, and nil (not a false
+// Recoverable) when Velero isn't installed — recoverability is genuinely unknown in that case,
+// which is a different fact than "known to have no covering backup."
+type RecoveryInfo struct {
+	Recoverable       bool   `json:"recoverable"`
+	CoveringBackupAge string `json:"coveringBackupAge,omitempty"`
+}
+
 // FailureSeverity classifies a detected issue's urgency. ObjectRef is nil for cluster-wide
 // severities (e.g. management-critical).
 type FailureSeverity struct {
-	ObjectRef *ObjectRef    `json:"objectRef"`
-	Level     SeverityLevel `json:"level"`
-	Reason    string        `json:"reason"`
+	ObjectRef    *ObjectRef    `json:"objectRef"`
+	Level        SeverityLevel `json:"level"`
+	Reason       string        `json:"reason"`
+	RecoveryInfo *RecoveryInfo `json:"recoveryInfo,omitempty"`
+}
+
+// BackupStorageLocationStatus is a normalized summary of one Velero BackupStorageLocation's
+// reachability (008/US1).
+type BackupStorageLocationStatus struct {
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
+	Reachable bool   `json:"reachable"`
+	Default   bool   `json:"default"`
+}
+
+// ClusterBackupCoverage is the per-cluster recoverability computed from known Backups/Restores
+// (008/US1-US3, research.md R5). One entry per known Cluster — always present, even with no
+// covering backup, so a cluster is never silently omitted (spec.md Edge Cases).
+type ClusterBackupCoverage struct {
+	ClusterRef           ObjectRef `json:"clusterRef"`
+	Covered              bool      `json:"covered"`
+	MostRecentBackupAge  string    `json:"mostRecentBackupAge,omitempty"`
+	MostRecentBackupName string    `json:"mostRecentBackupName,omitempty"`
+	Stale                bool      `json:"stale"`
+	RestoreInProgress    bool      `json:"restoreInProgress"`
+	LastRestoreOutcome   string    `json:"lastRestoreOutcome"` // "", "succeeded", or "failed"
+}
+
+// BackupHealth is the full Backup Health payload for the Day-2 Ops landing page (008/US1,
+// FR-001-FR-005, FR-009, FR-011).
+type BackupHealth struct {
+	Available           bool                          `json:"available"`
+	StorageLocations    []BackupStorageLocationStatus `json:"storageLocations"`
+	ClusterCoverage     []ClusterBackupCoverage       `json:"clusterCoverage"`
+	RPOThresholdSeconds int64                         `json:"rpoThresholdSeconds"`
+	RestoresInProgress  int                           `json:"restoresInProgress"`
 }
 
 // Data is the payload of a Day2OpsEvent broadcast to a connected dashboard (contracts/day2ops-ws-event.md).
@@ -115,4 +157,5 @@ type Data struct {
 	Risks             []RiskWarning     `json:"risks"`
 	Severities        []FailureSeverity `json:"severities"`
 	SourceUnavailable bool              `json:"sourceUnavailable"`
+	BackupHealth      BackupHealth      `json:"backupHealth"`
 }

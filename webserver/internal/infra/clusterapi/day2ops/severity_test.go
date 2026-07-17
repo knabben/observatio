@@ -52,9 +52,42 @@ func Test_ComputeManagementClusterSeverity(t *testing.T) {
 }
 
 func Test_ComputeCASecretMissingSeverity(t *testing.T) {
-	severity := ComputeCASecretMissingSeverity(ObjectRef{Name: "prod-1"}, false)
+	severity := ComputeCASecretMissingSeverity(ObjectRef{Name: "prod-1"}, false, nil)
 	require.NotNil(t, severity)
 	assert.Equal(t, SeverityManagementCritical, severity.Level)
 
-	assert.Nil(t, ComputeCASecretMissingSeverity(ObjectRef{Name: "prod-1"}, true))
+	assert.Nil(t, ComputeCASecretMissingSeverity(ObjectRef{Name: "prod-1"}, true, nil))
+}
+
+func Test_ComputeCASecretMissingSeverity_RecoverableWithCoveringBackup(t *testing.T) {
+	coverage := &ClusterBackupCoverage{Covered: true, MostRecentBackupAge: "3h0m0s"}
+
+	severity := ComputeCASecretMissingSeverity(ObjectRef{Name: "prod-1"}, false, coverage)
+
+	require.NotNil(t, severity)
+	require.NotNil(t, severity.RecoveryInfo)
+	assert.True(t, severity.RecoveryInfo.Recoverable)
+	assert.Equal(t, "3h0m0s", severity.RecoveryInfo.CoveringBackupAge)
+	assert.Contains(t, severity.Reason, "3h0m0s")
+	assert.Contains(t, severity.Reason, "recovery is straightforward")
+}
+
+func Test_ComputeCASecretMissingSeverity_NoCoveringBackup(t *testing.T) {
+	coverage := &ClusterBackupCoverage{Covered: false}
+
+	severity := ComputeCASecretMissingSeverity(ObjectRef{Name: "prod-1"}, false, coverage)
+
+	require.NotNil(t, severity)
+	require.NotNil(t, severity.RecoveryInfo)
+	assert.False(t, severity.RecoveryInfo.Recoverable)
+	assert.Contains(t, severity.Reason, "unrecoverable")
+}
+
+func Test_ComputeCASecretMissingSeverity_NoCoverageData_OmitsRecoveryInfo(t *testing.T) {
+	// Velero not installed (or no coverage data available) — recoverability is genuinely
+	// unknown, which must not be conflated with "known to have no covering backup."
+	severity := ComputeCASecretMissingSeverity(ObjectRef{Name: "prod-1"}, false, nil)
+
+	require.NotNil(t, severity)
+	assert.Nil(t, severity.RecoveryInfo)
 }

@@ -37,4 +37,24 @@ describe('SeverityBanner', () => {
     expect(selfHealingContainer.querySelector('[role="alert"]')).toBeNull();
     expect(criticalContainer.querySelector('[role="alert"]')).not.toBeNull();
   });
+
+  it('renders the enriched recoverable reason from a CA-secret-missing severity (008/US2)', () => {
+    const recoverable: FailureSeverity = {
+      objectRef: null, level: 'management_critical',
+      reason: "Cluster prod-1's CA secret is missing or inaccessible. A backup completed 3h0m0s ago covers this cluster — recovery is straightforward.",
+      recoveryInfo: {recoverable: true, coveringBackupAge: '3h0m0s'},
+    };
+    render(<SeverityBanner severities={[recoverable]}/>);
+    expect(screen.getByText(/recovery is straightforward/i)).toBeInTheDocument();
+  });
+
+  it('renders the enriched unrecoverable reason from a CA-secret-missing severity (008/US2)', () => {
+    const unrecoverable: FailureSeverity = {
+      objectRef: null, level: 'management_critical',
+      reason: "Cluster prod-1's CA secret is missing or inaccessible. No covering backup exists — this cluster's data is unrecoverable.",
+      recoveryInfo: {recoverable: false},
+    };
+    render(<SeverityBanner severities={[unrecoverable]}/>);
+    expect(screen.getByText(/unrecoverable/i)).toBeInTheDocument();
+  });
 });
