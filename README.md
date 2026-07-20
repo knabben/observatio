@@ -6,81 +6,57 @@
 <img src="front/public/logo.png" alt="logo" width="300"/>
 </p>
 
-The project focuses on monitoring Kubernetes clusters managed ty [ClusterAPI](https://cluster-api.sigs.k8s.io/), 
-providing tools and solutions to enhance visibility and efficiency. By collecting and consolidating data from diverse sources, 
-it offers comprehensive insights into cluster performance and health. Equipped with advanced dashboards and real-time visualization, 
-the project enables users to swiftly identify and address issues, improving operational reliability and reducing downtime. 
-This solution empowers organizations to maintain optimal cluster functionality, streamline troubleshooting efforts, 
-and ensure robust management of their cloud-native environments.
+Observātiō is a single dashboard for operators running [Cluster API](https://cluster-api.sigs.k8s.io/)-managed
+Kubernetes clusters. It watches Clusters, Machines, MachineDeployments, MachineSets, KubeadmControlPlanes,
+MachineHealthChecks, and ClusterClasses in real time, rolls their health up into one Day-2 Operations view, and lets
+an AI assistant investigate a failure by running read-only `kubectl` (and any aggregated MCP tool) against the
+management cluster on the operator's behalf. It ships as a single Go binary embedding a Next.js/Mantine frontend,
+talking to the management cluster's Kubernetes API and streaming resource state over WebSockets.
 
-## The Cluster Dashboard
-
-### Health Status
+## Day-2 Operations dashboard
 
 <p align="center">
-<img src="front/public/health.png" alt="health" width="450" />
+<img src="docs/screenshots/dashboard-overview.png" alt="Day-2 Operations dashboard" width="800"/>
 </p>
 
-The cluster health screen serves as a centralized dashboard for monitoring the operational status of your entire vSphere Cluster API environment, 
-presenting both quantitative metrics and visual health indicators in an at-a-glance format. 
-This view is crucial for vSphere administrators as it aggregates health data across multiple layers - from cluster-level availability down to individual machine lifecycle states 
+The landing page is a live rollup, not a list of links: healthy/degraded/failed counts per resource category
+(Clusters, Machine Deployments, Machines), a "Needs investigation" banner surfacing the single highest-severity
+issue across the environment, Velero backup health (reachability + recovery-point-objective staleness per cluster),
+the aggregated AI tool sources currently available to the assistant, and the Cluster Topology / Cluster Class views
+retained from earlier iterations of the dashboard.
 
-The accompanying circular health visualization provides an intuitive radial representation where each ring corresponds to different infrastructure layers, with green segments indicating healthy components and red segments highlighting problematic areas that require immediate attention. 
-For vSphere environments, this health summary is particularly valuable during troubleshooting scenarios, as it allows operators to quickly identify whether issues are isolated to specific machine provisioning problems 
-(potentially vSphere resource constraints) or represent broader cluster-wide failures that might indicate management plane issues, 
-networking problems, or underlying vSphere infrastructure degradation affecting multiple workload clusters simultaneously.
-
-### ClusterAPI Topology
-
+## Resource browsing
 
 <p align="center">
-<img src="front/public/topology.png" alt="topology" width="800" />
+<img src="docs/screenshots/resource-browser.png" alt="Clusters resource table" width="800"/>
 </p>
 
-The topology screen provides a comprehensive visual representation of your vSphere-based Cluster API infrastructure, displaying the hierarchical relationships
-between management and workload clusters as interconnected nodes. In the context of vSphere monitoring, this view is particularly valuable as it shows the real-time
-status and dependencies between different cluster components - from the top-level management cluster down to individual machine deployments and their underlying vSphere virtual machines.
-The color-coded boxes (blue for infrastructure components, orange for control plane elements, green for worker nodes, and teal for deployments) allow administrators to quickly 
-identify the health and operational state of each component, making it easier to trace issues from the Kubernetes layer down to the vSphere infrastructure. 
+Each Cluster API resource kind (Clusters, Machines, Machine Deployments, Machine Sets, Kubeadm Control Planes,
+Machine Health Checks, Cluster Classes) gets its own live-updating table — namespace, provider, version, phase, and
+a status dot driven by the same tri-state health semantics used across the dashboard, never a one-off color pick.
 
-This topology visualization is essential for debugging scenarios where problems might cascade through the stack - for instance, if a vSphere datastore issue affects specific machines,
-you can immediately see which workload clusters and applications are impacted by following the connection lines between the affected infrastructure components and
-their dependent resources.
-
-## Intelligent Troubleshooter
-
-### Scenario - Machine Bootstrap Failure Investigation
-
-**Problem**: A Kubernetes operator notices that a worker node machine *nx2-workload-md-0-dtphw-s2vbx-bl7gc* has been stuck in a failing 
-state for 25 minutes and is unable to join the cluster. The machine shows a red error indicator and multiple failed conditions, 
-but the root cause is unclear from basic cluster monitoring.
-
-**Available Information**: The operator has access to the machine's object status conditions, which reveals a cascade 
-of failure states including :
-
-- "Ready" (failed)
-- "WaitingForControlPlaneAvailable" (with message "0 of 2 completed")
-- "BootstrapReady" (failed)
-- "InfrastructureReady" (failed)
-- "WaitingForNodeRef" (failed). 
-
-All conditions show the same timestamp, indicating they occurred simultaneously during the bootstrap process.
-
-**AI Troubleshooting Integration**: The dashboard's AI troubleshooting feature analyzes these interconnected failure conditions and provides intelligent diagnosis, 
-identifying that the primary issue stems from the control plane not being fully available ("0 of 2 completed" message), which prevents the worker node from 
-completing its bootstrap sequence. 
+## Live controller logs
 
 <p align="center">
-<img src="front/public/debug-ai.gif" alt="AI" />
+<img src="docs/screenshots/logs.png" alt="Live controller log streaming" width="800"/>
 </p>
 
-The AI assistant explains that the machine deployment is waiting for at least 2 control plane nodes to be ready before proceeding, 
-suggesting this is likely a control plane scaling issue rather than a worker node-specific problem. 
+The Logs view tails the CAPI, CAPD, and CAPV controller-manager pods directly from the management cluster, so an
+operator doesn't need `kubectl logs -f` in a separate terminal while triaging a failure in the dashboard.
 
-This automated analysis helps the operator quickly pivot from investigating worker node issues to examining control plane availability 
-and scaling configurations, significantly reducing mean time to resolution in complex vSphere Cluster API environments.
+## AI Troubleshooting
 
-## Running the project
+<p align="center">
+<img src="docs/screenshots/ai-troubleshooting-demo.gif" alt="AI troubleshooting assistant investigating a stuck cluster" width="800"/>
+</p>
+
+The AI panel is a live agent, not a canned lookup: asked why a cluster isn't ready, it drives real, read-only
+`kubectl` calls against the management cluster — inspecting the Cluster, its KubeadmControlPlane, and its
+MachineDeployment/MachineHealthCheck status — before answering with the specific condition chain that explains the
+failure and a concrete remediation sequence. Tool access is pluggable: the built-in `kubectl` capability runs
+in-process as a local MCP server, and additional external MCP tool sources can be aggregated alongside it (see
+`specs/009-mcp-server-client-aggregator`), so the assistant's available tools grow without changing how it's asked
+a question.
 
 ## Building and Running
 
@@ -169,6 +145,21 @@ The `NEXT_PUBLIC_*` variables below exist only to support running `pnpm run dev`
 | `NEXT_PUBLIC_API_URL` | REST API base URL | same-origin (`''`) |
 | `NEXT_PUBLIC_WS_URL` | Live resource watcher WebSocket URL | `ws(s)://<origin>/ws/watcher` |
 | `NEXT_PUBLIC_WS_URL_CHATBOT` | AI troubleshooting WebSocket URL | `ws(s)://<origin>/ws/analysis` |
+
+### AI assistant configuration
+
+The AI Troubleshooting panel needs an Anthropic API key with an available credit balance. The
+Go SDK client (`anthropic.NewClient()`) reads it straight from the process environment — there is
+no `.env` auto-loading in the backend, so export it into the shell that runs `serve`/`run-backend`:
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+# optional: pin a specific model instead of the compiled-in default
+export ANTHROPIC_MODEL=claude-sonnet-5
+```
+
+Without a valid key/balance, the rest of the dashboard works normally — the panel just replies
+that the AI assistant isn't available and to check the server's AI configuration.
 
 ### Verifying the single-binary build
 
