@@ -29,11 +29,25 @@ retained from earlier iterations of the dashboard.
 
 <p align="center">
 <img src="docs/screenshots/resource-browser.png" alt="Clusters resource table" width="800"/>
+<img src="docs/screenshots/machines-list.png" alt="Machines resource table" width="800"/>
 </p>
 
 Each Cluster API resource kind (Clusters, Machines, Machine Deployments, Machine Sets, Kubeadm Control Planes,
 Machine Health Checks, Cluster Classes) gets its own live-updating table — namespace, provider, version, phase, and
 a status dot driven by the same tri-state health semantics used across the dashboard, never a one-off color pick.
+
+## Resource detail & AI hand-off
+
+<p align="center">
+<img src="docs/screenshots/cluster-detail.png" alt="Cluster detail view with spec, machine deployments, and object conditions" width="800"/>
+<img src="docs/screenshots/machine-detail.png" alt="Machine detail view with a failing NodeHealthy condition" width="800"/>
+</p>
+
+Selecting any row drills into that object's full detail view: spec fields, related child resources (a Cluster shows
+its Machine Deployments; a Machine shows its owner and provider ID), the raw YAML, and the timestamped chain of
+status conditions — the same signal an operator would otherwise read off `kubectl describe`. Every detail view also
+carries an **Ask AI about this** button that opens the AI Troubleshooting panel already pre-filled with that
+specific object's context, so investigating a failure never starts from a blank prompt.
 
 ## Live controller logs
 
@@ -160,6 +174,42 @@ export ANTHROPIC_MODEL=claude-sonnet-5
 
 Without a valid key/balance, the rest of the dashboard works normally — the panel just replies
 that the AI assistant isn't available and to check the server's AI configuration.
+
+### Velero backup health
+
+The Day-2 Ops dashboard's Backup Health card (spec `008-velero-backup-recoverability`) checks for the
+`backups.velero.io` CRD on connection; when it's absent the card just reports "Velero not available" and every
+other feature keeps working normally. To see it populated with real coverage/RPO data locally, install
+[Velero](https://velero.io/) against your management cluster with any S3-compatible backend — for a `kind`
+cluster with no cloud storage handy, a local MinIO container on the same docker network works:
+
+```bash
+# 1. Run MinIO on the kind network so cluster pods can reach it by container name
+docker run -d --network kind --name minio -p 9000:9000 -p 9001:9001 \
+  -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
+  minio/minio server /data --console-address :9001
+
+# 2. Create the bucket Velero will write to
+docker run --rm --network kind --entrypoint /bin/sh minio/mc -c \
+  "mc alias set myminio http://minio:9000 minioadmin minioadmin && mc mb myminio/velero"
+
+# 3. Install Velero against it
+cat > credentials-velero <<'EOF'
+[default]
+aws_access_key_id = minioadmin
+aws_secret_access_key = minioadmin
+EOF
+
+velero install --provider aws --plugins velero/velero-plugin-for-aws:v1.9.0 \
+  --bucket velero --secret-file credentials-velero --use-volume-snapshots=false \
+  --backup-location-config region=minio,s3ForcePathStyle=true,s3Url=http://minio:9000 --wait
+
+# 4. Take a backup so the card has an actual recovery point to report
+velero backup create demo-backup --include-namespaces default --wait
+```
+
+Once `kubectl get backupstoragelocation -n velero` shows `Phase: Available` and `velero backup get` shows
+`demo-backup` as `Completed`, the dashboard picks both up on its next watch tick — no restart needed.
 
 ### Verifying the single-binary build
 
