@@ -30,6 +30,14 @@ type WSClient struct {
 	// a time, but this guards ObservationService's conversation history against a race if a
 	// second message ever arrives before the first reply finishes.
 	chatMu sync.Mutex
+
+	// sendMu guards Send and closed together: a streaming chat goroutine calling sendMessage can
+	// race with the pool unregistering this client on disconnect, and Go panics on a send to an
+	// already-closed channel (select/default does not protect against this) - every send and
+	// every close must check/set closed under the same lock so a close never happens twice and a
+	// send never happens after one.
+	sendMu sync.Mutex
+	closed bool
 }
 
 // registerClient registers a new WebSocket client with the client pool and initializes its reader and writer goroutines.
@@ -116,12 +124,38 @@ func (c *WSClient) sendMessage(message *llm.ChatMessage) {
 		return
 	}
 
+	c.sendMu.Lock()
+	if c.closed {
+		c.sendMu.Unlock()
+		return
+	}
+
 	select {
 	case c.Send <- result:
+		c.sendMu.Unlock()
 	default:
+		// Buffer full and nobody reading it (client gone quiet or already disconnecting):
+		// close Send under the same lock so a racing sendMessage/closeSend call can never
+		// double-close or send-after-close, then let the pool's own goroutine own the
+		// Clients map mutation instead of touching it from here.
+		c.closed = true
 		close(c.Send)
-		delete(c.pool.Clients, c.ID)
+		c.sendMu.Unlock()
+		c.pool.Unregister <- c
 	}
+}
+
+// closeSend closes Send exactly once. Safe to call concurrently with sendMessage - both take
+// sendMu and check closed first, so a client that disconnects mid-stream never causes a
+// send-on-closed-channel panic or a double close.
+func (c *WSClient) closeSend() {
+	c.sendMu.Lock()
+	defer c.sendMu.Unlock()
+	if c.closed {
+		return
+	}
+	c.closed = true
+	close(c.Send)
 }
 
 // writer manages outgoing WebSocket messages, handles sending data from the Send channel,

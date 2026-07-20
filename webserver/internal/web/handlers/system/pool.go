@@ -23,7 +23,7 @@ func (c *ClientPool) Run(ctx context.Context) {
 		case client := <-c.Unregister:
 			if _, ok := c.Clients[client.ID]; ok {
 				delete(c.Clients, client.ID)
-				close(client.Send)
+				client.closeSend()
 				logging.Info("Client disconnected", "client", client.ID)
 			}
 		case message := <-c.Broadcast:
@@ -31,7 +31,7 @@ func (c *ClientPool) Run(ctx context.Context) {
 				select {
 				case client.Send <- message:
 				default:
-					close(client.Send)
+					client.closeSend()
 					delete(c.Clients, clientID)
 				}
 			}
